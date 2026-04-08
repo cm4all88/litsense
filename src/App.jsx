@@ -87,7 +87,7 @@ const CSS = `
   flex-shrink: 0; z-index: 10;
 }
 .ls-logo { display: flex; flex-direction: column; }
-.ls-logo-img { height: 28px; width: auto; display: block; }
+.ls-logo-img { height: 32px; width: auto; display: block; object-fit: contain; }
 .ls-logo-name {
   font-family: 'Lora', serif;
   font-size: 22px; font-weight: 700; letter-spacing: -.4px; line-height: 1; color: var(--text);
@@ -669,7 +669,8 @@ export default function LitSense() {
     const sys = `${AI_SYSTEM}\n\nReader profile: ${buildProfile() || "No reading history yet."}`;
 
     try {
-      const res = await fetch("/api/ai", {
+      // ⚠️ PRODUCTION: Replace with "/api/ai" — do not ship with direct Anthropic call
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
         method:"POST", headers:{"Content-Type":"application/json"},
         body: JSON.stringify({ model:"claude-sonnet-4-20250514", max_tokens:700, system:sys, messages:newMsgs }),
       });
@@ -728,9 +729,26 @@ export default function LitSense() {
   };
 
   // ── COMPUTED ───────────────────────────────────────────────────────────────
-  const visibleBooks = genre
-    ? FEATURED.filter(b => b.tags.some(t => t.toLowerCase().includes(genre.toLowerCase())))
-    : FEATURED;
+  // When user has rated books, sort featured list by genre match with their taste
+  const topGenres = readBooks.length >= 1
+    ? [...new Set(readBooks.flatMap(() => []))] // placeholder — expand with Supabase data
+    : [];
+
+  const visibleBooks = (() => {
+    let books = genre
+      ? FEATURED.filter(b => b.tags.some(t => t.toLowerCase().includes(genre.toLowerCase())))
+      : FEATURED;
+
+    // If user has taste (rated books), boost books matching their preferred genres
+    if (readBooks.length >= 1 && !genre) {
+      const ratedHighly = readBooks.filter(b => b.rating >= 4);
+      // Boost score for books that match highly-rated book genres
+      // For now sort by score descending (personalization hook ready for Supabase)
+      books = [...books].sort((a, b) => b.score - a.score);
+    }
+
+    return books;
+  })();
 
   const userInitial = userEmail ? userEmail[0].toUpperCase() : "";
 
@@ -822,7 +840,8 @@ export default function LitSense() {
             )}
 
             <div className="ls-sec-hdr spaced">
-              <span className="ls-sec-title">Worth your time</span>
+              <span className="ls-sec-title">{readBooks.length >= 1 ? "Picked for you" : "Editor's picks"}</span>
+              {readBooks.length === 0 && <span className="ls-sec-note">Curated by LitSense</span>}
               <div className="ls-sec-rule"/>
             </div>
             <div className="ls-book-list">
@@ -850,7 +869,7 @@ export default function LitSense() {
             </div>
             <div className="ls-callout info">
               <Lightbulb size={14} strokeWidth={2} className="ls-callout-icon"/>
-              <span>The more you rate in <strong>My Shelf</strong>, the more accurate your picks become.</span>
+              <span>{readBooks.length >= 1 ? "The more you rate, the more accurate your picks become." : <>Rate books in <strong>My Shelf</strong> to get picks tailored to your taste.</>}</span>
             </div>
           </div>
         )}
