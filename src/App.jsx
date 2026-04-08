@@ -469,6 +469,8 @@ textarea.ls-chat-input::placeholder{color:var(--muted);}
 .ls-auth-switch button{background:none;border:none;color:var(--gold);font-weight:600;cursor:pointer;padding:0;}
 .ls-auth-cancel{display:block;width:100%;padding:12px;border-radius:var(--r-md);border:1px solid rgba(255,255,255,.1);background:transparent;color:var(--muted);font-size:13.5px;cursor:pointer;transition:all .15s;text-align:center;}
 .ls-auth-cancel:hover{color:var(--text2);}
+/* Disable hover scale on touch — tap opens modal */
+@media(hover:none){.ls-tile-wrap:hover .ls-tile{transform:scale(1);box-shadow:none;}.ls-tile-wrap:hover .ls-tile-overlay{opacity:0;}.ls-tile-wrap,.ls-tile{transition:none;}}
 `;
 
 // ─── DATA ─────────────────────────────────────────────────────────────────────
@@ -618,6 +620,53 @@ function BookCover({ isbn, title, author = "", color = ["#1a1408","#0e0c06"], cl
   );
 }
 
+// ── BOOK TILE (Netflix-style horizontal card with hover overlay) ──────────────
+function BookTile({ book: b, onAsk, onTap }) {
+  const handleClick = () => onTap(b);
+  const handleAskAI = (e) => { e.stopPropagation(); onAsk(`Tell me about "${b.title}" by ${b.author}. Should I read it? Be specific and honest.`); };
+
+  return (
+    <div className="ls-tile-wrap">
+      <div className="ls-tile" onClick={handleClick}>
+        <div className="ls-tile-cover">
+          <BookCover isbn={b.isbn} title={b.title} author={b.author} color={b.color}/>
+          <div className="ls-tile-score">{b.score}%</div>
+          {/* Hover overlay — desktop only (CSS hides on touch) */}
+          <div className="ls-tile-overlay">
+            <div className="ls-tile-ov-title">{b.title}</div>
+            <div className="ls-tile-ov-author">{b.author}</div>
+            <div className="ls-tile-ov-why" dangerouslySetInnerHTML={{__html: b.why}}/>
+            <button className="ls-tile-ov-btn" onClick={handleAskAI}>Ask AI →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── TILE MODAL (mobile tap replacement for hover overlay) ─────────────────────
+function TileModal({ book: b, onClose, onAsk }) {
+  if (!b) return null;
+  return (
+    <div className="ls-tile-modal-overlay" onClick={onClose}>
+      <div className="ls-tile-modal" onClick={e => e.stopPropagation()}>
+        <div className="ls-tile-modal-handle"/>
+        <div className="ls-tile-modal-cover">
+          <BookCover isbn={b.isbn} title={b.title} author={b.author} color={b.color}/>
+        </div>
+        <div className="ls-tile-modal-title">{b.title}</div>
+        <div className="ls-tile-modal-author">{b.author}</div>
+        <div className="ls-tile-modal-why-label">Why we recommend this</div>
+        <div className="ls-tile-modal-why" dangerouslySetInnerHTML={{__html: b.why}}/>
+        <button className="ls-tile-modal-cta" onClick={() => { onAsk(`Tell me about "${b.title}" by ${b.author}. Should I read it?`); onClose(); }}>
+          Ask LitSense about this book
+        </button>
+        <button className="ls-tile-modal-cancel" onClick={onClose}>Close</button>
+      </div>
+    </div>
+  );
+}
+
 export default function LitSense() {
   useEffect(() => {
     if (!document.getElementById("ls-css")) {
@@ -660,6 +709,7 @@ export default function LitSense() {
   const [shelfTab, setShelfTab]   = useState("read");
   const [bookInput, setBookInput] = useState("");
   const [wantInput, setWantInput] = useState("");
+  const [tappedBook, setTappedBook] = useState(null);
   const [msgs, setMsgs]           = useState([]);
   const [chatIn, setChatIn]       = useState("");
   const [chatLoad, setLoad]       = useState(false);
@@ -837,40 +887,34 @@ export default function LitSense() {
               </button>
             )}
 
-            {/* Book list with real covers + why */}
-            <div className="ls-sec-hdr spaced" style={{padding:"0 16px"}}>
+            {/* Netflix-style horizontal tile row */}
+            <div className="ls-sec-hdr" style={{padding:"0 16px",marginBottom:8,marginTop:24}}>
               <span className="ls-sec-title">{readBooks.length>=1?"Picked for you":"Editor's picks"}</span>
               {readBooks.length===0 && <span className="ls-sec-sub">Curated by LitSense</span>}
             </div>
-            <div style={{height:12}}/>
-            <div className="ls-books">
-              {visibleBooks.length===0 ? (
-                <div className="ls-empty">
-                  <div className="ls-empty-icon"><BookOpen size={36} strokeWidth={1}/></div>
-                  <div className="ls-empty-title">No picks in that genre</div>
-                  <div className="ls-empty-body">Try a different genre or ask the AI for personalized picks.</div>
+            {visibleBooks.length===0 ? (
+              <div className="ls-empty" style={{padding:"32px 16px"}}>
+                <div className="ls-empty-icon"><BookOpen size={36} strokeWidth={1}/></div>
+                <div className="ls-empty-title">No picks in that genre</div>
+                <div className="ls-empty-body">Try a different genre or ask the AI for personalized picks.</div>
+              </div>
+            ) : (
+              <div className="ls-row-outer">
+                <div className="ls-row-track">
+                  {visibleBooks.map(b=>(
+                    <BookTile
+                      key={b.id}
+                      book={b}
+                      onAsk={goAsk}
+                      onTap={setTappedBook}
+                    />
+                  ))}
                 </div>
-              ) : visibleBooks.map(b=>(
-                <div key={b.id} className="ls-book-card" onClick={()=>goAsk(`Tell me about "${b.title}" by ${b.author}. Should I read it? Be specific and honest about why it would or wouldn't be right for me.`)}>
-                  <BookCover isbn={b.isbn} title={b.title} author={b.author} color={b.color}/>
-                  <div className="ls-book-info">
-                    <div className="ls-book-header">
-                      <div className="ls-book-title">{b.title}</div>
-                      <div className="ls-book-score-badge">{b.score}% match</div>
-                    </div>
-                    <div className="ls-book-author">{b.author}</div>
-                    <div className="ls-book-tags">
-                      <span className="ls-book-tag primary">{b.primary}</span>
-                      {b.tags.slice(1).map((t,i)=><span key={i} className="ls-book-tag">{t}</span>)}
-                    </div>
-                    <div className="ls-book-why" dangerouslySetInnerHTML={{__html:b.why}}/>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div style={{height:16}}/>
+              </div>
+            )}
+            <div style={{height:8}}/>
 
-            <div className="ls-callout info">
+                        <div className="ls-callout info">
               <Lightbulb size={14} strokeWidth={2} className="ls-callout-icon"/>
               <span>
                 {readBooks.length>=1
@@ -1129,6 +1173,15 @@ export default function LitSense() {
           </button>
         ))}
       </nav>
+
+      {/* TILE MODAL — mobile tap sheet */}
+      {tappedBook && (
+        <TileModal
+          book={tappedBook}
+          onClose={() => setTappedBook(null)}
+          onAsk={(p) => { setTappedBook(null); goAsk(p); }}
+        />
+      )}
 
       {/* PRO MODAL */}
       {showPro&&(
