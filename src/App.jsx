@@ -87,7 +87,7 @@ const CSS = `
   flex-shrink: 0; z-index: 10;
 }
 .ls-logo { display: flex; flex-direction: column; }
-.ls-logo-img { height: 32px; width: auto; display: block; object-fit: contain; }
+.ls-logo-img { height: 28px; width: auto; display: block; }
 .ls-logo-name {
   font-family: 'Lora', serif;
   font-size: 22px; font-weight: 700; letter-spacing: -.4px; line-height: 1; color: var(--text);
