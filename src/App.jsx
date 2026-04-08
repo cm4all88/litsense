@@ -21,6 +21,55 @@ const LIMIT_ANON = 3;
 const LIMIT_FREE = 5;
 const MEM_BOOKS  = 5;
 
+// ── AMAZON AFFILIATE ──────────────────────────────────────────────────────────
+// 🔑 Replace with your affiliate tag when ready: e.g. "litsense-20"
+const AMAZON_TAG = "litsense-20";
+
+function amazonLink(title, author, isbn) {
+  if (isbn && isbn.length >= 10) {
+    return `https://www.amazon.com/dp/${isbn}?tag=${AMAZON_TAG}&linkCode=ll1`;
+  }
+  const q = encodeURIComponent(`${title} ${author}`);
+  return `https://www.amazon.com/s?k=${q}&tag=${AMAZON_TAG}`;
+}
+
+// ── REFERRAL SYSTEM ───────────────────────────────────────────────────────────
+// In production: store referral data in Supabase, validate server-side
+// For now: localStorage simulation + URL param detection
+
+const REFERRAL_MILESTONES = [
+  { refs:1,  label:"Sharer",    reward:"+3 questions/day",     bonus:3  },
+  { refs:3,  label:"Connector", reward:"+9 questions/day",     bonus:9  },
+  { refs:5,  label:"Advocate",  reward:"1 month Pro free",     bonus:15 },
+  { refs:10, label:"Champion",  reward:"3 months Pro free",    bonus:15 },
+];
+
+function genRefCode(email) {
+  // Simple deterministic code from email — production should use UUID in DB
+  let h = 0;
+  for (let i = 0; i < email.length; i++) {
+    h = ((h << 5) - h) + email.charCodeAt(i);
+    h |= 0;
+  }
+  return Math.abs(h).toString(36).toUpperCase().slice(0,6).padEnd(6,"X");
+}
+
+function getReferralLink(email) {
+  const code = genRefCode(email);
+  return `https://litsense.app?ref=${code}`;
+}
+
+function getReferralMilestone(count) {
+  for (let i = REFERRAL_MILESTONES.length - 1; i >= 0; i--) {
+    if (count >= REFERRAL_MILESTONES[i].refs) return REFERRAL_MILESTONES[i];
+  }
+  return null;
+}
+
+function getNextMilestone(count) {
+  return REFERRAL_MILESTONES.find(m => m.refs > count) || null;
+}
+
 const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -545,6 +594,48 @@ const BOOKS = [
   },
 ];
 
+// ── TASTE LEVELS (reward / progression system) ───────────────────────────────
+const TASTE_LEVELS = [
+  { min:0,  label:"New Reader",    emoji:"📖", next:3,  desc:"Rate 3 books to unlock your taste profile." },
+  { min:3,  label:"Bookworm",      emoji:"🐛", next:7,  desc:"Your taste is starting to take shape." },
+  { min:7,  label:"Lit Nerd",      emoji:"🧠", next:15, desc:"LitSense is learning your reading DNA." },
+  { min:15, label:"Literary Twin", emoji:"✨", next:30, desc:"Recommendations are now deeply personal." },
+  { min:30, label:"Book Oracle",   emoji:"🔮", next:null, desc:"You have achieved legendary reading taste." },
+];
+
+function getTasteLevel(count) {
+  for (let i = TASTE_LEVELS.length - 1; i >= 0; i--) {
+    if (count >= TASTE_LEVELS[i].min) return TASTE_LEVELS[i];
+  }
+  return TASTE_LEVELS[0];
+}
+
+// Detect top genres from highly-rated books in our curated list
+function detectTopGenres(readBooks) {
+  const counts = {};
+  readBooks.filter(b => b.rating >= 4).forEach(rb => {
+    const match = BOOKS.find(b => b.title.toLowerCase() === rb.title.toLowerCase());
+    if (match) match.tags.forEach(t => { counts[t] = (counts[t] || 0) + 1; });
+  });
+  return Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([g])=>g);
+}
+
+// Build smart row title based on detected taste
+function smartRowTitle(readBooks) {
+  if (readBooks.length < 3) return null;
+  const genres = detectTopGenres(readBooks);
+  if (!genres.length) return null;
+  const g = genres[0];
+  const labels = {
+    "Literary Fiction": "Because you love literary fiction",
+    "Sci-Fi":           "For the science fiction fan in you",
+    "Historical":       "History and atmosphere, your way",
+    "Psychology":       "Because you love understanding people",
+    "Thriller":         "Edge-of-your-seat reads you'll love",
+  };
+  return labels[g] || `Because you love ${g}`;
+}
+
 const MOODS = [
   { id:"escape", name:"Escape",  Icon:Sun        },
   { id:"think",  name:"Think",   Icon:Brain      },
@@ -591,6 +682,142 @@ function fmtLine(t) {
   });
 }
 
+// ── BOOK SEARCH — live Open Library search with cover previews ───────────────
+function BookSearch({ onSelect, placeholder = "Search for a book...", mode = "rate" }) {
+  const [query, setQuery]     = useState("");
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [pending, setPending] = useState(null); // book waiting for rating
+  const debounceRef = useRef(null);
+
+  const search = async (q) => {
+    if (!q.trim() || q.length < 2) { setResults([]); return; }
+    setLoading(true);
+    try {
+      const res  = await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(q)}&limit=7&fields=title,author_name,isbn,cover_i,first_publish_year`);
+      const data = await res.json();
+      setResults((data.docs || []).filter(d => d.title));
+    } catch { setResults([]); }
+    setLoading(false);
+  };
+
+  const handleChange = (e) => {
+    const q = e.target.value;
+    setQuery(q);
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => search(q), 380);
+  };
+
+  const selectBook = (doc) => {
+    const book = {
+      title:  doc.title,
+      author: doc.author_name?.[0] || "",
+      isbn:   doc.isbn?.[0] || "",
+      coverId:doc.cover_i || null,
+    };
+    if (mode === "want") {
+      onSelect(book);
+      setQuery(""); setResults([]);
+    } else {
+      // rate mode — show inline star picker
+      setPending(book);
+      setQuery(""); setResults([]);
+    }
+  };
+
+  const confirmRate = (rating) => {
+    onSelect({ ...pending, rating });
+    setPending(null);
+  };
+
+  return (
+    <div style={{position:"relative"}}>
+      <div style={{display:"flex",gap:8}}>
+        <div style={{flex:1,position:"relative"}}>
+          <input
+            className="ls-input full"
+            value={query}
+            onChange={handleChange}
+            placeholder={placeholder}
+          />
+          {loading && (
+            <div style={{position:"absolute",right:10,top:"50%",transform:"translateY(-50%)",fontSize:11,color:"var(--muted)"}}>
+              Searching…
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Search results dropdown */}
+      {results.length > 0 && (
+        <div style={{
+          position:"absolute",top:"calc(100% + 6px)",left:0,right:0,zIndex:100,
+          background:"var(--bg3)",border:"1px solid rgba(255,255,255,.1)",
+          borderRadius:10,overflow:"hidden",
+          boxShadow:"0 8px 32px rgba(0,0,0,.6)",
+        }}>
+          {results.map((doc, i) => {
+            const covUrl = doc.cover_i
+              ? `https://covers.openlibrary.org/b/id/${doc.cover_i}-S.jpg`
+              : null;
+            return (
+              <div key={i}
+                onClick={() => selectBook(doc)}
+                style={{
+                  display:"flex",alignItems:"center",gap:10,
+                  padding:"9px 12px",cursor:"pointer",
+                  borderBottom:"1px solid rgba(255,255,255,.05)",
+                  transition:"background .14s",
+                }}
+                onMouseEnter={e=>e.currentTarget.style.background="rgba(212,148,26,.08)"}
+                onMouseLeave={e=>e.currentTarget.style.background="transparent"}
+              >
+                {/* Small cover */}
+                <div style={{width:28,height:40,borderRadius:3,overflow:"hidden",flexShrink:0,background:"var(--card2)"}}>
+                  {covUrl
+                    ? <img src={covUrl} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+                    : <div style={{width:"100%",height:"100%",background:"var(--lift)"}}/>}
+                </div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontFamily:"'Lora',serif",fontSize:12.5,fontWeight:600,color:"var(--text)",lineHeight:1.25,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{doc.title}</div>
+                  <div style={{fontSize:10.5,color:"var(--muted)",fontStyle:"italic",marginTop:1}}>{doc.author_name?.[0] || "Unknown"}{doc.first_publish_year ? ` · ${doc.first_publish_year}` : ""}</div>
+                </div>
+                <div style={{fontSize:10,color:"var(--gold)",fontWeight:600,flexShrink:0}}>{mode==="want"?"+ Add":"Rate →"}</div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Inline star rating after selecting (rate mode) */}
+      {pending && (
+        <div style={{
+          marginTop:8,padding:"12px 14px",
+          background:"var(--card2)",borderRadius:10,
+          border:"1px solid rgba(212,148,26,.2)",
+        }}>
+          <div style={{fontFamily:"'Lora',serif",fontSize:13,fontWeight:600,color:"var(--text)",marginBottom:1}}>{pending.title}</div>
+          <div style={{fontSize:11,color:"var(--muted)",fontStyle:"italic",marginBottom:10}}>{pending.author}</div>
+          <div style={{fontSize:11.5,color:"var(--text2)",marginBottom:8}}>How would you rate it?</div>
+          <div style={{display:"flex",gap:4,alignItems:"center",marginBottom:10}}>
+            {[1,2,3,4,5].map(s=>(
+              <span key={s} onClick={()=>confirmRate(s)}
+                style={{fontSize:26,cursor:"pointer",color:"var(--gold)",transition:"transform .1s"}}
+                onMouseEnter={e=>e.target.style.transform="scale(1.25)"}
+                onMouseLeave={e=>e.target.style.transform="scale(1)"}
+              >★</span>
+            ))}
+          </div>
+          <button onClick={()=>setPending(null)}
+            style={{fontSize:11,color:"var(--muted)",background:"none",border:"none",cursor:"pointer",padding:0}}>
+            Cancel
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Book cover — real cover from Open Library, premium designed fallback
 function BookCover({ isbn, title, author = "", color = ["#1a1408","#0e0c06"], className = "" }) {
   const [loaded, setLoaded] = useState(false);
@@ -620,25 +847,268 @@ function BookCover({ isbn, title, author = "", color = ["#1a1408","#0e0c06"], cl
   );
 }
 
-// ── BOOK TILE (Netflix-style horizontal card with hover overlay) ──────────────
-function BookTile({ book: b, onAsk, onTap }) {
-  const handleClick = () => onTap(b);
-  const handleAskAI = (e) => { e.stopPropagation(); onAsk(`Tell me about "${b.title}" by ${b.author}. Should I read it? Be specific and honest.`); };
+// ── BOOK TILE — scroll scale + hover overlay ─────────────────────────────────
+function BookTile({ book: b, onAsk, onTap, scrollScale = 1, isFirst, isLast }) {
+  const [hovered, setHovered] = useState(false);
+  const isTouchRef = useRef(false);
+
+  const handleMouseEnter = () => { if (!isTouchRef.current) setHovered(true); };
+  const handleMouseLeave = () => setHovered(false);
+  const handleTouchStart = () => { isTouchRef.current = true; };
+  const handleClick      = () => { if (isTouchRef.current) { onTap(b); isTouchRef.current = false; } };
+
+  // Hover adds extra scale on top of scroll-based scale
+  const finalScale = hovered ? scrollScale * 1.08 : scrollScale;
+  const origin = isFirst ? "left center" : isLast ? "right center" : "center center";
 
   return (
-    <div className="ls-tile-wrap">
-      <div className="ls-tile" onClick={handleClick}>
-        <div className="ls-tile-cover">
+    <div
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onTouchStart={handleTouchStart}
+      onClick={handleClick}
+      style={{
+        flexShrink: 0, position: "relative", cursor: "pointer",
+        zIndex: hovered ? 40 : 1,
+        transition: hovered ? "z-index 0s 0s" : "z-index 0s .3s",
+      }}
+    >
+      <div style={{
+        width: 124,
+        transform: `scale(${finalScale})`,
+        transformOrigin: origin,
+        transition: "transform .3s cubic-bezier(.2,.8,.2,1)",
+        borderRadius: 10, overflow: "hidden", position: "relative",
+        boxShadow: hovered || scrollScale > 1.05
+          ? "0 16px 48px rgba(0,0,0,.8), 0 0 0 1.5px rgba(212,148,26,.3)"
+          : "0 2px 8px rgba(0,0,0,.4)",
+      }}>
+        <div style={{
+          width: 124, height: 178, position: "relative",
+          background: `linear-gradient(155deg, ${b.color[0]}, ${b.color[1]})`,
+        }}>
           <BookCover isbn={b.isbn} title={b.title} author={b.author} color={b.color}/>
-          <div className="ls-tile-score">{b.score}%</div>
-          {/* Hover overlay — desktop only (CSS hides on touch) */}
-          <div className="ls-tile-overlay">
-            <div className="ls-tile-ov-title">{b.title}</div>
-            <div className="ls-tile-ov-author">{b.author}</div>
-            <div className="ls-tile-ov-why" dangerouslySetInnerHTML={{__html: b.why}}/>
-            <button className="ls-tile-ov-btn" onClick={handleAskAI}>Ask AI →</button>
+          {/* Score badge */}
+          <div style={{
+            position:"absolute", top:7, right:7, zIndex:2,
+            fontSize:9, fontWeight:700, color:"var(--gold)",
+            background:"rgba(10,8,6,.82)", backdropFilter:"blur(4px)",
+            padding:"2px 6px", borderRadius:99, border:"1px solid rgba(212,148,26,.25)",
+          }}>{b.score}%</div>
+          {/* Hover overlay */}
+          <div style={{
+            position:"absolute", inset:0,
+            background:"linear-gradient(to top, rgba(0,0,0,.97) 0%, rgba(0,0,0,.72) 38%, rgba(0,0,0,.12) 65%, transparent 100%)",
+            opacity: hovered ? 1 : 0,
+            transition:"opacity .22s ease",
+            display:"flex", flexDirection:"column", justifyContent:"flex-end",
+            padding:"10px 9px",
+          }}>
+            <div style={{fontFamily:"'Lora',serif",fontSize:11,fontWeight:700,color:"#fff",lineHeight:1.28,marginBottom:2}}>{b.title}</div>
+            <div style={{fontSize:9.5,color:"rgba(212,148,26,.85)",fontStyle:"italic",marginBottom:6}}>{b.author}</div>
+            <div style={{
+              fontSize:9.5,lineHeight:1.5,color:"rgba(240,232,216,.8)",fontStyle:"italic",marginBottom:8,
+              display:"-webkit-box",WebkitLineClamp:3,WebkitBoxOrient:"vertical",overflow:"hidden",
+            }} dangerouslySetInnerHTML={{__html:b.why}}/>
+            <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+              <button
+                onClick={e=>{e.stopPropagation();onAsk(`Tell me about "${b.title}" by ${b.author}. Should I read it?`);}}
+                style={{display:"inline-flex",alignItems:"center",padding:"5px 10px",borderRadius:99,border:"none",background:"var(--gold)",color:"#0a0806",fontSize:10,fontWeight:700,cursor:"pointer"}}
+              >Ask AI →</button>
+              <a
+                href={amazonLink(b.title, b.author, b.isbn)}
+                target="_blank" rel="noopener noreferrer"
+                onClick={e=>e.stopPropagation()}
+                style={{display:"inline-flex",alignItems:"center",padding:"5px 10px",borderRadius:99,textDecoration:"none",background:"rgba(255,255,255,.12)",color:"#fff",fontSize:10,fontWeight:600,cursor:"pointer",border:"1px solid rgba(255,255,255,.2)"}}
+              >Buy →</a>
+            </div>
           </div>
         </div>
+      </div>
+      {/* Title below — fades on hover */}
+      <div style={{marginTop:6,width:124,opacity:hovered?0:1,transition:"opacity .18s"}}>
+        <div style={{fontFamily:"'Lora',serif",fontSize:10.5,fontWeight:600,color:"var(--text2)",lineHeight:1.3,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{b.title}</div>
+        <div style={{fontSize:9.5,color:"var(--muted)",fontStyle:"italic",marginTop:1}}>{b.author}</div>
+      </div>
+    </div>
+  );
+}
+
+// ── BOOK ROW — horizontal scroll with center-scale focal effect ────────────────
+function BookRow({ books, title, subtitle, onAsk, onTap }) {
+  const trackRef = useRef(null);
+  const [scales, setScales] = useState(() => books.map((_, i) => i === 0 ? 1.12 : 0.9));
+
+  const calcScales = useCallback(() => {
+    const track = trackRef.current;
+    if (!track || !track.children.length) return;
+    const viewCenter = track.scrollLeft + track.clientWidth / 2;
+    const half = track.clientWidth * 0.52;
+
+    const next = Array.from(track.children).map(child => {
+      const childCenter = child.offsetLeft + child.offsetWidth / 2;
+      const dist = Math.abs(viewCenter - childCenter);
+      const t = Math.max(0, 1 - dist / half);
+      // Smooth ease: cubic
+      const eased = t * t * (3 - 2 * t);
+      // Range: 0.88 (edges) → 1.18 (center)
+      return 0.88 + 0.30 * eased;
+    });
+    setScales(next);
+  }, []);
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    // Initial calc after layout
+    const timer = setTimeout(calcScales, 60);
+    track.addEventListener("scroll", calcScales, { passive: true });
+    window.addEventListener("resize", calcScales);
+    return () => {
+      clearTimeout(timer);
+      track.removeEventListener("scroll", calcScales);
+      window.removeEventListener("resize", calcScales);
+    };
+  }, [calcScales]);
+
+  return (
+    <div style={{marginBottom:4}}>
+      {/* Row header */}
+      <div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between",padding:"0 16px",marginBottom:8}}>
+        <span style={{fontFamily:"'Lora',serif",fontSize:14,fontWeight:600,color:"var(--text)",letterSpacing:"-.1px"}}>{title}</span>
+        {subtitle && <span style={{fontSize:10,color:"var(--muted)",fontWeight:500}}>{subtitle}</span>}
+      </div>
+      {/* Outer: clips overflow, padding absorbs scale expansion */}
+      <div style={{overflow:"hidden",padding:"40px 0",margin:"-40px 0"}}>
+        <div
+          ref={trackRef}
+          style={{
+            display:"flex", gap:10,
+            overflowX:"auto", overflowY:"visible",
+            padding:"40px 16px",
+            scrollbarWidth:"none", msOverflowStyle:"none",
+            WebkitOverflowScrolling:"touch",
+          }}
+        >
+          {books.map((b, i) => (
+            <BookTile
+              key={b.id} book={b}
+              scrollScale={scales[i] ?? 1}
+              onAsk={onAsk} onTap={onTap}
+              isFirst={i===0} isLast={i===books.length-1}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── TASTE CARD — shows after 3+ ratings ───────────────────────────────────────
+function TasteCard({ readBooks, onAddBooks, isPro, onUpgrade }) {
+  const count = readBooks.length;
+  const level = getTasteLevel(count);
+  const genres = detectTopGenres(readBooks);
+  const progress = level.next
+    ? Math.min(100, ((count - level.min) / (level.next - level.min)) * 100)
+    : 100;
+
+  return (
+    <div style={{
+      margin:"0 16px 24px",
+      background:"linear-gradient(135deg,rgba(212,148,26,.08),rgba(212,148,26,.04))",
+      border:"1px solid rgba(212,148,26,.18)",
+      borderRadius:16, padding:"16px 18px",
+    }}>
+      {/* Level badge + title */}
+      <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
+        <div style={{fontSize:28,lineHeight:1}}>{level.emoji}</div>
+        <div>
+          <div style={{fontFamily:"'Lora',serif",fontSize:15,fontWeight:700,color:"var(--text)",lineHeight:1.2}}>{level.label}</div>
+          <div style={{fontSize:11,color:"var(--text2)",marginTop:1}}>{count} book{count!==1?"s":""} rated</div>
+        </div>
+        {isPro && <div style={{marginLeft:"auto",fontSize:10,fontWeight:700,color:"#0a0806",background:"var(--gold)",padding:"2px 8px",borderRadius:99}}>PRO</div>}
+      </div>
+
+      {/* Progress bar to next level */}
+      {level.next && (
+        <div style={{marginBottom:12}}>
+          <div style={{height:3,background:"rgba(255,255,255,.08)",borderRadius:99,overflow:"hidden"}}>
+            <div style={{height:"100%",width:`${progress}%`,background:"var(--gold)",borderRadius:99,transition:"width .4s ease"}}/>
+          </div>
+          <div style={{fontSize:10,color:"var(--muted)",marginTop:5}}>
+            {level.next - count} more to reach <strong style={{color:"var(--text2)"}}>{TASTE_LEVELS.find(l=>l.min===level.next)?.label}</strong>
+          </div>
+        </div>
+      )}
+
+      {/* Detected genres */}
+      {genres.length > 0 && (
+        <div style={{marginBottom:12}}>
+          <div style={{fontSize:9,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"var(--muted)",marginBottom:7}}>Your taste</div>
+          <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+            {genres.map(g=>(
+              <span key={g} style={{fontSize:11,fontWeight:600,color:"var(--gold)",background:"rgba(212,148,26,.12)",border:"1px solid rgba(212,148,26,.2)",padding:"3px 10px",borderRadius:99}}>{g}</span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div style={{fontSize:11.5,color:"var(--text2)",lineHeight:1.6,marginBottom:12,fontStyle:"italic"}}>{level.desc}</div>
+
+      <button
+        onClick={onAddBooks}
+        style={{display:"flex",alignItems:"center",gap:6,background:"var(--gold)",color:"#0a0806",border:"none",padding:"8px 16px",borderRadius:99,fontSize:12,fontWeight:700,cursor:"pointer"}}
+      >+ Rate another book</button>
+    </div>
+  );
+}
+
+// ── QUICK RATE CARD — onboarding when shelf is empty ──────────────────────────
+function QuickRateCard({ onRate, onSkip }) {
+  const [ratings, setRatings] = useState({});
+  const starters = BOOKS.slice(0, 3);
+  const ratedCount = Object.keys(ratings).length;
+
+  return (
+    <div style={{margin:"0 16px 28px",background:"var(--card)",borderRadius:16,padding:"18px 16px",border:"1px solid rgba(255,255,255,.06)"}}>
+      <div style={{fontFamily:"'Lora',serif",fontSize:16,fontWeight:700,color:"var(--text)",marginBottom:4}}>
+        Rate a few books.
+      </div>
+      <div style={{fontSize:13,color:"var(--text2)",marginBottom:16,lineHeight:1.6}}>
+        LitSense learns from what you've loved. The more you rate, the smarter your recommendations get.
+      </div>
+
+      {starters.map(b=>(
+        <div key={b.id} style={{display:"flex",alignItems:"center",gap:12,marginBottom:12}}>
+          <div style={{width:40,height:56,borderRadius:5,overflow:"hidden",flexShrink:0,background:`linear-gradient(145deg,${b.color[0]},${b.color[1]})`}}>
+            <BookCover isbn={b.isbn} title={b.title} color={b.color}/>
+          </div>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontFamily:"'Lora',serif",fontSize:12.5,fontWeight:600,color:"var(--text)",lineHeight:1.3,marginBottom:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{b.title}</div>
+            <div style={{fontSize:11,color:"var(--muted)",fontStyle:"italic"}}>{b.author}</div>
+          </div>
+          <div style={{display:"flex",gap:3,flexShrink:0}}>
+            {[1,2,3,4,5].map(s=>(
+              <span key={s} onClick={()=>setRatings(r=>({...r,[b.id]:s}))} style={{cursor:"pointer",fontSize:15,color:ratings[b.id]>=s?"var(--gold)":"var(--faint)"}}>★</span>
+            ))}
+          </div>
+        </div>
+      ))}
+
+      <div style={{display:"flex",gap:8,marginTop:4}}>
+        <button
+          disabled={ratedCount===0}
+          onClick={()=>onRate(starters.map(b=>({...b,rating:ratings[b.id]||0})).filter(b=>b.rating>0))}
+          style={{
+            flex:1,padding:"10px",borderRadius:99,border:"none",
+            background:ratedCount>0?"var(--gold)":"rgba(212,148,26,.2)",
+            color:ratedCount>0?"#0a0806":"var(--muted)",
+            fontFamily:"'Lora',serif",fontSize:13,fontWeight:700,fontStyle:"italic",
+            cursor:ratedCount>0?"pointer":"default",transition:"all .2s",
+          }}
+        >{ratedCount>0?`Save ${ratedCount} rating${ratedCount>1?"s":""}  →`:"Rate at least one book"}</button>
+        <button onClick={onSkip} style={{padding:"10px 14px",borderRadius:99,border:"1px solid rgba(255,255,255,.1)",background:"transparent",color:"var(--muted)",fontSize:12,cursor:"pointer"}}>Skip</button>
       </div>
     </div>
   );
@@ -661,8 +1131,157 @@ function TileModal({ book: b, onClose, onAsk }) {
         <button className="ls-tile-modal-cta" onClick={() => { onAsk(`Tell me about "${b.title}" by ${b.author}. Should I read it?`); onClose(); }}>
           Ask LitSense about this book
         </button>
+        <a
+          href={amazonLink(b.title, b.author, b.isbn)}
+          target="_blank" rel="noopener noreferrer"
+          style={{
+            display:"block",width:"100%",padding:"13px",borderRadius:10,
+            background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.1)",
+            color:"var(--text2)",textAlign:"center",textDecoration:"none",
+            fontSize:14,fontWeight:600,marginBottom:10,boxSizing:"border-box",
+          }}
+        >Buy on Amazon →</a>
         <button className="ls-tile-modal-cancel" onClick={onClose}>Close</button>
       </div>
+    </div>
+  );
+}
+
+// ── REFERRAL CARD ─────────────────────────────────────────────────────────────
+function ReferralCard({ userEmail, referralCount }) {
+  const [copied, setCopied] = useState(false);
+  const link = getReferralLink(userEmail);
+  const milestone = getReferralMilestone(referralCount);
+  const next = getNextMilestone(referralCount);
+  const nextMilestoneCount = next ? next.refs : null;
+  const progress = next
+    ? Math.min(100, (referralCount / next.refs) * 100)
+    : 100;
+
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2200);
+    } catch {
+      // fallback — select the text
+    }
+  };
+
+  const shareLink = async () => {
+    if (navigator.share) {
+      await navigator.share({
+        title: "LitSense — AI Book Advisor",
+        text: "I've been using LitSense to find my next book. It learns your taste and tells you exactly why each book is right for you. Try it free:",
+        url: link,
+      });
+    } else {
+      copyLink();
+    }
+  };
+
+  return (
+    <div style={{
+      margin:"0 0 24px",
+      background:"linear-gradient(135deg,rgba(212,148,26,.06),rgba(212,148,26,.02))",
+      border:"1px solid rgba(212,148,26,.15)",
+      borderRadius:16, padding:"18px 16px",
+    }}>
+      {/* Header */}
+      <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:12}}>
+        <div>
+          <div style={{fontFamily:"'Lora',serif",fontSize:16,fontWeight:700,color:"var(--text)",lineHeight:1.2,marginBottom:3}}>
+            Invite friends.<br/><em style={{color:"var(--gold)"}}>Earn more.</em>
+          </div>
+          <div style={{fontSize:12,color:"var(--text2)",lineHeight:1.55}}>
+            They get 14 days Pro free.<br/>You get +3 questions/day per referral.
+          </div>
+        </div>
+        <div style={{fontSize:28,flexShrink:0,marginLeft:10}}>🎁</div>
+      </div>
+
+      {/* Stats row */}
+      <div style={{display:"flex",gap:10,marginBottom:14}}>
+        <div style={{flex:1,background:"var(--card)",borderRadius:10,padding:"10px 12px",border:"1px solid rgba(255,255,255,.05)"}}>
+          <div style={{fontFamily:"'Lora',serif",fontSize:22,fontWeight:700,color:"var(--gold)",lineHeight:1}}>{referralCount}</div>
+          <div style={{fontSize:10,color:"var(--muted)",marginTop:2,fontWeight:600,letterSpacing:".5px",textTransform:"uppercase"}}>Referred</div>
+        </div>
+        <div style={{flex:1,background:"var(--card)",borderRadius:10,padding:"10px 12px",border:"1px solid rgba(255,255,255,.05)"}}>
+          <div style={{fontFamily:"'Lora',serif",fontSize:22,fontWeight:700,color:milestone?"var(--gold)":"var(--muted)",lineHeight:1}}>
+            {milestone ? `+${milestone.bonus === 999 ? "∞" : milestone.bonus}` : "+0"}
+          </div>
+          <div style={{fontSize:10,color:"var(--muted)",marginTop:2,fontWeight:600,letterSpacing:".5px",textTransform:"uppercase"}}>Q/day bonus</div>
+        </div>
+        {milestone && (
+          <div style={{flex:1,background:"var(--card)",borderRadius:10,padding:"10px 12px",border:"1px solid rgba(255,255,255,.05)"}}>
+            <div style={{fontSize:14,fontWeight:700,color:"var(--gold)",lineHeight:1.2}}>{milestone.label}</div>
+            <div style={{fontSize:10,color:"var(--muted)",marginTop:2,fontWeight:600,letterSpacing:".5px",textTransform:"uppercase"}}>Your status</div>
+          </div>
+        )}
+      </div>
+
+      {/* Progress to next milestone */}
+      {next && (
+        <div style={{marginBottom:14}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:5}}>
+            <span style={{fontSize:11,color:"var(--text2)"}}>{referralCount} of {next.refs} referrals to <strong style={{color:"var(--gold)"}}>{next.reward}</strong></span>
+            <span style={{fontSize:10,color:"var(--muted)"}}>{next.refs - referralCount} to go</span>
+          </div>
+          <div style={{height:3,background:"rgba(255,255,255,.07)",borderRadius:99,overflow:"hidden"}}>
+            <div style={{height:"100%",width:`${progress}%`,background:"linear-gradient(90deg,var(--gold-d),var(--gold))",borderRadius:99,transition:"width .4s ease"}}/>
+          </div>
+        </div>
+      )}
+      {!next && referralCount >= 10 && (
+        <div style={{marginBottom:14,padding:"8px 12px",background:"rgba(212,148,26,.1)",borderRadius:8,fontSize:12,color:"var(--gold)",fontFamily:"'Lora',serif",fontStyle:"italic"}}>
+          🏆 Champion — you've earned 3 months Pro free. We'll be in touch.
+        </div>
+      )}
+
+      {/* Referral link */}
+      <div style={{
+        background:"var(--bg2)",borderRadius:8,padding:"9px 12px",
+        display:"flex",alignItems:"center",justifyContent:"space-between",
+        marginBottom:10,border:"1px solid rgba(255,255,255,.06)",
+      }}>
+        <span style={{fontSize:11.5,color:"var(--text2)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1}}>{link}</span>
+        <button onClick={copyLink} style={{
+          flexShrink:0,marginLeft:8,padding:"4px 10px",borderRadius:6,border:"none",
+          background:copied?"rgba(74,128,96,.3)":"rgba(212,148,26,.15)",
+          color:copied?"#6ecf9a":"var(--gold)",
+          fontSize:11,fontWeight:700,cursor:"pointer",transition:"all .2s",whiteSpace:"nowrap",
+        }}>{copied?"✓ Copied":"Copy"}</button>
+      </div>
+
+      {/* Share buttons */}
+      <div style={{display:"flex",gap:8}}>
+        <button onClick={shareLink} style={{
+          flex:1,padding:"10px",borderRadius:99,border:"none",
+          background:"var(--gold)",color:"#0a0806",
+          fontFamily:"'Lora',serif",fontSize:13,fontWeight:700,fontStyle:"italic",
+          cursor:"pointer",
+        }}>Share your link</button>
+      </div>
+
+      {/* How it works */}
+      <details style={{marginTop:12}}>
+        <summary style={{fontSize:11,color:"var(--muted)",cursor:"pointer",userSelect:"none",listStyle:"none",display:"flex",alignItems:"center",gap:5}}>
+          <span>How it works</span>
+        </summary>
+        <div style={{marginTop:8,display:"flex",flexDirection:"column",gap:6}}>
+          {REFERRAL_MILESTONES.map(m=>(
+            <div key={m.refs} style={{display:"flex",alignItems:"center",gap:8,opacity:referralCount>=m.refs?1:.5}}>
+              <div style={{width:20,height:20,borderRadius:"50%",background:referralCount>=m.refs?"var(--gold)":"rgba(255,255,255,.1)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:700,color:referralCount>=m.refs?"#0a0806":"var(--muted)",flexShrink:0}}>
+                {referralCount>=m.refs?"✓":m.refs}
+              </div>
+              <div>
+                <span style={{fontSize:11.5,fontWeight:600,color:"var(--text2)"}}>{m.refs} referral{m.refs>1?"s":""}</span>
+                <span style={{fontSize:11,color:"var(--muted)"}}> → {m.reward}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </details>
     </div>
   );
 }
@@ -673,6 +1292,13 @@ export default function LitSense() {
       const s = document.createElement("style");
       s.id = "ls-css"; s.textContent = CSS;
       document.head.appendChild(s);
+    }
+    // Check for referral param — store so signup flow can credit referrer
+    // In production: send to Supabase to credit the referrer's account
+    const params = new URLSearchParams(window.location.search);
+    const refCode = params.get("ref");
+    if (refCode) {
+      try { localStorage.setItem("ls_ref_from", refCode); } catch {}
     }
   }, []);
 
@@ -690,7 +1316,10 @@ export default function LitSense() {
   const loadCounter = () => { try { const r = localStorage.getItem("ls_counter"); if (!r) return 0; const {count,date} = JSON.parse(r); return date===today()?count:0; } catch { return 0; } };
   const [questionsUsed, setQuestionsUsed] = useState(loadCounter);
   const saveCounter = (n) => { try { localStorage.setItem("ls_counter",JSON.stringify({count:n,date:today()})); } catch {} };
-  const questionLimit = isPro ? Infinity : isSignedIn ? LIMIT_FREE : LIMIT_ANON;
+  // Referral bonus adds to daily question limit
+  const refMilestone = getReferralMilestone(referralCount);
+  const refBonus = (!isPro && isSignedIn && refMilestone) ? refMilestone.bonus : 0;
+  const questionLimit = isPro ? Infinity : isSignedIn ? LIMIT_FREE + refBonus : LIMIT_ANON;
   const questionsLeft = questionLimit === Infinity ? null : Math.max(0, questionLimit - questionsUsed);
   const atLimit = !isPro && questionsUsed >= questionLimit;
 
@@ -709,7 +1338,9 @@ export default function LitSense() {
   const [shelfTab, setShelfTab]   = useState("read");
   const [bookInput, setBookInput] = useState("");
   const [wantInput, setWantInput] = useState("");
-  const [tappedBook, setTappedBook] = useState(null);
+  const [tappedBook, setTappedBook]       = useState(null);
+  const [quickRateDone, setQuickRateDone] = useState(() => { try { return !!localStorage.getItem("ls_qr_done"); } catch { return false; } });
+  const [referralCount, setReferralCount] = useState(() => { try { return parseInt(localStorage.getItem("ls_refs")||"0",10); } catch { return 0; } });
   const [msgs, setMsgs]           = useState([]);
   const [chatIn, setChatIn]       = useState("");
   const [chatLoad, setLoad]       = useState(false);
@@ -773,6 +1404,16 @@ export default function LitSense() {
     if (authMode==="signup") {
       if (localStorage.getItem(`ls_user_${authEmail.toLowerCase()}`)) { setAuthError("An account with this email already exists. Sign in instead."); return; }
       localStorage.setItem(`ls_user_${authEmail.toLowerCase()}`,authPass);
+    // Credit referrer if signup came via a referral link
+    // ⚠️ PRODUCTION: do this server-side in Supabase via /api/referral endpoint
+    try {
+      const refFrom = localStorage.getItem("ls_ref_from");
+      if (refFrom && authMode === "signup") {
+        // In production: POST /api/referral { refCode: refFrom, newUserId: userId }
+        // For now: just clear the ref param so it doesn't re-trigger
+        localStorage.removeItem("ls_ref_from");
+      }
+    } catch {}
     } else {
       if (localStorage.getItem(`ls_user_${authEmail.toLowerCase()}`)!==authPass) { setAuthError("Incorrect email or password."); return; }
     }
@@ -835,8 +1476,7 @@ export default function LitSense() {
                 <button className="ls-hero-link" onClick={()=>goAsk("What are the most underrated books of the last three years?")}>Hidden gems</button>
                 <button className="ls-hero-link" onClick={()=>goAsk("I've been in a reading slump. What's the one book that will pull me back in?")}>End a slump</button>
               </div>
-
-              {/* Proof card — real cover + why */}
+              {/* Proof card */}
               <div className="ls-proof">
                 <div className="ls-proof-label">How LitSense recommends</div>
                 <div className="ls-proof-card">
@@ -847,10 +1487,39 @@ export default function LitSense() {
                     <div className="ls-proof-reason">
                       Because you gave <strong>Pachinko</strong> five stars and loved <strong>A Gentleman in Moscow</strong> for its patience — you want literary fiction that earns its length. This is that book.
                     </div>
+                    <a href={amazonLink("The Covenant of Water","Abraham Verghese","9780802162175")} target="_blank" rel="noopener noreferrer"
+                      style={{display:"inline-flex",alignItems:"center",gap:5,marginTop:10,padding:"5px 12px",borderRadius:99,textDecoration:"none",background:"rgba(212,148,26,.15)",border:"1px solid rgba(212,148,26,.25)",color:"var(--gold)",fontSize:11,fontWeight:600}}>Buy on Amazon →</a>
+                    <a
+                      href={amazonLink("The Covenant of Water","Abraham Verghese","9780802162175")}
+                      target="_blank" rel="noopener noreferrer"
+                      style={{display:"inline-flex",alignItems:"center",gap:5,marginTop:10,padding:"5px 12px",borderRadius:99,textDecoration:"none",background:"rgba(212,148,26,.15)",border:"1px solid rgba(212,148,26,.25)",color:"var(--gold)",fontSize:11,fontWeight:600}}
+                    >Buy on Amazon →</a>
                   </div>
                 </div>
               </div>
             </div>
+
+            {/* Taste profile card — shown after 3+ ratings */}
+            {readBooks.length >= 3 && (
+              <TasteCard
+                readBooks={readBooks}
+                onAddBooks={()=>setTab("shelf")}
+                isPro={isPro}
+                onUpgrade={()=>setPro(true)}
+              />
+            )}
+
+            {/* Quick-rate onboarding — shown until dismissed or 3 books rated */}
+            {readBooks.length < 3 && !quickRateDone && (
+              <QuickRateCard
+                onRate={(rated)=>{
+                  rated.forEach(b => setReadBooks(prev=>[...prev,{id:Date.now()+Math.random(),title:b.title,author:b.author,rating:b.rating}]));
+                  localStorage.setItem("ls_qr_done","1");
+                  setQuickRateDone(true);
+                }}
+                onSkip={()=>{ localStorage.setItem("ls_qr_done","1"); setQuickRateDone(true); }}
+              />
+            )}
 
             {/* Mood */}
             <div className="ls-sec-hdr" style={{padding:"0 16px",marginBottom:12}}>
@@ -880,18 +1549,13 @@ export default function LitSense() {
                 <button key={g} className={`ls-genre-pill${genre===g?" on":""}`} onClick={()=>setGenre(genre===g?null:g)}>{g}</button>
               ))}
             </div>
-
             {(mood||genre) && (
               <button className="ls-filter-cta" onClick={()=>goAsk(`Based on my reading history${mood?`, I'm in the mood to ${mood}`:""}${genre?`, I prefer ${genre}`:""}. Give me three specific recommendations with honest reasons why each is right for me.`)}>
                 Get my AI picks <ChevronRight size={16} strokeWidth={2.5}/>
               </button>
             )}
 
-            {/* Netflix-style horizontal tile row */}
-            <div className="ls-sec-hdr" style={{padding:"0 16px",marginBottom:8,marginTop:24}}>
-              <span className="ls-sec-title">{readBooks.length>=1?"Picked for you":"Editor's picks"}</span>
-              {readBooks.length===0 && <span className="ls-sec-sub">Curated by LitSense</span>}
-            </div>
+            {/* Netflix-style book row */}
             {visibleBooks.length===0 ? (
               <div className="ls-empty" style={{padding:"32px 16px"}}>
                 <div className="ls-empty-icon"><BookOpen size={36} strokeWidth={1}/></div>
@@ -899,27 +1563,22 @@ export default function LitSense() {
                 <div className="ls-empty-body">Try a different genre or ask the AI for personalized picks.</div>
               </div>
             ) : (
-              <div className="ls-row-outer">
-                <div className="ls-row-track">
-                  {visibleBooks.map(b=>(
-                    <BookTile
-                      key={b.id}
-                      book={b}
-                      onAsk={goAsk}
-                      onTap={setTappedBook}
-                    />
-                  ))}
-                </div>
-              </div>
+              <BookRow
+                books={visibleBooks}
+                title={smartRowTitle(readBooks) || (readBooks.length>=1?"Picked for you":"Editor's picks")}
+                subtitle={readBooks.length===0?"Curated by LitSense":null}
+                onAsk={goAsk}
+                onTap={setTappedBook}
+              />
             )}
-            <div style={{height:8}}/>
 
-                        <div className="ls-callout info">
+            <div style={{height:8}}/>
+            <div className="ls-callout info">
               <Lightbulb size={14} strokeWidth={2} className="ls-callout-icon"/>
               <span>
-                {readBooks.length>=1
-                  ? "The more you rate, the more accurate your picks become."
-                  : <span>Rate books in <strong>My Shelf</strong> to get picks tailored to your taste.</span>}
+                {readBooks.length>=3
+                  ? "The more you rate, the more personal your picks become."
+                  : <span>Rate books above to unlock recommendations tailored to your taste.</span>}
               </span>
             </div>
             <div style={{height:8}}/>
@@ -948,6 +1607,12 @@ export default function LitSense() {
               </div>
             ) : (
               <>
+                {/* Referral card — shown to signed-in users */}
+                <ReferralCard
+                  userEmail={userEmail}
+                  referralCount={referralCount}
+                />
+
                 <div className="ls-status-tabs">
                   {[["read","Finished"],["reading","Reading"],["want","Want to Read"]].map(([v,l])=>(
                     <button key={v} className={`ls-status-tab${shelfTab===v?" on":""}`} onClick={()=>setShelfTab(v)}>{l}</button>
@@ -957,13 +1622,20 @@ export default function LitSense() {
                 {shelfTab==="read" && (
                   <>
                     <div className="ls-input-card">
-                      <div className="ls-input-label">Add a book you've read</div>
-                      <div className="ls-input-row">
-                        <input className="ls-input" placeholder="Book title..." value={bookInput}
-                          onChange={e=>setBookInput(e.target.value)}
-                          onKeyDown={e=>{if(e.key==="Enter")addBook();}}/>
-                        <button className="ls-add-btn" onClick={addBook}><Plus size={18} strokeWidth={2}/></button>
-                      </div>
+                      <div className="ls-input-label">Search for a book you've read</div>
+                      <BookSearch
+                        mode="rate"
+                        placeholder="Title, author, or ISBN..."
+                        onSelect={(book) => {
+                          setReadBooks(p=>[...p,{
+                            id: Date.now(),
+                            title: book.title,
+                            author: book.author,
+                            isbn: book.isbn,
+                            rating: book.rating || 3,
+                          }]);
+                        }}
+                      />
                     </div>
                     {!isPro && readBooks.length>=MEM_BOOKS && (
                       <div className="ls-callout info" style={{marginBottom:12}}>
@@ -1036,13 +1708,14 @@ export default function LitSense() {
                 {shelfTab==="want" && (
                   <>
                     <div className="ls-input-card">
-                      <div className="ls-input-label">Add to your list</div>
-                      <div className="ls-input-row">
-                        <input className="ls-input" placeholder="Book title..." value={wantInput}
-                          onChange={e=>setWantInput(e.target.value)}
-                          onKeyDown={e=>{if(e.key==="Enter")addWant();}}/>
-                        <button className="ls-add-btn" onClick={addWant}><Plus size={18} strokeWidth={2}/></button>
-                      </div>
+                      <div className="ls-input-label">Search books to add</div>
+                      <BookSearch
+                        mode="want"
+                        placeholder="Find a book to add to your list..."
+                        onSelect={(book) => {
+                          setWantList(p=>[...p, book.title + (book.author ? ` — ${book.author}` : "")]);
+                        }}
+                      />
                     </div>
                     {wantList.length===0 ? (
                       <div className="ls-empty">
@@ -1057,6 +1730,8 @@ export default function LitSense() {
                             <div className="ls-book-row-left"><div className="ls-book-row-title">{t}</div></div>
                             <div className="ls-book-row-actions">
                               <button className="ls-ask-ai-btn" onClick={()=>goAsk(`Should I read "${t}"? Give me a real, honest take based on what I've read before.`)}>Ask AI</button>
+                              <a href={amazonLink(t.split(" — ")[0], t.split(" — ")[1]||"")} target="_blank" rel="noopener noreferrer"
+                                style={{display:"inline-flex",alignItems:"center",padding:"4px 9px",borderRadius:6,textDecoration:"none",background:"rgba(212,148,26,.1)",border:"1px solid rgba(212,148,26,.2)",color:"var(--gold)",fontSize:10.5,fontWeight:600}}>Buy</a>
                               <button className="ls-remove-btn" onClick={()=>setWantList(p=>p.filter((_,j)=>j!==i))}><X size={14}/></button>
                             </div>
                           </div>
