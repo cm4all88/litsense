@@ -1316,12 +1316,6 @@ export default function LitSense() {
   const loadCounter = () => { try { const r = localStorage.getItem("ls_counter"); if (!r) return 0; const {count,date} = JSON.parse(r); return date===today()?count:0; } catch { return 0; } };
   const [questionsUsed, setQuestionsUsed] = useState(loadCounter);
   const saveCounter = (n) => { try { localStorage.setItem("ls_counter",JSON.stringify({count:n,date:today()})); } catch {} };
-  // Referral bonus adds to daily question limit
-  const refMilestone = getReferralMilestone(referralCount);
-  const refBonus = (!isPro && isSignedIn && refMilestone) ? refMilestone.bonus : 0;
-  const questionLimit = isPro ? Infinity : isSignedIn ? LIMIT_FREE + refBonus : LIMIT_ANON;
-  const questionsLeft = questionLimit === Infinity ? null : Math.max(0, questionLimit - questionsUsed);
-  const atLimit = !isPro && questionsUsed >= questionLimit;
 
   // ── SHELF ─────────────────────────────────────────────────────────────────
   const loadShelf = () => { try { const r = localStorage.getItem("ls_shelf"); return r ? JSON.parse(r) : null; } catch { return null; } };
@@ -1341,6 +1335,12 @@ export default function LitSense() {
   const [tappedBook, setTappedBook]       = useState(null);
   const [quickRateDone, setQuickRateDone] = useState(() => { try { return !!localStorage.getItem("ls_qr_done"); } catch { return false; } });
   const [referralCount, setReferralCount] = useState(() => { try { return parseInt(localStorage.getItem("ls_refs")||"0",10); } catch { return 0; } });
+  // Referral bonus adds to daily question limit
+  const refMilestone = getReferralMilestone(referralCount);
+  const refBonus = (!isPro && isSignedIn && refMilestone) ? refMilestone.bonus : 0;
+  const questionLimit = isPro ? Infinity : isSignedIn ? LIMIT_FREE + refBonus : LIMIT_ANON;
+  const questionsLeft = questionLimit === Infinity ? null : Math.max(0, questionLimit - questionsUsed);
+  const atLimit = !isPro && questionsUsed >= questionLimit;
   const [msgs, setMsgs]           = useState([]);
   const [chatIn, setChatIn]       = useState("");
   const [chatLoad, setLoad]       = useState(false);
@@ -1489,11 +1489,6 @@ export default function LitSense() {
                     </div>
                     <a href={amazonLink("The Covenant of Water","Abraham Verghese","9780802162175")} target="_blank" rel="noopener noreferrer"
                       style={{display:"inline-flex",alignItems:"center",gap:5,marginTop:10,padding:"5px 12px",borderRadius:99,textDecoration:"none",background:"rgba(212,148,26,.15)",border:"1px solid rgba(212,148,26,.25)",color:"var(--gold)",fontSize:11,fontWeight:600}}>Buy on Amazon →</a>
-                    <a
-                      href={amazonLink("The Covenant of Water","Abraham Verghese","9780802162175")}
-                      target="_blank" rel="noopener noreferrer"
-                      style={{display:"inline-flex",alignItems:"center",gap:5,marginTop:10,padding:"5px 12px",borderRadius:99,textDecoration:"none",background:"rgba(212,148,26,.15)",border:"1px solid rgba(212,148,26,.25)",color:"var(--gold)",fontSize:11,fontWeight:600}}
-                    >Buy on Amazon →</a>
                   </div>
                 </div>
               </div>
