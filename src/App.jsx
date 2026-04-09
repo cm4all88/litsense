@@ -615,8 +615,8 @@ textarea.ls-chat-input::placeholder{color:var(--muted);}
 }
 
 @keyframes lsBgBreath {
-  from { opacity:0.55; filter:blur(48px) saturate(0.65); }
-  to   { opacity:0.72; filter:blur(44px) saturate(0.75); }
+  from { opacity:0.28; filter:blur(60px) saturate(0.58); }
+  to   { opacity:0.38; filter:blur(56px) saturate(0.65); }
 }
 
 .ls::after {
@@ -1062,8 +1062,125 @@ function getRecommendationReason(book, userState = {}, rowContext = null) {
   return stripHtml(book.why);
 }
 
+/**
+ * getFavoriteBookPitch(book, userState, rowContext)
+ *
+ * Generates a 3-sentence persuasive paragraph for conviction surfaces:
+ * hero wheel focus panel and desktop hover overlay.
+ *
+ * Structure:
+ *   S1 — core appeal: what makes this book distinctive
+ *   S2 — reading experience: what it actually delivers
+ *   S3 — personal connection: why this reader specifically
+ *
+ * Voice-matched but subtle. No algorithmic language.
+ * "If the books you love..." is fine. "Based on your taste" is not.
+ */
+function getFavoriteBookPitch(book, userState = {}) {
+  const voice  = getUserVoiceProfile(userState);
+  const meta   = BOOK_AFFINITY[book.id] || {};
+  const pacing = meta.pacing || "moderate";
+  const tags   = book.tags || [];
+  const { readBooks = [] } = userState;
 
-// ── TASTE LEVELS (reward / progression system) ───────────────────────────────
+  // Deterministic pool pick — same book always gets same pitch
+  const pick = (pool) => pool[book.id % pool.length];
+
+  // Comparison anchor — highest-rated book the user has read
+  const topRated = [...readBooks]
+    .filter(b => (b.rating || 0) >= 4)
+    .sort((a, b) => (b.rating || 0) - (a.rating || 0))[0];
+  const anchor = topRated ? topRated.title.split(":")[0].trim() : null;
+
+  // ── S1: Core appeal — what makes this book distinctive ──────────────────
+  const isSciFi    = tags.includes("Sci-Fi") || tags.includes("Fantasy");
+  const isThriller = tags.includes("Thriller") || tags.includes("Mystery") || tags.includes("True Crime");
+  const isLit      = tags.includes("Literary Fiction") || tags.includes("Historical") || tags.includes("Essays");
+  const isNf       = tags.some(t => ["Non-Fiction","Psychology","Self-Help","Business","Biography","Philosophy"].includes(t));
+  const isEmotional= tags.includes("Family Saga") || tags.includes("Romance");
+
+  let s1;
+  if (isNf) s1 = pick([
+    "This is the kind of non-fiction that changes the way you think about something you believed you already understood — the argument is specific, the evidence is concrete, and the conclusions are earned.",
+    "The best non-fiction makes a complex subject feel clear without oversimplifying it, and this one does that — rigorously but readably.",
+    "This manages to be genuinely useful and genuinely interesting at the same time, which is a harder combination to pull off than it sounds and rarer than it should be.",
+  ]);
+  else if (isSciFi) s1 = pick([
+    "This has the propulsive problem-solving energy that makes the best science fiction hard to put down, without the jargon that slows lesser books.",
+    "The core concept is genuinely original, and the execution keeps it moving — the ideas and the pacing work together instead of competing.",
+    "This moves like a thriller and thinks like the best science fiction — the setup is clean, the problem is real, and the pages go fast.",
+  ]);
+  else if (isThriller) s1 = pick([
+    "The tension here is built carefully and released at exactly the right moments — the kind of control that makes it genuinely difficult to set the book down.",
+    "This compresses time — you look up and an hour has passed without you registering it, which is exactly what the best thrillers do.",
+    "The pacing is a craft achievement: it accelerates when it should and pauses in the right places, which creates tension that feels real rather than mechanical.",
+  ]);
+  else if (isEmotional) s1 = pick([
+    "The characters in this book feel lived in rather than constructed — they make choices that make sense for who they are, and the emotional turns feel earned rather than manufactured.",
+    "This creates real attachment to people who do not exist, which is a difficult thing to do with any kind of honesty.",
+    "The emotional intelligence here is confident, not manipulative — it knows what it wants you to feel and earns it rather than forcing it.",
+  ]);
+  else s1 = pick([
+    "Few books manage to be this precise and this moving at the same time — the writing does exactly what it intends, and what it intends is genuinely ambitious.",
+    "This is the kind of literary fiction that reminds you what the form is capable of — patient, specific, and quietly devastating.",
+    "This earns its reputation — the kind of read that delivers on what the premise promises and then keeps going.",
+  ]);
+
+  // ── S2: Reading experience — what the pages actually feel like ──────────
+  let s2;
+  if (pacing === "fast" || isSciFi || isThriller) {
+    s2 = pick([
+      "It moves — the chapters do not overstay their welcome, which means you can read a large stretch without noticing how much time has passed.",
+      "The structure never lets up, and that momentum is a genuine pleasure — this is a book you finish ahead of when you planned to.",
+      "It earns its pace: nothing is rushed, but nothing is wasted, and the result is a reading experience that keeps its grip.",
+    ]);
+  } else if (pacing === "slow" || (isLit && !isThriller)) {
+    s2 = pick([
+      "It takes its time in the best way — the depth that builds slowly here is the kind that stays with you, not the kind that just delays the payoff.",
+      "This rewards the attention you give it — the more you bring, the more it returns.",
+      "The pace is deliberate and the investment is real, but so is the payoff — books this carefully constructed are rare.",
+    ]);
+  } else if (isNf) {
+    s2 = pick([
+      "This is a book you read with a pen — you keep finding things worth returning to, and the ideas compound as you go.",
+      "The structure carries you forward even when the material is dense, which is exactly what good non-fiction writing is supposed to do.",
+      "It respects your intelligence throughout, which means the conclusions land harder because you followed the full argument to get there.",
+    ]);
+  } else {
+    s2 = pick([
+      "The reading experience is smooth and confident — the author knows what they are building toward, and the structure reflects that clarity.",
+      "This has the rare quality of feeling completely in control without ever feeling cold or calculated.",
+      "Every element earns its place — the result is a book that feels neither overwritten nor rushed.",
+    ]);
+  }
+
+  // ── S3: Personal connection — why this reader specifically ──────────────
+  let s3;
+  if (anchor) {
+    // Use their actual reading history — most persuasive option
+    s3 = pick([
+      `If ${anchor} is in your short list of favorites, the sensibility here should feel immediately familiar in the best way.`,
+      `Given how much you responded to ${anchor}, this has the qualities that likely made it land for you — just in a different setting.`,
+    ]);
+  } else if (voice === "analytical") {
+    s3 = "If the books you return to are the ones that actually changed how you think about something, this has genuine potential to be one of those.";
+  } else if (voice === "literary") {
+    s3 = "If the books that stay with you are the ones where the writing itself is doing real work, this is a very strong fit.";
+  } else if (voice === "emotional") {
+    s3 = "If your favorite reads are the ones where you still think about the characters weeks after you finished — this delivers that.";
+  } else if (voice === "fast") {
+    s3 = "If you want a book that can take over a weekend and make it feel genuinely well spent, this is exactly that kind of read.";
+  } else {
+    s3 = pick([
+      "If you want something that earns real staying power rather than just passing the time well, this is one of the stronger options available right now.",
+      "This is the kind of book people recommend specifically, not generically — which is usually a reliable signal.",
+    ]);
+  }
+
+  return `${s1} ${s2} ${s3}`;
+}
+
+
 const TASTE_LEVELS = [
   { min:0,  label:"New Reader",    emoji:"📖", next:3,  desc:"Rate 3 books to unlock your taste profile." },
   { min:3,  label:"Bookworm",      emoji:"🐛", next:7,  desc:"Your taste is starting to take shape." },
@@ -1542,6 +1659,9 @@ function RecommendationWheel({ books, savedBooks, onSave, onDismiss, onAsk, onTa
   const reason = activeBook
     ? getRecommendationReason(activeBook, userState || {})
     : "";
+  const pitch  = activeBook
+    ? getFavoriteBookPitch(activeBook, userState || {})
+    : "";
 
   if (!books || books.length === 0) return null;
 
@@ -1686,12 +1806,24 @@ function RecommendationWheel({ books, savedBooks, onSave, onDismiss, onAsk, onTa
             fontSize:12, color:"var(--muted)", fontStyle:"italic", marginBottom:10,
           }}>{activeBook.author}</div>
 
-          {/* Why this was recommended */}
+          {/* Why this could be your next favorite */}
           <div style={{
-            fontSize:11.5, color:"rgba(240,232,216,.88)", fontStyle:"italic",
-            lineHeight:1.68, marginBottom:16,
-            maxWidth:286, marginLeft:"auto", marginRight:"auto",
-          }}>{fmtLine(reason)}</div>
+            maxWidth:304, marginLeft:"auto", marginRight:"auto",
+            marginBottom:16, textAlign:"left",
+          }}>
+            <div style={{
+              fontSize:7.5, fontWeight:700, letterSpacing:"2.2px",
+              textTransform:"uppercase", color:"var(--gold)", opacity:.7,
+              marginBottom:7, display:"flex", alignItems:"center", gap:6,
+            }}>
+              <span style={{width:10,height:1,background:"rgba(212,148,26,.45)",display:"inline-block",borderRadius:1,flexShrink:0}}/>
+              Why this could be your next favorite
+            </div>
+            <div style={{
+              fontSize:12, color:"rgba(240,232,216,.88)",
+              lineHeight:1.72, fontStyle:"italic",
+            }}>{pitch}</div>
+          </div>
 
           {/* Actions */}
           <div style={{display:"flex", gap:8, justifyContent:"center", flexWrap:"wrap"}}>
@@ -2371,6 +2503,8 @@ function BookTile({ book: b, onAsk, onTap, scrollScale = 1, isFirst, isLast, isS
   };
 
   const reason = getRecommendationReason(b, userState || {}, rowContext || null);
+  const pitch  = getFavoriteBookPitch(b, userState || {});
+  const hook   = getHook(b);
   const finalScale = hovered ? scrollScale * 1.08 : scrollScale;
   const origin = isFirst ? "left center" : isLast ? "right center" : "center center";
 
@@ -2415,44 +2549,60 @@ function BookTile({ book: b, onAsk, onTap, scrollScale = 1, isFirst, isLast, isS
           }}>{b.score}%</div>
           {/* Saved pip */}
           {isSaved && <div className="ls-tile-saved-pip">✓ Saved</div>}
-          {/* Hover overlay */}
+          {/* Hover overlay — conviction level */}
           <div style={{
             position:"absolute", inset:0,
-            background:"linear-gradient(to top, rgba(0,0,0,.97) 0%, rgba(0,0,0,.75) 42%, rgba(0,0,0,.1) 68%, transparent 100%)",
+            background:"linear-gradient(to top, rgba(0,0,0,.97) 0%, rgba(0,0,0,.88) 48%, rgba(0,0,0,.3) 80%, transparent 100%)",
             opacity: hovered ? 1 : 0,
             transition:"opacity .22s ease",
             display:"flex", flexDirection:"column", justifyContent:"flex-end",
-            padding:"10px 9px",
+            padding:"9px 9px 10px",
           }}>
-            <div style={{fontFamily:"'Inter',sans-serif",fontSize:11,fontWeight:700,color:"#fff",lineHeight:1.28,marginBottom:2}}>{b.title}</div>
-            <div style={{fontSize:9.5,color:"rgba(212,148,26,.85)",fontStyle:"italic",marginBottom:5}}>{b.author}</div>
-            {/* Labeled reason — replaces raw b.why */}
+            {/* Hook — bold, immediate */}
+            <div style={{
+              fontSize:10, fontWeight:700, color:"#fff",
+              lineHeight:1.3, marginBottom:6,
+              display:"-webkit-box", WebkitLineClamp:2,
+              WebkitBoxOrient:"vertical", overflow:"hidden",
+            }}>{hook}</div>
+
+            {/* Conviction label + pitch */}
             <div style={{marginBottom:7}}>
-              <div className="ls-overlay-why-label">Why recommended</div>
               <div style={{
-                fontSize:9,lineHeight:1.52,color:"rgba(240,232,216,.82)",fontStyle:"italic",
-                display:"-webkit-box",WebkitLineClamp:3,WebkitBoxOrient:"vertical",overflow:"hidden",
-              }}>{fmtLine(reason)}</div>
+                fontSize:6.5, fontWeight:700, letterSpacing:"1.8px",
+                textTransform:"uppercase", color:"rgba(212,148,26,.65)",
+                marginBottom:4,
+              }}>Why this could be your next favorite</div>
+              <div style={{
+                fontSize:8.5, lineHeight:1.58,
+                color:"rgba(240,232,216,.85)",
+                display:"-webkit-box", WebkitLineClamp:5,
+                WebkitBoxOrient:"vertical", overflow:"hidden",
+                maskImage:"linear-gradient(180deg,#000 55%,transparent 100%)",
+                WebkitMaskImage:"linear-gradient(180deg,#000 55%,transparent 100%)",
+              }}>{pitch}</div>
             </div>
-            <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+
+            {/* Actions */}
+            <div style={{display:"flex",gap:5}}>
               <button
                 onClick={handleSaveClick}
                 style={{
-                  display:"inline-flex",alignItems:"center",gap:4,
-                  padding:"5px 10px",borderRadius:99,border:"none",
+                  flex:2, padding:"5px 8px", borderRadius:99, border:"none",
                   background: isSaved ? "rgba(212,148,26,.18)" : "var(--gold)",
                   color: isSaved ? "var(--gold)" : "#0a0806",
-                  fontSize:10,fontWeight:700,cursor: isSaved ? "default" : "pointer",
-                  transition:"all .18s",
+                  fontSize:9.5, fontWeight:700,
+                  cursor: isSaved ? "default" : "pointer", transition:"all .18s",
                 }}
               >{isSaved ? "✓ Saved" : "Save to Read"}</button>
               <button
-                onClick={e=>{e.stopPropagation();onAsk(`Tell me about "${b.title}" by ${b.author}. Should I read it?`);}}
-                style={{display:"inline-flex",alignItems:"center",padding:"5px 10px",borderRadius:99,border:"1px solid rgba(255,255,255,.2)",background:"rgba(255,255,255,.1)",color:"#fff",fontSize:10,fontWeight:600,cursor:"pointer"}}
-              >Ask AI →</button>
-              <button
                 onClick={handleDismissClick}
-                style={{display:"inline-flex",alignItems:"center",padding:"5px 9px",borderRadius:99,border:"1px solid rgba(255,255,255,.12)",background:"transparent",color:"rgba(255,255,255,.5)",fontSize:10,fontWeight:500,cursor:"pointer",transition:"all .15s"}}
+                style={{
+                  flex:1, padding:"5px 6px", borderRadius:99,
+                  border:"1px solid rgba(255,255,255,.15)", background:"transparent",
+                  color:"rgba(255,255,255,.55)", fontSize:9.5, fontWeight:500,
+                  cursor:"pointer", transition:"all .15s",
+                }}
               >No Thanks</button>
             </div>
           </div>
@@ -3074,19 +3224,20 @@ export default function LitSense() {
   return (
     <div style={{ position:"relative", height:"100dvh", overflow:"hidden", background:"#14110d" }}>
 
-      {/* ── BACKGROUND GRADIENT SCENES — z:0, always visible ── */}
+      {/* ── BACKGROUND GRADIENT SCENES — subtle atmosphere only ── */}
       {bgScenes.map((grad, i) => (
         <div key={i} style={{
           position:"absolute", inset:0, zIndex:0,
           background: grad,
-          opacity: i === bgIdx ? 1 : 0,
+          opacity: i === bgIdx ? 0.35 : 0,
+          filter:"blur(60px) saturate(0.6)",
           transition:"opacity 4s ease-in-out",
         }}/>
       ))}
-      {/* Vignette — softens edges */}
+      {/* Vignette — protects readability */}
       <div style={{
         position:"absolute", inset:0, zIndex:1, pointerEvents:"none",
-        background:"radial-gradient(ellipse 140% 100% at 50% 40%, transparent 0%, rgba(5,4,3,.38) 60%, rgba(5,4,3,.78) 100%)",
+        background:"radial-gradient(ellipse 140% 100% at 50% 40%, rgba(14,11,8,.25) 0%, rgba(10,8,6,.58) 60%, rgba(8,6,4,.88) 100%)",
       }}/>
 
       {/* ── APP — z:2, transparent bg, full height ── */}
