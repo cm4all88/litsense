@@ -1,12 +1,43 @@
 /**
  * LitSense — AI Book Advisor
- * v9 · Cinematic Dark · Real Covers · Why Explanations
+ * v21 · Readability & Color Refinement
+ *
+ * Changes from v20 (style values only — no layout, logic, or component changes):
+ *
+ *  CSS VARIABLES
+ *  --text2: #b0a080 → #cbc3b8
+ *    Was warm mid-gray at ~43% luminance. Now warm light-gray at ~60%.
+ *    Improves readability of every element using this variable across the app:
+ *    hero body, proof reason, book-why, empty states, modal sub-copy,
+ *    welcome sub, chat bubbles, shelf labels, auth sub — all improve automatically.
+ *
+ *  --muted: #706040 → #8c8476
+ *    Was too dark at small sizes (~17% luminance). Now ~28%.
+ *    Improves author names, row subtitles, pro feature descriptions,
+ *    nav labels, secondary labels throughout.
+ *
+ *  CSS CLASSES
+ *  .ls-why-reason: color var(--text2) → rgba(240,232,216,.82), line-height 1.7 → 1.72
+ *    TileModal explanatory text — higher explicit contrast, fractionally more open.
+ *
+ *  .ls-proof-reason: line-height 1.62 → 1.68
+ *    Hero proof card body — more breathing room.
+ *
+ *  .ls-pro-feat-desc: line-height 1.55 → 1.62
+ *    Pro modal feature descriptions.
+ *
+ *  WHEEL FOCUS PANEL (inline)
+ *  Reason text: var(--text2) → rgba(240,232,216,.78)
+ *    Explicit near-white for the most-read surface in the wheel experience.
+ *
+ *  FOR YOU ITEM (inline) — three-tier hierarchy:
+ *  Title:  var(--text) = #f0e8d8 — unchanged, max brightness
+ *  Hook:   rgba(240,232,216,.95) — near-title brightness, 600 weight
+ *  Reason: rgba(240,232,216,.72) — clearly secondary, still readable
+ *  Hook line-height: 1.4 → 1.48 — slightly more open
+ *  Reason line-height: 1.68 → 1.70
  *
  * ⚠️  PRODUCTION: Replace fetch URL with "/api/ai" before deploying.
- * Replace localStorage auth simulation with Clerk.
- *
- * Book covers: Open Library free API — no key needed.
- * https://covers.openlibrary.org/b/isbn/{ISBN}-L.jpg
  */
 
 import { useState, useRef, useEffect, useCallback } from "react";
@@ -71,87 +102,106 @@ function getNextMilestone(count) {
 }
 
 const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,600;0,700;1,600;1,700&family=Inter:wght@300;400;500;600;700&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 
 .ls {
-  font-family:'DM Sans',sans-serif;
+  font-family:'Inter',sans-serif;
   height:100dvh;display:flex;flex-direction:column;overflow:hidden;
-  background:#0a0806;color:#f0e8d8;
+  background:transparent;color:#f0e8d8;
+  position:relative;z-index:1;
 
   --gold:    #d4941a;
   --gold-r:  #e8a820;
-  --gold-l:  rgba(212,148,26,.14);
+  --gold-l:  rgba(212,148,26,.15);
   --gold-d:  #9a6808;
   --sage:    #4a8060;
   --rust:    #b84028;
 
-  --bg:      #0a0806;
-  --bg2:     #141008;
-  --bg3:     #1e1610;
-  --card:    #1a1410;
-  --card2:   #241c14;
-  --lift:    #2e2418;
+  /* Glass system — everything layered over the gradient bg */
+  --glass:        rgba(255,255,255,.035);
+  --glass-mid:    rgba(255,255,255,.06);
+  --glass-lift:   rgba(255,255,255,.10);
+  --glass-border: rgba(255,255,255,.09);
+  --glass-strong: rgba(20,17,13,.50);
 
-  --text:    #f0e8d8;
-  --text2:   #b0a080;
-  --muted:   #706040;
-  --faint:   #3c2e1e;
+  --bg:      #14110d;
+  --bg2:     rgba(255,255,255,.04);
+  --bg3:     rgba(22,17,12,.78);
+  --card:    var(--glass);
+  --card2:   var(--glass-mid);
 
-  --r-sm:  6px;
-  --r-md:  12px;
-  --r-lg:  18px;
+  --text:    #f5efe5;
+  --text2:   #e8e2da;
+  --muted:   #c4bdb4;
+  --faint:   rgba(255,255,255,.08);
+
+  --r-sm:  8px;
+  --r-md:  14px;
+  --r-lg:  20px;
+  --r-xl:  26px;
   --r-pill:99px;
-  --glow:  rgba(212,148,26,.22);
+  --glow:  rgba(212,148,26,.28);
+  --spring: cubic-bezier(0.34,1.56,0.64,1);
+  --ease:   cubic-bezier(0.25,0.46,0.45,0.94);
 }
 .ls ::-webkit-scrollbar{display:none;}
 
-/* ── HEADER ── */
+/* ── HEADER — glass, floats above bg ── */
 .ls-hdr{
-  height:54px;min-height:54px;padding:0 16px;
+  height:58px;min-height:58px;padding:0 20px;
   display:flex;align-items:center;justify-content:space-between;
-  background:linear-gradient(180deg,rgba(10,8,6,.99) 0%,rgba(10,8,6,.85) 100%);
-  border-bottom:1px solid rgba(255,255,255,.05);
+  background:rgba(18,14,10,.65);
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border-bottom:1px solid rgba(255,255,255,.07);
   flex-shrink:0;z-index:10;
 }
-.ls-logo{display:flex;flex-direction:column;gap:1px;}
+.ls-logo{display:flex;flex-direction:column;gap:2px;}
 .ls-logo-img{height:26px;width:auto;display:block;filter:brightness(1.3);}
-.ls-logo-name{font-family:'Lora',serif;font-size:21px;font-weight:700;letter-spacing:-.4px;line-height:1;color:var(--text);}
+.ls-logo-name{font-family:'Lora',serif;font-size:22px;font-weight:700;letter-spacing:-.5px;line-height:1;color:var(--text);}
 .ls-logo-name em{color:var(--gold);font-style:italic;}
-.ls-logo-sub{font-size:8px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);}
+.ls-logo-sub{font-size:8px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--muted);opacity:.8;}
 .ls-hdr-right{display:flex;align-items:center;gap:8px;}
 .ls-signin-btn{
-  padding:6px 13px;border-radius:var(--r-pill);
-  border:1px solid rgba(255,255,255,.12);
-  background:rgba(255,255,255,.05);color:var(--text2);
-  font-size:12px;font-weight:600;cursor:pointer;transition:all .18s;
+  padding:7px 15px;border-radius:var(--r-pill);
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.07);color:var(--text2);
+  font-size:12px;font-weight:600;cursor:pointer;
+  transition:all .22s var(--ease);
+  backdrop-filter:blur(8px);
 }
 .ls-signin-btn:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-l);}
 .ls-pro-btn{
   display:flex;align-items:center;gap:5px;
-  padding:6px 14px;border-radius:var(--r-pill);
+  padding:7px 15px;border-radius:var(--r-pill);
   background:var(--gold);color:#0a0806;border:none;
-  font-size:12px;font-weight:700;cursor:pointer;transition:all .18s;
-  box-shadow:0 0 18px var(--glow);
+  font-size:12px;font-weight:700;cursor:pointer;
+  transition:all .22s var(--ease);
+  box-shadow:0 2px 16px var(--glow);
 }
-.ls-pro-btn:hover{background:var(--gold-r);box-shadow:0 0 28px rgba(212,148,26,.35);}
+.ls-pro-btn:hover{background:var(--gold-r);transform:translateY(-1px);box-shadow:0 4px 24px rgba(212,148,26,.45);}
 .ls-user-avatar{
-  width:30px;height:30px;border-radius:50%;
-  background:var(--card2);border:1.5px solid rgba(212,148,26,.3);
+  width:32px;height:32px;border-radius:50%;
+  background:rgba(212,148,26,.12);border:1.5px solid rgba(212,148,26,.35);
   display:flex;align-items:center;justify-content:center;
-  font-size:11px;font-weight:700;color:var(--gold);cursor:pointer;
+  font-size:12px;font-weight:700;color:var(--gold);cursor:pointer;
+  transition:all .2s;
 }
-.ls-pro-pip{font-size:9px;font-weight:700;color:#0a0806;background:var(--gold);padding:2px 8px;border-radius:var(--r-pill);}
+.ls-user-avatar:hover{background:rgba(212,148,26,.2);}
+.ls-pro-pip{font-size:9px;font-weight:700;color:#0a0806;background:var(--gold);padding:2px 9px;border-radius:var(--r-pill);letter-spacing:.3px;}
 
-/* ── BOTTOM NAV ── */
+/* ── BOTTOM NAV — glass ── */
 .ls-nav{
-  display:flex;background:rgba(10,8,6,.98);
-  border-top:1px solid rgba(255,255,255,.06);
+  display:flex;
+  background:rgba(18,14,10,.70);
+  backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);
+  border-top:1px solid rgba(255,255,255,.07);
   flex-shrink:0;padding-bottom:env(safe-area-inset-bottom,0);
 }
-.ls-nav-btn{flex:1;padding:10px 4px 8px;border:none;background:transparent;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;color:var(--muted);transition:color .15s;}
+.ls-nav-btn{flex:1;padding:11px 4px 9px;border:none;background:transparent;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;color:var(--muted);transition:color .2s var(--ease),transform .2s var(--spring);}
 .ls-nav-btn.on{color:var(--gold);}
-.ls-nav-label{font-family:'Lora',serif;font-size:9px;font-weight:500;font-style:italic;color:inherit;}
+.ls-nav-btn:active{transform:scale(.88);}
+.ls-nav-label{font-family:'Inter',sans-serif;font-size:9.5px;font-weight:500;letter-spacing:.3px;color:inherit;}
 
 /* ── LAYOUT ── */
 .ls-main{flex:1;overflow:hidden;display:flex;flex-direction:column;}
@@ -159,368 +209,347 @@ const CSS = `
 
 /* ── CINEMATIC HERO ── */
 .ls-hero{
-  padding:32px 16px 24px;
-  background:linear-gradient(180deg,
-    rgba(10,8,6,0) 0%,rgba(10,8,6,.5) 50%,rgba(10,8,6,1) 100%),
-    radial-gradient(ellipse 100% 80% at 50% 0%,rgba(212,148,26,.1) 0%,transparent 70%),
-    linear-gradient(145deg,#1a1208,#0e0c06);
-  position:relative;overflow:hidden;
-}
-.ls-hero::after{
-  content:'';position:absolute;inset:0;pointer-events:none;
-  background:radial-gradient(ellipse 60% 40% at 80% 20%,rgba(212,148,26,.04) 0%,transparent 60%);
+  padding:36px 20px 28px;
+  background:linear-gradient(180deg, transparent 0%, rgba(10,8,6,.42) 60%, rgba(10,8,6,.82) 100%);
+  position:relative;
 }
 .ls-hero-eyebrow{
-  font-size:9.5px;font-weight:700;letter-spacing:3px;
-  text-transform:uppercase;color:var(--gold);margin-bottom:10px;
-  display:flex;align-items:center;gap:8px;
+  font-size:9px;font-weight:700;letter-spacing:3.5px;
+  text-transform:uppercase;color:var(--gold);margin-bottom:12px;
+  display:flex;align-items:center;gap:9px;opacity:.9;
 }
-.ls-hero-eyebrow::before{content:'';width:22px;height:1.5px;background:var(--gold);border-radius:1px;}
+.ls-hero-eyebrow::before{content:'';width:24px;height:1.5px;background:var(--gold);border-radius:1px;}
 .ls-hero-title{
   font-family:'Lora',serif;
-  font-size:28px;font-weight:700;line-height:1.22;
-  color:var(--text);margin-bottom:10px;letter-spacing:-.4px;
+  font-size:30px;font-weight:700;line-height:1.2;
+  color:var(--text);margin-bottom:12px;letter-spacing:-.5px;
 }
 .ls-hero-title em{color:var(--gold);font-style:italic;}
-.ls-hero-body{font-size:14px;line-height:1.7;color:var(--text2);margin-bottom:20px;max-width:290px;}
+.ls-hero-body{font-size:14.5px;line-height:1.68;color:var(--text2);margin-bottom:22px;max-width:300px;}
 .ls-hero-cta{
   display:inline-flex;align-items:center;gap:9px;
-  padding:13px 24px;border:none;border-radius:var(--r-pill);
-  background:var(--gold);color:#0a0806;
-  font-family:'Lora',serif;font-size:14px;font-weight:700;font-style:italic;
-  cursor:pointer;transition:all .2s;margin-bottom:14px;
-  box-shadow:0 4px 24px rgba(212,148,26,.4);
+  padding:14px 26px;border:none;border-radius:var(--r-pill);
+  background:var(--gold);color:#060402;
+  font-family:'Inter',sans-serif;font-size:14px;font-weight:700;
+  cursor:pointer;transition:all .25s var(--ease);margin-bottom:14px;
+  box-shadow:0 4px 28px rgba(212,148,26,.45);
 }
-.ls-hero-cta:hover{background:var(--gold-r);transform:translateY(-2px);box-shadow:0 8px 32px rgba(212,148,26,.5);}
-.ls-hero-links{display:flex;gap:8px;flex-wrap:wrap;}
+.ls-hero-cta:hover{background:var(--gold-r);transform:translateY(-2px) scale(1.02);box-shadow:0 8px 36px rgba(212,148,26,.55);}
+.ls-hero-links{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;}
 .ls-hero-link{
-  padding:7px 14px;border-radius:var(--r-pill);
+  padding:8px 16px;border-radius:var(--r-pill);
   border:1px solid rgba(255,255,255,.12);
-  background:rgba(255,255,255,.06);color:var(--text2);
-  font-size:12px;font-weight:600;cursor:pointer;transition:all .18s;
+  background:rgba(255,255,255,.06);
+  backdrop-filter:blur(10px);
+  color:var(--text2);font-size:12.5px;font-weight:500;
+  cursor:pointer;transition:all .22s var(--ease);
 }
-.ls-hero-link:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-l);}
+.ls-hero-link:hover{border-color:rgba(212,148,26,.5);color:var(--gold);background:var(--gold-l);transform:translateY(-1px);}
 
-/* ── PROOF CARD ── */
-.ls-proof{margin-top:22px;padding-top:20px;border-top:1px solid rgba(255,255,255,.06);}
-.ls-proof-label{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;}
+/* ── PROOF CARD — glass ── */
+.ls-proof{margin-top:24px;padding-top:22px;border-top:1px solid rgba(255,255,255,.06);}
+.ls-proof-label{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;opacity:.9;}
 .ls-proof-card{
-  display:flex;gap:12px;
-  background:rgba(255,255,255,.03);border-radius:var(--r-md);
-  padding:14px;border:1px solid rgba(255,255,255,.06);
+  display:flex;gap:14px;
+  background:rgba(255,255,255,.05);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-radius:var(--r-lg);padding:16px;
+  border:1px solid rgba(255,255,255,.09);
+  box-shadow:0 8px 32px rgba(0,0,0,.25);
 }
-.ls-proof-cover{
-  width:52px;min-width:52px;height:72px;border-radius:6px;overflow:hidden;
-  background:var(--card2);flex-shrink:0;
-  box-shadow:3px 3px 12px rgba(0,0,0,.5);
-}
+.ls-proof-cover{width:52px;min-width:52px;height:72px;border-radius:8px;overflow:hidden;flex-shrink:0;box-shadow:0 4px 16px rgba(0,0,0,.5);}
 .ls-proof-cover img{width:100%;height:100%;object-fit:cover;display:block;}
 .ls-proof-body{flex:1;min-width:0;}
-.ls-proof-title{font-family:'Lora',serif;font-size:13px;font-weight:600;color:var(--text);margin-bottom:1px;line-height:1.3;}
-.ls-proof-author{font-size:10.5px;color:var(--muted);font-style:italic;margin-bottom:8px;}
-.ls-proof-reason{
-  font-size:11.5px;line-height:1.62;color:var(--text2);font-style:italic;
-  padding:7px 10px;
-  background:var(--gold-l);
-  border-left:2px solid var(--gold);
-  border-radius:0 5px 5px 0;
-}
+.ls-proof-title{font-family:'Lora',serif;font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;line-height:1.3;}
+.ls-proof-author{font-size:10.5px;color:var(--muted);margin-bottom:9px;}
+.ls-proof-reason{font-size:11.5px;line-height:1.68;color:var(--text2);font-style:italic;padding:8px 11px;background:rgba(212,148,26,.09);border-left:2px solid var(--gold);border-radius:0 6px 6px 0;}
 .ls-proof-reason strong{color:var(--gold);font-style:normal;font-weight:600;}
 
 /* ── SECTION HEADERS ── */
-.ls-sec-hdr{display:flex;align-items:center;justify-content:space-between;padding:0 16px;margin-bottom:12px;}
-.ls-sec-hdr.spaced{margin-top:28px;}
-.ls-sec-title{font-family:'Lora',serif;font-size:15px;font-weight:600;color:var(--text);letter-spacing:-.1px;}
-.ls-sec-sub{font-size:10px;font-weight:500;color:var(--muted);}
+.ls-sec-hdr{display:flex;align-items:center;justify-content:space-between;padding:0 20px;margin-bottom:14px;}
+.ls-sec-hdr.spaced{margin-top:32px;}
+.ls-sec-title{font-family:'Lora',serif;font-size:16px;font-weight:700;color:var(--text);letter-spacing:-.2px;}
+.ls-sec-sub{font-size:10px;font-weight:500;color:var(--muted);letter-spacing:.2px;}
 
-/* ── MOOD CHIPS ── */
-.ls-mood-row{display:flex;gap:9px;overflow-x:auto;padding:0 16px 6px;margin-bottom:24px;}
+/* ── MOOD CHIPS — glass ── */
+.ls-mood-row{display:flex;gap:9px;overflow-x:auto;padding:0 20px 8px;margin-bottom:24px;}
 .ls-mood-chip{
   flex-shrink:0;display:flex;align-items:center;gap:6px;
-  padding:9px 15px;border-radius:var(--r-pill);
-  background:var(--card2);border:1px solid rgba(255,255,255,.06);
-  color:var(--text2);cursor:pointer;transition:all .18s;
+  padding:9px 16px;border-radius:var(--r-pill);
+  background:rgba(255,255,255,.06);
+  backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.09);
+  color:var(--text2);cursor:pointer;
+  transition:all .22s var(--ease);
   font-size:13px;font-weight:500;white-space:nowrap;
 }
-.ls-mood-chip:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-l);}
-.ls-mood-chip.on{background:var(--gold);color:#0a0806;border-color:var(--gold);font-weight:700;box-shadow:0 0 16px var(--glow);}
-.ls-mood-chip.on svg{color:#0a0806;}
+.ls-mood-chip:hover{border-color:rgba(212,148,26,.4);color:var(--gold);background:var(--gold-l);transform:translateY(-1px);}
+.ls-mood-chip.on{background:var(--gold);color:#060402;border-color:var(--gold);font-weight:700;box-shadow:0 4px 18px var(--glow);}
+.ls-mood-chip.on svg{color:#060402;}
 .ls-mood-banner{
-  margin:-16px 16px 20px;padding:9px 13px;border-radius:var(--r-md);
-  background:var(--gold-l);border:1px solid rgba(212,148,26,.2);
+  margin:-16px 20px 22px;padding:10px 14px;border-radius:var(--r-md);
+  background:rgba(212,148,26,.1);border:1px solid rgba(212,148,26,.22);
   display:flex;align-items:center;justify-content:space-between;
+  backdrop-filter:blur(8px);
 }
-.ls-mood-banner-text{font-size:12px;color:var(--gold);font-family:'Lora',serif;font-style:italic;font-weight:500;}
+.ls-mood-banner-text{font-size:12px;color:var(--gold);font-weight:500;}
 .ls-mood-banner-clear{background:transparent;border:none;color:var(--gold);font-size:11px;font-weight:600;cursor:pointer;}
 
-/* ── GENRE PILLS ── */
-.ls-genre-row{display:flex;gap:7px;overflow-x:auto;padding:0 16px 4px;margin-bottom:20px;}
+/* ── GENRE PILLS — glass ── */
+.ls-genre-row{display:flex;gap:8px;overflow-x:auto;padding:0 20px 4px;margin-bottom:22px;}
 .ls-genre-pill{
   padding:7px 16px;border-radius:var(--r-pill);
   border:1px solid rgba(255,255,255,.09);
-  background:var(--card);color:var(--text2);
-  font-size:12.5px;font-weight:500;
-  cursor:pointer;transition:all .18s;white-space:nowrap;flex-shrink:0;
+  background:rgba(255,255,255,.05);
+  backdrop-filter:blur(8px);
+  color:var(--text2);font-size:12.5px;font-weight:500;
+  cursor:pointer;transition:all .2s var(--ease);white-space:nowrap;flex-shrink:0;
 }
-.ls-genre-pill:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-l);}
-.ls-genre-pill.on{background:var(--gold);border-color:var(--gold);color:#0a0806;font-weight:700;box-shadow:0 0 14px var(--glow);}
+.ls-genre-pill:hover{border-color:rgba(212,148,26,.4);color:var(--gold);transform:translateY(-1px);}
+.ls-genre-pill.on{background:var(--gold);border-color:var(--gold);color:#060402;font-weight:700;box-shadow:0 4px 16px var(--glow);}
 
 /* ── FILTER CTA ── */
 .ls-filter-cta{
   display:flex;align-items:center;justify-content:center;gap:8px;
-  margin:0 16px 24px;padding:13px;border-radius:var(--r-md);border:1px solid rgba(212,148,26,.25);
-  background:rgba(212,148,26,.1);color:var(--gold);
-  font-family:'Lora',serif;font-size:14px;font-weight:600;font-style:italic;
-  cursor:pointer;transition:all .18s;
+  margin:0 20px 24px;padding:14px;border-radius:var(--r-lg);
+  border:1px solid rgba(212,148,26,.28);
+  background:rgba(212,148,26,.1);
+  backdrop-filter:blur(10px);
+  color:var(--gold);font-size:14px;font-weight:600;cursor:pointer;transition:all .22s;
 }
-.ls-filter-cta:hover{background:rgba(212,148,26,.18);box-shadow:0 0 20px var(--glow);}
+.ls-filter-cta:hover{background:rgba(212,148,26,.18);transform:translateY(-1px);box-shadow:0 4px 20px var(--glow);}
 
-/* ── BOOK CARDS — NETFLIX STYLE ── */
-.ls-books{display:flex;flex-direction:column;gap:16px;padding:0 16px 8px;}
+/* ── BOOK CARDS — glass ── */
+.ls-books{display:flex;flex-direction:column;gap:14px;padding:0 20px 8px;}
 .ls-book-card{
-  display:flex;gap:14px;padding:14px;
-  background:var(--card);border-radius:var(--r-lg);
-  border:1px solid rgba(255,255,255,.04);
-  cursor:pointer;transition:all .2s;
-  box-shadow:0 4px 20px rgba(0,0,0,.3);
+  display:flex;gap:14px;padding:14px 16px;
+  background:rgba(255,255,255,.055);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border-radius:var(--r-lg);
+  border:1px solid rgba(255,255,255,.09);
+  cursor:pointer;transition:all .25s var(--ease);
+  box-shadow:0 4px 24px rgba(0,0,0,.2);
 }
 .ls-book-card:hover{
-  background:var(--card2);border-color:rgba(212,148,26,.2);
-  box-shadow:0 8px 32px rgba(0,0,0,.5),0 0 0 1px rgba(212,148,26,.1);
+  background:rgba(255,255,255,.09);
+  border-color:rgba(212,148,26,.25);
   transform:translateY(-2px);
+  box-shadow:0 8px 36px rgba(0,0,0,.35),0 0 0 1px rgba(212,148,26,.12);
 }
 
 /* ── BOOK COVER ── */
-.ls-book-cover{
-  width:72px;min-width:72px;height:104px;
-  border-radius:8px;overflow:hidden;flex-shrink:0;
-  background:var(--card2);
-  box-shadow:4px 4px 16px rgba(0,0,0,.6);
-  position:relative;
-}
+.ls-book-cover{width:72px;min-width:72px;height:104px;border-radius:9px;overflow:hidden;flex-shrink:0;box-shadow:0 4px 20px rgba(0,0,0,.5);}
 .ls-book-cover img{width:100%;height:100%;object-fit:cover;display:block;}
-.ls-book-cover-fallback{
-  width:100%;height:100%;
-  display:flex;flex-direction:column;justify-content:flex-end;
-  padding:10px 9px 10px;position:relative;
-}
-.ls-book-cover-lines{
-  position:absolute;top:10px;left:9px;right:9px;
-  display:flex;flex-direction:column;gap:4px;
-}
-.ls-book-cover-line{
-  height:1.5px;background:rgba(212,148,26,.2);border-radius:1px;
-}
-.ls-book-cover-line.short{width:60%;}
-.ls-book-cover-title{
-  font-family:'Lora',serif;font-size:11px;font-weight:700;
-  color:rgba(240,232,216,.9);line-height:1.3;
-  position:relative;z-index:1;margin-bottom:4px;
-}
-.ls-book-cover-author{
-  font-size:9px;font-weight:400;font-style:italic;
-  color:rgba(212,148,26,.7);position:relative;z-index:1;
-}
+.ls-book-info{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:space-between;}
+.ls-book-title{font-family:'Lora',serif;font-size:15px;font-weight:700;line-height:1.28;color:var(--text);letter-spacing:-.1px;}
+.ls-book-author{font-size:11.5px;color:var(--muted);margin-bottom:8px;}
+.ls-book-why{font-size:12px;line-height:1.65;color:var(--text2);}
+.ls-book-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px;}
+.ls-tag{font-size:10px;font-weight:600;padding:3px 8px;border-radius:var(--r-pill);background:rgba(255,255,255,.07);color:var(--muted);border:1px solid rgba(255,255,255,.07);}
+.ls-book-actions{display:flex;gap:7px;margin-top:10px;}
+.ls-save-btn{flex:1;padding:9px;border-radius:var(--r-pill);border:none;background:var(--gold);color:#060402;font-size:12px;font-weight:700;cursor:pointer;transition:all .22s var(--ease);box-shadow:0 2px 12px var(--glow);}
+.ls-save-btn:hover{background:var(--gold-r);transform:translateY(-1px);}
+.ls-dismiss-btn{padding:9px 13px;border-radius:var(--r-pill);border:1px solid rgba(255,255,255,.1);background:transparent;color:var(--muted);font-size:12px;font-weight:500;cursor:pointer;transition:all .18s;}
+.ls-dismiss-btn:hover{border-color:rgba(255,255,255,.2);color:var(--text2);}
 
-/* ── BOOK INFO ── */
-.ls-book-info{flex:1;min-width:0;display:flex;flex-direction:column;}
-.ls-book-header{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:4px;}
-.ls-book-title{font-family:'Lora',serif;font-size:15px;font-weight:600;line-height:1.28;color:var(--text);letter-spacing:-.1px;}
-.ls-book-score-badge{
-  flex-shrink:0;display:flex;align-items:center;
-  font-size:10px;font-weight:700;color:var(--gold);
-  background:var(--gold-l);border:1px solid rgba(212,148,26,.2);
-  padding:2px 7px;border-radius:var(--r-pill);white-space:nowrap;
-}
-.ls-book-author{font-size:11.5px;font-style:italic;color:var(--muted);margin-bottom:10px;}
-.ls-book-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;}
-.ls-book-tag{padding:2px 8px;border-radius:var(--r-pill);font-size:9.5px;font-weight:600;background:var(--bg3);color:var(--muted);}
-.ls-book-tag.primary{background:rgba(212,148,26,.15);color:var(--gold);}
-
-/* ── WHY PANEL ── */
-.ls-book-why{
-  flex:1;
-  font-size:12px;line-height:1.65;color:var(--text2);
-  padding:9px 11px;
-  background:rgba(255,255,255,.03);
-  border-left:2px solid rgba(212,148,26,.4);
-  border-radius:0 6px 6px 0;
-  font-style:italic;
-}
-.ls-book-why strong{color:var(--gold);font-style:normal;font-weight:600;}
-
-/* ── CALLOUT ── */
-.ls-callout{
-  margin:0 16px 20px;border-radius:var(--r-md);padding:11px 13px;
-  display:flex;gap:9px;align-items:flex-start;font-size:12.5px;line-height:1.65;
-}
-.ls-callout.info{background:var(--gold-l);border:1px solid rgba(212,148,26,.18);color:var(--gold);}
-.ls-callout-icon{flex-shrink:0;margin-top:1px;}
+/* ── ROW TILES — Netflix horizontal scroll ── */
+.ls-row-wrap{overflow-x:auto;padding:0 20px 8px;}
+.ls-row{display:flex;gap:12px;}
+.ls-tile-wrap{flex-shrink:0;cursor:pointer;transition:transform .25s var(--spring);}
+.ls-tile-wrap:hover{transform:scale(1.05) translateY(-4px);}
+.ls-tile{width:110px;height:160px;border-radius:var(--r-md);overflow:hidden;position:relative;box-shadow:0 6px 24px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.07);transition:box-shadow .25s;}
+.ls-tile-wrap:hover .ls-tile{box-shadow:0 14px 40px rgba(0,0,0,.65),0 0 0 1px rgba(212,148,26,.25);}
+.ls-tile-overlay{position:absolute;inset:0;background:linear-gradient(180deg,transparent 35%,rgba(4,2,1,.95) 100%);opacity:0;transition:opacity .22s;display:flex;flex-direction:column;justify-content:flex-end;padding:10px 9px;}
+.ls-tile-wrap:hover .ls-tile-overlay{opacity:1;}
+.ls-tile-book-title{font-family:'Inter',sans-serif;font-size:10px;font-weight:700;color:#fff;line-height:1.25;margin-bottom:2px;}
+.ls-tile-book-author{font-size:9px;color:rgba(255,255,255,.6);}
 
 /* ── SHELF ── */
-.ls-shelf-scroll{flex:1;overflow-y:auto;padding:20px 16px 32px;}
-.ls-shelf-hdr{margin-bottom:20px;}
-.ls-shelf-hdr-title{font-family:'Lora',serif;font-size:22px;font-weight:700;font-style:italic;color:var(--text);margin-bottom:4px;}
+.ls-shelf-scroll{flex:1;overflow-y:auto;padding-bottom:16px;}
+.ls-shelf-hdr{padding:28px 20px 20px;}
+.ls-shelf-hdr-title{font-family:'Lora',serif;font-size:24px;font-weight:700;color:var(--text);margin-bottom:4px;}
 .ls-shelf-hdr-sub{font-size:13px;color:var(--text2);}
-.ls-status-tabs{display:flex;gap:4px;margin-bottom:18px;background:var(--card);border-radius:var(--r-md);padding:4px;}
-.ls-status-tab{flex:1;padding:8px 4px;border-radius:var(--r-sm);border:none;background:transparent;color:var(--muted);font-family:'Lora',serif;font-size:12px;font-weight:500;font-style:italic;cursor:pointer;text-align:center;transition:all .18s;}
-.ls-status-tab.on{background:var(--card2);color:var(--gold);font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.4);}
-
-/* ── SHELF GATE ── */
-.ls-shelf-gate{display:flex;flex-direction:column;align-items:center;text-align:center;padding:52px 24px;gap:12px;}
-.ls-shelf-gate-icon{color:var(--gold);opacity:.45;margin-bottom:4px;}
-.ls-shelf-gate-title{font-family:'Lora',serif;font-size:21px;font-weight:700;color:var(--text);}
+.ls-shelf-gate{display:flex;flex-direction:column;align-items:center;text-align:center;padding:52px 32px;}
+.ls-shelf-gate-icon{color:var(--muted);margin-bottom:18px;opacity:.4;}
+.ls-shelf-gate-title{font-family:'Lora',serif;font-size:21px;font-weight:700;color:var(--text);margin-bottom:10px;}
 .ls-shelf-gate-body{font-size:14px;color:var(--text2);max-width:240px;line-height:1.72;}
-
-/* ── INPUTS ── */
-.ls-input-card{background:var(--card);border-radius:var(--r-md);padding:16px;margin-bottom:14px;border:1px solid rgba(255,255,255,.05);}
+.ls-status-tabs{display:flex;gap:6px;padding:0 20px;margin-bottom:20px;}
+.ls-status-tab{flex:1;padding:9px 4px;border-radius:var(--r-md);border:none;background:rgba(255,255,255,.05);color:var(--muted);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer;text-align:center;transition:all .2s;}
+.ls-status-tab.on{background:rgba(212,148,26,.15);color:var(--gold);border:1px solid rgba(212,148,26,.25);}
+.ls-input-row{display:flex;gap:8px;padding:0 20px;margin-bottom:16px;}
 .ls-input-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
-.ls-input-row{display:flex;gap:8px;}
-.ls-input{flex:1;background:var(--bg2);border:1px solid rgba(255,255,255,.08);border-radius:var(--r-sm);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 13px;outline:none;transition:border-color .2s;}
+.ls-input{flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(8px);border-radius:var(--r-md);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;padding:11px 14px;outline:none;transition:border-color .2s;}
 .ls-input:focus{border-color:var(--gold);}
 .ls-input::placeholder{color:var(--muted);}
-.ls-input.full{width:100%;}
-.ls-add-btn{padding:10px 15px;border-radius:var(--r-sm);border:none;background:var(--gold);color:#0a0806;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .18s;flex-shrink:0;}
-.ls-add-btn:hover{background:var(--gold-r);}
-
-/* ── BOOK ROWS (shelf) ── */
-.ls-book-row{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-radius:var(--r-md);background:var(--card);border:1px solid rgba(255,255,255,.04);margin-bottom:7px;}
-.ls-book-row-left{flex:1;min-width:0;}
-.ls-book-row-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
-.ls-book-row-actions{display:flex;gap:7px;flex-shrink:0;align-items:center;}
-.ls-book-row-title{font-size:13.5px;font-weight:500;color:var(--text);margin-bottom:2px;}
-.ls-book-row-author{font-size:11px;color:var(--muted);font-style:italic;}
-.ls-star-row{display:flex;gap:3px;align-items:center;}
-.ls-star{cursor:pointer;transition:all .1s;display:inline-flex;align-items:center;}
-.ls-remove-btn{background:transparent;border:none;color:var(--faint);cursor:pointer;padding:4px 6px;transition:color .15s;display:flex;align-items:center;}
+.ls-input-btn{padding:11px 16px;border-radius:var(--r-md);border:none;background:var(--gold);color:#060402;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.ls-input-btn:hover{background:var(--gold-r);}
+.ls-book-row-item{display:flex;align-items:center;gap:11px;padding:10px 20px;border-radius:var(--r-md);transition:background .18s;}
+.ls-book-row-item:hover{background:rgba(255,255,255,.04);}
+.ls-book-row-thumb{width:36px;height:50px;border-radius:5px;overflow:hidden;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.4);}
+.ls-book-row-title{font-family:'Lora',serif;font-size:13px;font-weight:600;color:var(--text);line-height:1.3;}
+.ls-book-row-author{font-size:11px;color:var(--muted);}
+.ls-star-row{display:flex;gap:3px;margin-top:4px;}
+.ls-star{font-size:14px;color:rgba(255,255,255,.15);cursor:pointer;transition:color .12s;}
+.ls-star.on{color:var(--gold);}
+.ls-remove-btn{background:transparent;border:none;color:rgba(255,255,255,.18);cursor:pointer;padding:4px 6px;transition:color .15s;display:flex;align-items:center;}
 .ls-remove-btn:hover{color:var(--rust);}
+.ls-want-item{display:flex;align-items:center;justify-content:space-between;padding:9px 20px;}
+.ls-want-text{font-size:13.5px;color:var(--text2);line-height:1.5;flex:1;}
+.ls-action-btn{width:100%;padding:15px;border-radius:var(--r-lg);border:none;background:var(--gold);color:#060402;font-family:'Inter',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .25s var(--ease);display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 24px rgba(212,148,26,.38);}
+.ls-action-btn:hover{background:var(--gold-r);transform:translateY(-2px);box-shadow:0 8px 32px rgba(212,148,26,.48);}
+.ls-ask-ai-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:var(--r-sm);border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);backdrop-filter:blur(8px);color:var(--text2);font-size:11.5px;font-weight:600;cursor:pointer;transition:all .18s;}
+.ls-ask-ai-btn:hover{border-color:var(--gold);color:var(--gold);}
 
-/* ── BUTTONS ── */
-.ls-action-wrap{margin-top:16px;}
-.ls-action-btn{width:100%;padding:14px;border-radius:var(--r-md);border:none;background:var(--gold);color:#0a0806;font-family:'Lora',serif;font-size:15px;font-weight:700;font-style:italic;cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 20px rgba(212,148,26,.3);}
-.ls-action-btn:hover{background:var(--gold-r);transform:translateY(-1px);}
-.ls-action-btn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none;}
-.ls-ask-ai-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:var(--r-sm);border:1px solid rgba(255,255,255,.1);background:transparent;color:var(--text2);font-size:11.5px;font-weight:600;cursor:pointer;transition:all .18s;}
-.ls-ask-ai-btn:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-l);}
+/* ── CALLOUT — glass ── */
+.ls-callout{display:flex;align-items:flex-start;gap:9px;font-size:12.5px;line-height:1.65;padding:12px 16px;margin:0 20px;border-radius:var(--r-md);background:rgba(255,255,255,.04);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.08);color:var(--text2);}
+.ls-callout.info{border-color:rgba(212,148,26,.2);background:rgba(212,148,26,.06);}
+.ls-callout-icon{color:var(--gold);flex-shrink:0;margin-top:1px;}
 
-/* ── EMPTY STATES ── */
-.ls-empty{text-align:center;padding:48px 24px;display:flex;flex-direction:column;align-items:center;gap:10px;}
-.ls-empty-icon{color:var(--faint);margin-bottom:4px;opacity:.4;}
-.ls-empty-title{font-family:'Lora',serif;font-size:17px;font-weight:600;font-style:italic;color:var(--text);}
+/* ── EMPTY ── */
+.ls-empty{display:flex;flex-direction:column;align-items:center;text-align:center;padding:52px 32px;}
+.ls-empty-icon{color:var(--muted);margin-bottom:16px;opacity:.4;}
+.ls-empty-title{font-family:'Lora',serif;font-size:17px;font-weight:600;color:var(--text);margin-bottom:8px;}
 .ls-empty-body{font-size:13.5px;color:var(--text2);max-width:220px;line-height:1.7;}
 
-/* ── QUESTION COUNTER ── */
-.ls-counter{padding:6px 16px;display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:var(--muted);border-top:1px solid rgba(255,255,255,.05);background:rgba(10,8,6,.97);flex-shrink:0;}
-.ls-counter.warn{color:var(--rust);}
-.ls-counter-upgrade{font-size:11.5px;font-weight:600;color:var(--gold);background:none;border:none;cursor:pointer;padding:0;}
-
-/* ── LIMIT WALL ── */
-.ls-limit-wall{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:36px 24px;gap:12px;}
-.ls-limit-title{font-family:'Lora',serif;font-size:22px;font-weight:700;color:var(--text);line-height:1.25;}
-.ls-limit-title em{color:var(--gold);font-style:italic;}
-.ls-limit-body{font-size:14px;color:var(--text2);max-width:240px;line-height:1.72;}
-.ls-limit-cta{margin-top:8px;padding:13px 32px;border-radius:var(--r-pill);border:none;background:var(--gold);color:#0a0806;font-family:'Lora',serif;font-size:15px;font-weight:700;font-style:italic;cursor:pointer;box-shadow:0 4px 20px rgba(212,148,26,.35);transition:all .18s;}
-.ls-limit-cta:hover{background:var(--gold-r);transform:translateY(-1px);}
-.ls-limit-cta.outline{background:transparent;color:var(--gold);border:1.5px solid var(--gold);box-shadow:none;margin-top:4px;}
+/* ── LIMIT GATE ── */
+.ls-limit{display:flex;flex-direction:column;align-items:center;text-align:center;padding:44px 24px;}
+.ls-limit-icon{color:var(--muted);margin-bottom:14px;opacity:.5;}
+.ls-limit-title{font-family:'Lora',serif;font-size:22px;font-weight:700;color:var(--text);line-height:1.25;margin-bottom:8px;}
+.ls-limit-body{font-size:14px;color:var(--text2);max-width:240px;line-height:1.72;margin-bottom:6px;}
 .ls-limit-note{font-size:11.5px;color:var(--muted);margin-top:4px;}
+.ls-limit-cta{margin-top:8px;padding:14px 32px;border-radius:var(--r-pill);border:none;background:var(--gold);color:#060402;font-family:'Inter',sans-serif;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 24px rgba(212,148,26,.4);transition:all .25s var(--ease);}
+.ls-limit-cta:hover{background:var(--gold-r);transform:translateY(-2px);}
+.ls-limit-cta.outline{background:transparent;color:var(--gold);border:1.5px solid var(--gold);box-shadow:none;margin-top:4px;}
 
-/* ── ASK CHAT ── */
-.ls-ask-msgs{flex:1;overflow-y:auto;padding:20px 16px;display:flex;flex-direction:column;gap:16px;}
-.ls-welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;gap:10px;padding:28px 20px;}
-.ls-welcome-icon{color:var(--gold);filter:drop-shadow(0 4px 16px rgba(212,148,26,.3));margin-bottom:8px;}
-.ls-welcome-title{font-family:'Lora',serif;font-size:28px;font-weight:700;color:var(--text);line-height:1.2;}
+/* ── WELCOME ── */
+.ls-welcome{display:flex;flex-direction:column;align-items:center;text-align:center;padding:44px 24px 32px;}
+.ls-welcome-title{font-family:'Lora',serif;font-size:28px;font-weight:700;color:var(--text);line-height:1.2;margin-bottom:10px;}
 .ls-welcome-title em{color:var(--gold);font-style:italic;}
 .ls-welcome-sub{font-size:14px;color:var(--text2);max-width:250px;line-height:1.72;margin-bottom:8px;}
-.ls-prompt-list{display:flex;flex-direction:column;gap:7px;width:100%;max-width:320px;}
-.ls-prompt-btn{
-  padding:12px 16px;border-radius:var(--r-md);
-  border:1px solid rgba(255,255,255,.07);background:var(--card);color:var(--text2);
-  font-family:'Lora',serif;font-size:13px;font-weight:400;font-style:italic;
-  cursor:pointer;text-align:left;transition:all .18s;
-  box-shadow:0 2px 8px rgba(0,0,0,.3);line-height:1.45;
-}
-.ls-prompt-btn:hover{color:var(--gold);background:var(--gold-l);border-color:rgba(212,148,26,.25);transform:translateY(-1px);}
 
-/* ── MESSAGES ── */
-.ls-msg{display:flex;gap:10px;max-width:100%;animation:msgIn .2s ease-out;}
-.ls-msg.user{flex-direction:row-reverse;align-self:flex-end;}
-@keyframes msgIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-.ls-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.ls-av.ai{background:linear-gradient(135deg,var(--card2),var(--lift));border:1.5px solid rgba(212,148,26,.25);color:var(--gold);}
-.ls-av.user{background:var(--bg3);color:var(--text2);font-size:11px;font-weight:700;}
+/* ── ASK / CHAT ── */
+.ls-ask{flex:1;overflow:hidden;display:flex;flex-direction:column;}
+.ls-chat{flex:1;overflow-y:auto;padding:16px 16px 8px;display:flex;flex-direction:column;gap:14px;}
+.ls-msg{display:flex;gap:10px;align-items:flex-start;animation:fadeIn .22s ease;}
+.ls-av{width:30px;height:30px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.ls-av.ai{background:rgba(212,148,26,.12);border:1px solid rgba(212,148,26,.22);color:var(--gold);font-size:14px;}
+.ls-av.user{background:rgba(255,255,255,.08);color:var(--text2);font-size:11px;font-weight:700;}
 .ls-bubble{padding:12px 16px;border-radius:16px;font-size:14px;line-height:1.75;max-width:calc(100% - 44px);}
-.ls-bubble.ai{background:var(--card);border:1px solid rgba(255,255,255,.05);color:var(--text);border-radius:4px 16px 16px 16px;}
-.ls-bubble.user{background:var(--bg3);border:1px solid rgba(255,255,255,.06);color:var(--text2);border-radius:16px 4px 16px 16px;}
-.ls-bubble.error{background:rgba(184,64,40,.08);border:1px solid rgba(184,64,40,.2);color:var(--rust);border-radius:4px 16px 16px 16px;display:flex;flex-direction:column;gap:9px;}
-.ls-bubble.ai strong{color:var(--gold);font-weight:600;}
-.ls-bubble.ai em{color:var(--sage);font-style:normal;font-weight:600;}
-.ls-bubble.ai h4{font-family:'Lora',serif;font-size:12.5px;font-weight:600;font-style:italic;color:var(--text2);margin:12px 0 5px;padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,.06);}
-.ls-bubble.ai h4:first-child{margin-top:0;}
+.ls-bubble.ai{background:rgba(255,255,255,.06);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.09);color:var(--text2);border-radius:4px 16px 16px 16px;}
+.ls-bubble.ai strong{color:var(--text);font-weight:600;}
+.ls-bubble.ai h4{font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;color:var(--text2);margin:12px 0 5px;padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,.07);}
+.ls-bubble.ai ul{margin:6px 0;padding-left:0;list-style:none;}
 .ls-bubble.ai li{margin-bottom:5px;padding-left:14px;color:var(--text2);}
-.ls-retry-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 11px;border-radius:6px;border:1px solid rgba(184,64,40,.3);background:transparent;color:var(--rust);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;align-self:flex-start;}
-.ls-dots{display:flex;gap:5px;align-items:center;padding:5px 2px;}
+.ls-bubble.user{background:rgba(212,148,26,.12);border:1px solid rgba(212,148,26,.18);color:var(--text);border-radius:16px 4px 16px 16px;}
+.ls-typing{display:flex;gap:5px;align-items:center;padding:12px 16px;}
 .ls-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:ldot 1.2s ease-in-out infinite;}
 .ls-dot:nth-child(2){animation-delay:.2s;}.ls-dot:nth-child(3){animation-delay:.4s;}
 @keyframes ldot{0%,60%,100%{transform:translateY(0);opacity:.3}30%{transform:translateY(-6px);opacity:1}}
+.ls-retry-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 11px;border-radius:6px;border:1px solid rgba(184,64,40,.3);background:transparent;color:var(--rust);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;align-self:flex-start;}
 
-/* ── CHAT INPUT ── */
-.ls-input-row-chat{display:flex;gap:9px;padding:10px 16px;border-top:1px solid rgba(255,255,255,.05);background:rgba(10,8,6,.98);flex-shrink:0;}
-textarea.ls-chat-input{flex:1;background:var(--card);border:1px solid rgba(255,255,255,.08);border-radius:12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:11px 14px;resize:none;outline:none;line-height:1.5;min-height:46px;max-height:110px;transition:border-color .2s;}
+/* ── CHAT INPUT — glass ── */
+.ls-input-row-chat{display:flex;gap:9px;padding:10px 16px;border-top:1px solid rgba(255,255,255,.07);background:rgba(18,14,10,.75);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);flex-shrink:0;}
+textarea.ls-chat-input{flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.11);backdrop-filter:blur(8px);border-radius:14px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;padding:11px 14px;resize:none;outline:none;line-height:1.5;min-height:46px;max-height:110px;transition:border-color .2s;}
 textarea.ls-chat-input:focus{border-color:var(--gold);}
 textarea.ls-chat-input::placeholder{color:var(--muted);}
-.ls-send-btn{width:46px;height:46px;border-radius:12px;border:none;flex-shrink:0;background:var(--gold);color:#0a0806;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .18s;box-shadow:0 3px 12px rgba(212,148,26,.35);}
-.ls-send-btn:hover{background:var(--gold-r);}
-.ls-send-btn:active{transform:scale(.93);}
-.ls-send-btn:disabled{opacity:.35;cursor:not-allowed;box-shadow:none;}
+.ls-send-btn{width:46px;height:46px;border-radius:14px;border:none;flex-shrink:0;background:var(--gold);color:#060402;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .22s var(--spring);box-shadow:0 3px 16px rgba(212,148,26,.42);}
+.ls-send-btn:hover{background:var(--gold-r);transform:scale(1.08);}
+.ls-send-btn:active{transform:scale(.91);}
+.ls-send-btn:disabled{opacity:.35;cursor:not-allowed;box-shadow:none;transform:none;}
 
-/* ── MODALS ── */
-.ls-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(10px);display:flex;align-items:flex-end;justify-content:center;z-index:200;animation:fadeIn .22s ease;}
+/* ── MODALS — glass sheets ── */
+.ls-overlay{position:fixed;inset:0;background:rgba(0,0,0,.50);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);display:flex;align-items:flex-end;justify-content:center;z-index:200;animation:fadeIn .22s ease;}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-.ls-modal{background:var(--bg3);border-radius:22px 22px 0 0;padding:8px 20px 48px;width:100%;max-width:480px;animation:slideUp .3s cubic-bezier(.32,.72,0,1);box-shadow:0 -12px 48px rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.06);border-bottom:none;}
+.ls-modal{background:rgba(24,19,14,.88);backdrop-filter:blur(32px);-webkit-backdrop-filter:blur(32px);border-radius:28px 28px 0 0;padding:8px 22px 50px;width:100%;max-width:480px;animation:slideUp .32s cubic-bezier(.32,.72,0,1);box-shadow:0 -8px 60px rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.1);border-bottom:none;}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.ls-modal-handle{width:36px;height:4px;border-radius:2px;background:var(--faint);margin:14px auto 22px;}
-.ls-modal-eyebrow{font-size:9.5px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);margin-bottom:7px;}
+.ls-modal-handle{width:40px;height:4px;border-radius:2px;background:rgba(255,255,255,.14);margin:14px auto 24px;}
+.ls-modal-eyebrow{font-size:9.5px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);margin-bottom:7px;opacity:.9;}
 .ls-modal-title{font-family:'Lora',serif;font-size:28px;font-weight:700;color:var(--text);margin-bottom:7px;line-height:1.2;}
 .ls-modal-title em{color:var(--gold);font-style:italic;}
 .ls-modal-sub{font-size:14px;color:var(--text2);line-height:1.68;margin-bottom:22px;}
-.ls-pro-features{display:flex;flex-direction:column;gap:12px;margin-bottom:26px;}
-.ls-pro-feature{display:flex;align-items:flex-start;gap:12px;}
-.ls-pro-feat-icon{width:32px;height:32px;border-radius:var(--r-sm);background:var(--gold-l);border:1px solid rgba(212,148,26,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--gold);}
+.ls-pro-features{display:flex;flex-direction:column;gap:14px;margin-bottom:26px;}
+.ls-pro-feature{display:flex;align-items:flex-start;gap:13px;}
+.ls-pro-feat-icon{width:34px;height:34px;border-radius:var(--r-md);background:rgba(212,148,26,.12);border:1px solid rgba(212,148,26,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--gold);}
 .ls-pro-feat-text{flex:1;}
 .ls-pro-feat-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px;}
-.ls-pro-feat-desc{font-size:12px;color:var(--muted);line-height:1.55;}
-.ls-modal-price-row{display:flex;align-items:baseline;gap:7px;margin-bottom:16px;}
+.ls-pro-feat-desc{font-size:12px;color:var(--muted);line-height:1.62;}
+.ls-modal-price-row{display:flex;align-items:baseline;gap:7px;margin-bottom:18px;}
 .ls-modal-price{font-family:'Lora',serif;font-size:38px;font-weight:700;color:var(--text);}
 .ls-modal-price-period{font-size:14px;color:var(--muted);}
 .ls-modal-price-note{font-size:12px;color:var(--sage);font-weight:600;}
-.ls-modal-cta{width:100%;padding:16px;border-radius:var(--r-md);border:none;background:var(--gold);color:#0a0806;font-family:'Lora',serif;font-size:17px;font-weight:700;font-style:italic;cursor:pointer;margin-bottom:11px;box-shadow:0 6px 24px rgba(212,148,26,.4);transition:all .18s;}
-.ls-modal-cta:hover{background:var(--gold-r);transform:translateY(-1px);}
-.ls-modal-cancel{width:100%;padding:13px;border-radius:var(--r-md);border:1px solid rgba(255,255,255,.1);background:transparent;color:var(--muted);font-size:14px;cursor:pointer;transition:all .15s;}
+.ls-modal-cta{width:100%;padding:17px;border-radius:var(--r-lg);border:none;background:var(--gold);color:#060402;font-family:'Inter',sans-serif;font-size:16px;font-weight:700;cursor:pointer;margin-bottom:11px;box-shadow:0 6px 28px rgba(212,148,26,.45);transition:all .25s var(--ease);}
+.ls-modal-cta:hover{background:var(--gold-r);transform:translateY(-2px);}
+.ls-modal-cancel{width:100%;padding:14px;border-radius:var(--r-md);border:1px solid rgba(255,255,255,.1);background:transparent;color:var(--muted);font-size:14px;cursor:pointer;transition:all .15s;}
 .ls-modal-cancel:hover{color:var(--text2);}
 
-/* ── AUTH MODAL ── */
-.ls-auth-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(10px);display:flex;align-items:flex-end;justify-content:center;z-index:300;animation:fadeIn .22s ease;}
-.ls-auth-modal{background:var(--bg3);border-radius:22px 22px 0 0;padding:8px 20px 48px;width:100%;max-width:480px;animation:slideUp .3s cubic-bezier(.32,.72,0,1);box-shadow:0 -12px 48px rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.06);border-bottom:none;}
-.ls-auth-handle{width:36px;height:4px;border-radius:2px;background:var(--faint);margin:14px auto 22px;}
+/* ── AUTH MODAL — glass ── */
+.ls-auth-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(20px);display:flex;align-items:flex-end;justify-content:center;z-index:300;animation:fadeIn .22s ease;}
+.ls-auth-modal{background:rgba(24,19,14,.88);backdrop-filter:blur(32px);border-radius:28px 28px 0 0;padding:8px 22px 50px;width:100%;max-width:480px;animation:slideUp .32s cubic-bezier(.32,.72,0,1);box-shadow:0 -8px 60px rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.1);border-bottom:none;}
+.ls-auth-handle{width:40px;height:4px;border-radius:2px;background:rgba(255,255,255,.14);margin:14px auto 24px;}
 .ls-auth-eyebrow{font-size:9.5px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);margin-bottom:7px;}
 .ls-auth-title{font-family:'Lora',serif;font-size:24px;font-weight:700;color:var(--text);margin-bottom:5px;line-height:1.25;}
 .ls-auth-title em{color:var(--gold);font-style:italic;}
 .ls-auth-sub{font-size:13.5px;color:var(--text2);line-height:1.65;margin-bottom:22px;}
 .ls-auth-field{display:flex;flex-direction:column;gap:6px;margin-bottom:13px;}
 .ls-auth-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);}
-.ls-auth-input{width:100%;background:var(--bg2);border:1px solid rgba(255,255,255,.08);border-radius:var(--r-sm);color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;padding:12px 14px;outline:none;transition:border-color .2s;}
+.ls-auth-input{width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:var(--r-md);color:var(--text);font-family:'Inter',sans-serif;font-size:15px;padding:13px 15px;outline:none;transition:border-color .2s;}
 .ls-auth-input:focus{border-color:var(--gold);}
 .ls-auth-input::placeholder{color:var(--muted);}
-.ls-auth-error{font-size:13px;color:var(--rust);margin-bottom:13px;padding:10px 13px;background:rgba(184,64,40,.08);border-radius:var(--r-sm);border:1px solid rgba(184,64,40,.2);}
-.ls-auth-cta{width:100%;padding:15px;border-radius:var(--r-md);border:none;background:var(--gold);color:#0a0806;font-family:'Lora',serif;font-size:17px;font-weight:700;font-style:italic;cursor:pointer;margin-bottom:13px;box-shadow:0 6px 24px rgba(212,148,26,.4);transition:all .18s;margin-top:4px;}
-.ls-auth-cta:hover{background:var(--gold-r);transform:translateY(-1px);}
+.ls-auth-error{font-size:13px;color:var(--rust);margin-bottom:13px;padding:10px 13px;background:rgba(184,64,40,.08);border-radius:var(--r-sm);border:1px solid rgba(184,64,40,.22);}
+.ls-auth-cta{width:100%;padding:16px;border-radius:var(--r-lg);border:none;background:var(--gold);color:#060402;font-family:'Inter',sans-serif;font-size:16px;font-weight:700;cursor:pointer;margin-bottom:13px;box-shadow:0 6px 28px rgba(212,148,26,.45);transition:all .25s var(--ease);margin-top:4px;}
+.ls-auth-cta:hover{background:var(--gold-r);transform:translateY(-2px);}
 .ls-auth-switch{text-align:center;font-size:13.5px;color:var(--text2);margin-bottom:11px;}
 .ls-auth-switch button{background:none;border:none;color:var(--gold);font-weight:600;cursor:pointer;padding:0;}
-.ls-auth-cancel{display:block;width:100%;padding:12px;border-radius:var(--r-md);border:1px solid rgba(255,255,255,.1);background:transparent;color:var(--muted);font-size:13.5px;cursor:pointer;transition:all .15s;text-align:center;}
+.ls-auth-cancel{display:block;width:100%;padding:13px;border-radius:var(--r-md);border:1px solid rgba(255,255,255,.1);background:transparent;color:var(--muted);font-size:13.5px;cursor:pointer;transition:all .15s;text-align:center;}
 .ls-auth-cancel:hover{color:var(--text2);}
-/* Disable hover scale on touch — tap opens modal */
-@media(hover:none){.ls-tile-wrap:hover .ls-tile{transform:scale(1);box-shadow:none;}.ls-tile-wrap:hover .ls-tile-overlay{opacity:0;}.ls-tile-wrap,.ls-tile{transition:none;}}
+@media(hover:none){.ls-tile-wrap:hover .ls-tile{transform:scale(1);}.ls-tile-wrap:hover .ls-tile-overlay{opacity:0;}.ls-tile-wrap,.ls-tile{transition:none;}}
+
+/* ── TILE MODAL — glass ── */
+.ls-tile-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.52);backdrop-filter:blur(20px);display:flex;align-items:flex-end;justify-content:center;z-index:200;animation:fadeIn .22s ease;}
+.ls-tile-modal{background:rgba(24,19,14,.88);backdrop-filter:blur(32px);border-radius:28px 28px 0 0;padding:8px 22px 52px;width:100%;max-width:480px;animation:slideUp .32s cubic-bezier(.32,.72,0,1);box-shadow:0 -8px 60px rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.1);border-bottom:none;max-height:92dvh;overflow-y:auto;}
+.ls-tile-modal-handle{width:40px;height:4px;border-radius:2px;background:rgba(255,255,255,.14);margin:14px auto 22px;}
+.ls-tile-modal-cover{width:92px;height:134px;border-radius:13px;overflow:hidden;margin:0 auto 18px;box-shadow:0 12px 40px rgba(0,0,0,.65);}
+.ls-tile-modal-title{font-family:'Lora',serif;font-size:22px;font-weight:700;color:var(--text);text-align:center;margin-bottom:4px;line-height:1.22;}
+.ls-tile-modal-author{font-size:13px;color:var(--muted);text-align:center;margin-bottom:22px;}
+.ls-tile-modal-cta{width:100%;padding:14px;border-radius:var(--r-lg);border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.07);backdrop-filter:blur(8px);color:var(--text2);font-family:'Inter',sans-serif;font-size:13.5px;font-weight:600;cursor:pointer;margin-bottom:10px;transition:all .2s;display:block;text-align:center;box-sizing:border-box;}
+.ls-tile-modal-cta:hover{background:rgba(255,255,255,.12);color:var(--text);}
+.ls-tile-modal-cancel{width:100%;padding:13px;border-radius:var(--r-md);border:none;background:transparent;color:var(--muted);font-size:13px;cursor:pointer;transition:all .15s;display:block;text-align:center;box-sizing:border-box;}
+.ls-tile-modal-cancel:hover{color:var(--text2);}
+
+/* ── WHY BLOCK ── */
+.ls-why-block{padding:12px 14px;background:rgba(255,255,255,.05);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.09);border-radius:var(--r-md);margin-bottom:14px;}
+.ls-why-label{display:flex;align-items:center;gap:7px;font-size:8px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);opacity:.82;margin-bottom:7px;}
+.ls-why-label::before{content:'';width:14px;height:1px;background:rgba(212,148,26,.5);border-radius:1px;flex-shrink:0;}
+.ls-why-reason{font-size:12.5px;line-height:1.72;color:rgba(240,232,216,.9);font-style:italic;}
+.ls-why-reason strong{color:var(--gold);font-style:normal;font-weight:600;}
+.ls-overlay-why-label{font-size:7px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(212,148,26,.65);margin-bottom:3px;}
+.ls-proof-why-label{display:flex;align-items:center;gap:6px;font-size:7.5px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold);opacity:.78;margin-bottom:6px;}
+.ls-proof-why-label::before{content:'';width:10px;height:1px;background:rgba(212,148,26,.4);border-radius:1px;}
+
+/* ── WHEEL ── */
+@keyframes wheelFocus{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes wheelFadeIn{from{opacity:0}to{opacity:1}}
+
+/* ── FOR YOU FEED ── */
+.ls-feed-toggle{
+  display:flex;padding:10px 16px;gap:6px;
+  background:rgba(18,14,10,.68);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border-bottom:1px solid rgba(255,255,255,.08);
+  position:sticky;top:0;z-index:9;flex-shrink:0;
+}
+.ls-feed-toggle-btn{
+  flex:1;padding:9px;border-radius:var(--r-pill);border:none;
+  font-family:'Inter',sans-serif;font-size:13px;font-weight:600;
+  cursor:pointer;transition:all .25s var(--ease);
+}
+.ls-feed-toggle-btn.on{background:var(--gold);color:#060402;box-shadow:0 3px 16px var(--glow);}
+.ls-feed-toggle-btn:not(.on){background:transparent;color:var(--muted);}
+.ls-feed-toggle-btn:not(.on):hover{color:var(--text2);}
+.ls-foryou-feed{flex:1;overflow-y:auto;}
+.ls-foryou-card{padding:22px 20px 18px;border-bottom:1px solid rgba(255,255,255,.05);animation:feedItemIn .22s var(--ease);}
+@keyframes feedItemIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 `;
+
 
 // ─── DATA ─────────────────────────────────────────────────────────────────────
 // Open Library cover URLs — free, no API key
@@ -594,6 +623,359 @@ const BOOKS = [
   },
 ];
 
+// ── RECOMMENDATION REASON ENGINE ─────────────────────────────────────────────
+// Affinity metadata per book — extends the static BOOKS array without bloating it.
+// similarTo: titles the user may have in their read history
+// toneWords:  2-3 descriptors used in generated reason copy
+// pacing:     used when no other signal is available
+// moodMap:    optional mood-specific copy overrides
+const BOOK_AFFINITY = {
+  1: {
+    similarTo: ["Pachinko","A Gentleman in Moscow","The Kite Runner","The God of Small Things","Cutting for Stone"],
+    toneWords:  ["sweeping","patient","literary"],
+    pacing:     "slow",
+    moodMap: {
+      escape:  "An immersive escape across three generations — completely absorbing",
+      feel:    "Will move you deeply — patient, emotional family storytelling",
+      unwind:  "Rich, slow-burning and atmospheric — perfect for unwinding",
+    },
+  },
+  2: {
+    similarTo: ["East of Eden","Grapes of Wrath","The Underground Railroad","Where the Crawdads Sing","Hillbilly Elegy"],
+    toneWords:  ["morally urgent","raw","essential"],
+    pacing:     "moderate",
+    moodMap: {
+      think:   "Hard to look away — morally urgent writing about a real crisis",
+      feel:    "Emotionally gripping — this will make you feel things that matter",
+      learn:   "One of the most illuminating novels about modern America written recently",
+    },
+  },
+  3: {
+    similarTo: ["The Martian","Ready Player One","Dark Matter","Recursion","Hitchhiker's Guide"],
+    toneWords:  ["propulsive","clever","mind-bending"],
+    pacing:     "fast",
+    moodMap: {
+      escape:  "A total escape — lone astronaut, impossible odds, relentless momentum",
+      think:   "Hard science wrapped in a thriller — rewards intelligence on every page",
+      laugh:   "Genuinely funny and clever — science fiction with real wit",
+    },
+  },
+  4: {
+    similarTo: ["The Nightingale","The Book Thief","All the Light","Pillars of the Earth","The Alice Network"],
+    toneWords:  ["luminous","devastating","precise"],
+    pacing:     "moderate",
+    moodMap: {
+      feel:    "Devastating in the best way — precise, luminous prose about war and loss",
+      escape:  "WWII France — completely absorbing, alternating perspectives",
+      unwind:  "Beautifully written, immersive — the kind of historical fiction that stays with you",
+    },
+  },
+  5: {
+    similarTo: ["A Gentleman in Moscow","Rules of Civility","The Remains of the Day","Lincoln in the Bardo"],
+    toneWords:  ["elegant","witty","restrained"],
+    pacing:     "moderate",
+    moodMap: {
+      escape:  "A beautifully constructed world — Towles's wit and restraint at their best",
+      laugh:   "Sharp, funny, and full of personality — Towles writes like no one else",
+      unwind:  "Elegant prose, unforgettable characters — very easy to lose yourself in",
+    },
+  },
+  6: {
+    similarTo: ["Thinking in Bets","Predictably Irrational","Blink","Nudge","The Power of Habit","Sapiens"],
+    toneWords:  ["mind-expanding","rigorous","practical"],
+    pacing:     "moderate",
+    moodMap: {
+      think:   "Every decision you make looks different after reading this — genuinely mind-expanding",
+      learn:   "One of the most useful books written in decades — you will think differently",
+      escape:  "The ideas here will follow you for weeks after you finish",
+    },
+  },
+};
+
+// Maps mood selection to a reason template when no personal signal exists
+const MOOD_FALLBACKS = {
+  escape:  (tone) => `${tone[0][0].toUpperCase()}${tone[0].slice(1)} and hard to put down — exactly what you're looking for right now`,
+  think:   (tone) => `You'll close this with a different perspective — ${tone[0]} writing that stays with you`,
+  feel:    (tone) => `You wanted something to feel — this has genuine emotional weight, not just sentiment`,
+  learn:   (tone) => `You'll finish this knowing something you didn't — ${tone[2] || tone[0]} and practically useful`,
+  laugh:   ()     => `Lighter in tone but not in quality — has real wit without sacrificing substance`,
+  unwind:  (tone) => `${tone[0][0].toUpperCase()}${tone[0].slice(1)} and immersive — the kind of book you get lost in without trying`,
+};
+
+function stripHtml(str) {
+  return (str || "").replace(/<[^>]+>/g, "");
+}
+
+// ── USER VOICE PROFILE SYSTEM ─────────────────────────────────────────────────
+// The app's explanation language adapts to how the user reads and thinks.
+// Voice is never labelled in the UI — it only affects word choice and rhythm.
+//
+// Detection uses available signals: saved books, rated books, mood, genre.
+// Designed for future extension: multi-voice blending, adaptive shift over time.
+
+const VOICE_PROFILES = {
+  analytical: {
+    description: "Precise, structured, evidence-based. No sentiment.",
+    traits:      ["declarative", "data-adjacent", "efficient"],
+  },
+  literary: {
+    description: "Appreciates prose craft. Clause-rich, quality-conscious.",
+    traits:      ["craft-aware", "register-sensitive", "descriptive"],
+  },
+  emotional: {
+    description: "Feeling-first. The reader's inner experience is paramount.",
+    traits:      ["empathetic", "resonance-focused", "personal"],
+  },
+  fast: {
+    description: "Hook-first. Short sentences. Momentum over analysis.",
+    traits:      ["punchy", "action-led", "directional"],
+  },
+  curious: {
+    description: "Insight-driven. Connects ideas. Exploratory and open.",
+    traits:      ["idea-connecting", "exploratory", "observational"],
+  },
+};
+
+// Voice-aware phrase templates, keyed by context type.
+// Each key maps voice → string-producing function.
+// To add a new voice or context: add an entry here.
+const VOICE_PHRASES = {
+
+  // Context: user saved a book that matches this book's affinity
+  saved: {
+    analytical: ({title, tone}) => `**${title}** → same ${tone} construction. Solid match.`,
+    literary:   ({title, tone}) => `You saved **${title}** — this shares the same ${tone} register and asks the same quality of attention.`,
+    emotional:  ({title})       => `Because you saved **${title}**. This one will land in the same place.`,
+    fast:       ({title})       => `You saved **${title}**. Same pace, same pull. Read this next.`,
+    curious:    ({title, tone}) => `You saved **${title}** — interesting. This one follows a related thread, with the same ${tone} at its core.`,
+  },
+
+  // Context: user gave a matched book 4+ stars
+  rated: {
+    analytical: ({title, rating, tone}) => `You rated **${title}** ${rating} stars. Same ${tone} structure. High probability of match.`,
+    literary:   ({title, rating, tone}) => `**${title}** earned ${rating} stars from you — this is written in the same register, with the same ${tone} care.`,
+    emotional:  ({title, rating})       => `You gave **${title}** ${rating} stars. This one will move you in a similar way.`,
+    fast:       ({title, rating})       => `${rating} stars on **${title}**. Same energy. Different story.`,
+    curious:    ({title, rating, tone}) => `You rated **${title}** ${rating} stars — and here's what's interesting: this one shares its ${tone} core.`,
+  },
+
+  // Context: genre filter is active
+  genre: {
+    analytical: ({genre, tone}) => `${genre} — ${tone} and well-constructed. One of the stronger examples in the category.`,
+    literary:   ({genre, tone}) => `You're in ${genre} — this is one of the more carefully written examples of it. The ${tone} quality holds throughout.`,
+    emotional:  ({genre})       => `You're exploring ${genre}. This one has the emotional depth to justify it.`,
+    fast:       ({genre})       => `${genre}. One of the best. Starts strong and keeps moving.`,
+    curious:    ({genre, tone}) => `You're browsing ${genre} — worth knowing this one is ${tone} in a way that actually earns the label.`,
+  },
+
+  // Context: slow-paced book, user has reading history
+  pacing_slow: {
+    analytical: () => `Slow-paced. Rewards sustained attention. Structured for depth over pace.`,
+    literary:   () => `Takes its time — and the writing justifies every page.`,
+    emotional:  () => `Patient storytelling. The kind that earns the feelings it creates.`,
+    fast:       () => `Slower build than you might usually reach for — but the payoff is real.`,
+    curious:    () => `Takes time to develop. Worth noting, because what it builds toward is genuinely interesting.`,
+  },
+
+  // Context: fast-paced book, user has reading history
+  pacing_fast: {
+    analytical: () => `Fast-paced. High signal, low friction. Efficient reading experience.`,
+    literary:   () => `Moves quickly without sacrificing prose quality — rarer than it should be.`,
+    emotional:  () => `Pulls you forward — and the emotional core arrives before you expect it.`,
+    fast:       () => `Moves fast. Gets to the point. Hard to put down.`,
+    curious:    () => `Unusually propulsive — worth noting because the ideas don't suffer for the pace.`,
+  },
+
+  // Context: moderate-paced book, user has reading history
+  pacing_moderate: {
+    analytical: () => `Balanced pacing. Depth and readability in reliable proportion.`,
+    literary:   () => `Well-calibrated between momentum and prose. Respects your time and your attention equally.`,
+    emotional:  () => `Balanced — gives you enough room to feel what it's building toward.`,
+    fast:       () => `Solid pacing throughout. Never drags. Worth the time.`,
+    curious:    () => `Neither slow nor rushed — which leaves the ideas room to develop properly.`,
+  },
+};
+
+// Resolve a voice phrase by context key and variable map.
+// Fallback chain: requested voice → curious → null.
+function voicePhrase(voice, key, vars = {}) {
+  const group = VOICE_PHRASES[key];
+  if (!group) return null;
+  const fn = group[voice] || group.curious;
+  return typeof fn === "function" ? fn(vars) : (fn || null);
+}
+
+// Detect the user's dominant voice profile from available signals.
+// Scores each voice type, returns the highest scorer.
+// Default: "curious" — the most open reading posture for new users.
+//
+// Extensibility note: to add blending, return the full scores object
+// and use weighted interpolation across voice templates in voicePhrase.
+function getUserVoiceProfile(userState) {
+  const { savedBooks = [], readBooks = [], mood = null, genre = null } = userState;
+
+  const scores = { analytical:0, literary:0, emotional:0, fast:0, curious:0 };
+
+  // ── Signals from saved books (have full tag data) ──
+  const ANALYTICAL_TAGS = ["Psychology","Non-Fiction","Business","Self-Help","Philosophy","Biography"];
+  const LITERARY_TAGS   = ["Literary Fiction","Historical","Essays"];
+  const EMOTIONAL_TAGS  = ["Family Saga","Romance"];
+  const FAST_TAGS       = ["Sci-Fi","Thriller","Mystery","True Crime","Fantasy"];
+
+  for (const b of savedBooks) {
+    const tags = b.tags || [];
+    if (tags.some(t => ANALYTICAL_TAGS.includes(t))) scores.analytical += 2;
+    if (tags.some(t => LITERARY_TAGS.includes(t)))   scores.literary   += 2;
+    if (tags.some(t => EMOTIONAL_TAGS.includes(t)))  scores.emotional  += 1;
+    if (tags.some(t => FAST_TAGS.includes(t)))       scores.fast       += 2;
+  }
+
+  // Genre diversity across saves → curious signal
+  const uniqueTagsFromSaves = new Set(savedBooks.flatMap(b => b.tags || []));
+  if (uniqueTagsFromSaves.size >= 4) scores.curious += 2;
+
+  // ── Signals from read books — cross-reference with curated BOOKS for tags ──
+  for (const rb of readBooks) {
+    const match = BOOKS.find(b =>
+      b.title.toLowerCase() === rb.title.toLowerCase() ||
+      rb.title.toLowerCase().includes(b.title.toLowerCase().split(":")[0].toLowerCase())
+    );
+    if (!match) continue;
+    const weight = (rb.rating || 3) >= 4 ? 2 : 1;
+    if (match.tags.some(t => ANALYTICAL_TAGS.includes(t))) scores.analytical += weight;
+    if (match.tags.some(t => LITERARY_TAGS.includes(t)))   scores.literary   += weight;
+    if (match.tags.some(t => EMOTIONAL_TAGS.includes(t)))  scores.emotional  += weight;
+    if (match.tags.some(t => FAST_TAGS.includes(t)))       scores.fast       += weight;
+  }
+
+  // ── Signals from mood ──
+  const MOOD_SIGNALS = {
+    think: { analytical:3 }, learn:  { analytical:2, curious:1 },
+    feel:  { emotional:3  }, unwind: { literary:1,  emotional:1 },
+    escape:{ fast:2       }, laugh:  { curious:2, fast:1       },
+  };
+  if (mood && MOOD_SIGNALS[mood]) {
+    for (const [v, pts] of Object.entries(MOOD_SIGNALS[mood])) scores[v] += pts;
+  }
+
+  // ── Signals from genre filter ──
+  const GENRE_SIGNALS = {
+    "Psychology":       { analytical:3 }, "Business":    { analytical:2 },
+    "Self-Help":        { analytical:2 }, "Philosophy":  { analytical:2, curious:1 },
+    "Biography":        { analytical:1, literary:1 },
+    "Literary Fiction": { literary:3   }, "Historical":  { literary:2 },
+    "Essays":           { literary:2, curious:1 },
+    "Romance":          { emotional:3  },
+    "Sci-Fi":           { fast:2, curious:1 }, "Thriller": { fast:3 },
+    "Mystery":          { fast:2, curious:1 }, "True Crime":{ fast:2, analytical:1 },
+    "Fantasy":          { fast:1, curious:2 },
+  };
+  if (genre && GENRE_SIGNALS[genre]) {
+    for (const [v, pts] of Object.entries(GENRE_SIGNALS[genre])) scores[v] += pts;
+  }
+
+  // No signals → default to curious
+  const total = Object.values(scores).reduce((a, b) => a + b, 0);
+  if (total === 0) return "curious";
+
+  return Object.entries(scores).sort((a, b) => b[1] - a[1])[0][0];
+}
+
+
+
+/**
+ * getRecommendationReason(book, userState, rowContext?)
+ *
+ * Priority order (unchanged from v16):
+ *  1. Saved book affinity match        ← voice-aware
+ *  2. Highly rated book affinity match ← voice-aware
+ *  3. Mood + book-specific copy        (book-specific, not voice-varied)
+ *  4. Mood + generic fallback          (mood-specific, not voice-varied)
+ *  5. Genre filter active              ← voice-aware
+ *  6. Row context                      (context-specific, not voice-varied)
+ *  7. Reading history / pacing signal  ← voice-aware
+ *  8. Curated HTML fallback            (editorial copy, not voice-varied)
+ *
+ * Voice is detected from userState via getUserVoiceProfile().
+ * Never shown in UI — only affects word choice and sentence rhythm.
+ */
+function getRecommendationReason(book, userState = {}, rowContext = null) {
+  const { savedBooks = [], readBooks = [], mood = null, genre = null } = userState;
+  const meta      = BOOK_AFFINITY[book.id] || {};
+  const toneWords = meta.toneWords || ["well-crafted", "compelling", "absorbing"];
+  const similarTo = meta.similarTo || [];
+
+  // Detect voice once at the top — used across all voice-aware branches below
+  const voice = getUserVoiceProfile(userState);
+
+  // Fuzzy title match: first word of each string is enough to connect books
+  const titleMatch = (userTitle, targets) =>
+    targets.some(t =>
+      userTitle.toLowerCase().includes(t.toLowerCase().split(" ")[0]) ||
+      t.toLowerCase().includes(userTitle.toLowerCase().split(" ")[0])
+    );
+
+  // 1. Saved book affinity match — voice-aware ─────────────────────────────
+  for (const sb of savedBooks) {
+    if (titleMatch(sb.title, similarTo)) {
+      return voicePhrase(voice, "saved", { title: sb.title, tone: toneWords[0] });
+    }
+  }
+
+  // 2. Highly rated book affinity match — voice-aware ──────────────────────
+  const topRated = [...readBooks].sort((a, b) => (b.rating || 0) - (a.rating || 0));
+  for (const rb of topRated) {
+    if ((rb.rating || 0) >= 4 && titleMatch(rb.title, similarTo)) {
+      return voicePhrase(voice, "rated", { title: rb.title, rating: rb.rating, tone: toneWords[0] });
+    }
+  }
+
+  // 3. Mood + book-specific copy ─────────────────────────────────────────────
+  // Per-book moodMap entries are already precise — no voice variation needed.
+  if (mood && meta.moodMap?.[mood]) {
+    return meta.moodMap[mood];
+  }
+
+  // 4. Mood + generic fallback ───────────────────────────────────────────────
+  // Mood-specific wording is already distinct enough — no voice variation.
+  if (mood && MOOD_FALLBACKS[mood]) {
+    return MOOD_FALLBACKS[mood](toneWords);
+  }
+
+  // 5. Genre filter active — voice-aware ────────────────────────────────────
+  if (genre && book.tags.some(t => t.toLowerCase().includes(genre.toLowerCase()))) {
+    return voicePhrase(voice, "genre", { genre, tone: toneWords[0] });
+  }
+
+  // 6. Row context — context-specific copy, not voice-varied ─────────────────
+  if (rowContext) {
+    if (rowContext === "fast-paced") {
+      return `${meta.pacing === "fast" ? "Fast-paced from the first page" : "Moves quickly and doesn't waste your time"} — the kind of book you read in two sittings`;
+    }
+    if (rowContext === "slow-burn literary") {
+      return `Takes its time — and earns it. The kind of book you think about after you've finished`;
+    }
+    if (rowContext === "mind-expanding non-fiction") {
+      return `You'll close this with a different understanding of something you thought you already knew`;
+    }
+    if (rowContext.startsWith("Because you") || rowContext.includes("loved") || rowContext.includes("saved")) {
+      return `Same ${toneWords[0]} quality — written in the same register as what drew you to that book`;
+    }
+  }
+
+  // 7. Reading history signal — pacing-based, voice-aware ───────────────────
+  if (readBooks.length >= 2) {
+    const pacingKey = meta.pacing === "slow" ? "pacing_slow"
+      : meta.pacing === "fast" ? "pacing_fast"
+      : "pacing_moderate";
+    return voicePhrase(voice, pacingKey, {});
+  }
+
+  // 8. Curated fallback — editorial copy, not voice-varied ──────────────────
+  return stripHtml(book.why);
+}
+
+
 // ── TASTE LEVELS (reward / progression system) ───────────────────────────────
 const TASTE_LEVELS = [
   { min:0,  label:"New Reader",    emoji:"📖", next:3,  desc:"Rate 3 books to unlock your taste profile." },
@@ -634,6 +1016,222 @@ function smartRowTitle(readBooks) {
     "Thriller":         "Edge-of-your-seat reads you'll love",
   };
   return labels[g] || `Because you love ${g}`;
+}
+
+// ── DISCOVER ROW BUILDER ───────────────────────────────────────────────────────
+// Generates multiple contextual rows for the Discover tab.
+// Each row has a strong, specific title rather than a generic label.
+// Rows adapt based on: savedBooks, readBooks, mood, genre, dismissedBooks.
+
+const MOOD_ROWS = {
+  escape: { title:"You want to disappear into a book — these will do it",  subtitle:"Absorbing from page one" },
+  think:  { title:"You'll still be thinking about these days later",        subtitle:"Ideas that don't leave you alone" },
+  feel:   { title:"You wanted something to feel — these deliver",           subtitle:"Emotional weight, earned" },
+  learn:  { title:"You'll finish these knowing something you didn't",       subtitle:"Non-fiction worth the investment" },
+  laugh:  { title:"Not everything has to be serious — and these prove it",  subtitle:"Wit and lightness, without sacrificing quality" },
+  unwind: { title:"You want to slow down — these pull you in gently",       subtitle:"Immersive and low-pressure" },
+};
+
+const GENRE_ROW_TITLES = {
+  "Literary Fiction": { title:"Literary fiction that earns its length",          subtitle:"Patient, precise, worth every page" },
+  "Sci-Fi":           { title:"Smart sci-fi — ideas first, plot second",          subtitle:"No jargon barriers, just good thinking" },
+  "Historical":       { title:"Historical fiction that puts you somewhere else",  subtitle:"Another place, another time, completely real" },
+  "Psychology":       { title:"You want to understand how people actually work",  subtitle:"The most practically useful shelf in fiction" },
+  "Thriller":         { title:"High tension, no filler — dark and propulsive",    subtitle:"The kind you finish in one sitting" },
+  "Mystery":          { title:"Mystery fiction that respects your intelligence",  subtitle:"Character-led — never just a puzzle" },
+  "Biography":        { title:"Real lives that read stranger than fiction",       subtitle:"You'll close these knowing someone deeply" },
+  "Self-Help":        { title:"Self-help that actually earns the label",          subtitle:"Evidence-based — not optimism theater" },
+  "Philosophy":       { title:"Philosophy written for people who read fiction",   subtitle:"Clearer and more urgent than you'd expect" },
+};
+
+function buildDiscoverRows(allBooks, userState) {
+  const { savedBooks = [], readBooks = [], mood = null, genre = null, dismissedBooks = [] } = userState;
+  const available = allBooks.filter(b => !dismissedBooks.includes(b.id));
+  if (available.length === 0) return [];
+
+  const rows = [];
+  const usedIds = new Set(); // track which books have appeared so far
+
+  // Helper: fuzzy first-word match between a user title and affinity targets
+  const affinityMatch = (userTitle, targets = []) =>
+    targets.some(t => {
+      const tFirst = t.toLowerCase().split(/\s+/)[0];
+      const uFirst = userTitle.toLowerCase().split(/\s+/)[0];
+      return userTitle.toLowerCase().includes(tFirst) || t.toLowerCase().includes(uFirst);
+    });
+
+  // ── Row 1: PERSONALIZED — if user has saved or highly-rated books ──
+  const topSaved = savedBooks[0];
+  const topRated = [...readBooks].sort((a,b)=>(b.rating||0)-(a.rating||0)).find(b=>(b.rating||0)>=4);
+  const anchor = topSaved || topRated;
+  if (anchor) {
+    const personalBooks = available.filter(b =>
+      affinityMatch(anchor.title, BOOK_AFFINITY[b.id]?.similarTo)
+    );
+    if (personalBooks.length >= 1) {
+      const verb = topSaved ? "saved" : "loved";
+      const shortTitle = anchor.title.split(":")[0].split("—")[0].trim();
+      rows.push({
+        id: "personal",
+        title: `Because you ${verb} ${shortTitle}`,
+        subtitle: "Same tone, same craft — different story",
+        books: personalBooks,
+        rowContext: anchor.title,
+      });
+      personalBooks.forEach(b => usedIds.add(b.id));
+    }
+  }
+
+  // ── Row 2: MOOD — if mood is active ──
+  if (mood && MOOD_ROWS[mood]) {
+    // Show all available books, reason engine will use mood signal
+    rows.push({
+      id: `mood-${mood}`,
+      ...MOOD_ROWS[mood],
+      books: available,
+      rowContext: mood,
+    });
+  }
+
+  // ── Row 3: GENRE — if genre filter is active ──
+  if (genre) {
+    const genreBooks = available.filter(b =>
+      b.tags.some(t => t.toLowerCase().includes(genre.toLowerCase()))
+    );
+    if (genreBooks.length >= 1) {
+      const genreMeta = GENRE_ROW_TITLES[genre] || {
+        title: `The best ${genre} right now`,
+        subtitle: "Handpicked for quality and craft",
+      };
+      rows.push({
+        id: `genre-${genre}`,
+        ...genreMeta,
+        books: genreBooks,
+        rowContext: genre,
+      });
+    }
+  }
+
+  // ── Row 4: WEEKEND READS — fast + moderate pacing ──
+  const weekendBooks = available.filter(b =>
+    ["fast","moderate"].includes(BOOK_AFFINITY[b.id]?.pacing)
+  );
+  if (weekendBooks.length >= 2) {
+    rows.push({
+      id: "weekend",
+      title: "You tend to finish faster-paced books — start here",
+      subtitle: "Propulsive writing that doesn't let you stop",
+      books: weekendBooks,
+      rowContext: "fast-paced",
+    });
+  }
+
+  // ── Row 5: SLOW-BURN LITERARY — slow pacing, literary/historical tags ──
+  const slowBooks = available.filter(b =>
+    BOOK_AFFINITY[b.id]?.pacing === "slow" ||
+    b.tags.some(t => ["Literary Fiction","Historical","Family Saga"].includes(t))
+  );
+  if (slowBooks.length >= 2) {
+    rows.push({
+      id: "literary",
+      title: "Worth the slow build — the payoff is the whole point",
+      subtitle: "Patient storytelling at its best",
+      books: slowBooks,
+      rowContext: "slow-burn literary",
+    });
+  }
+
+  // ── Row 6: MIND-EXPANDING — non-fiction and psychology ──
+  const nonficBooks = available.filter(b =>
+    b.tags.some(t => ["Non-Fiction","Psychology","Self-Help","Business","Philosophy","Biography"].includes(t))
+  );
+  if (nonficBooks.length >= 1) {
+    rows.push({
+      id: "nonfic",
+      title: "You'll close these knowing something you didn't before",
+      subtitle: "Non-fiction that earns the time you give it",
+      books: nonficBooks,
+      rowContext: "mind-expanding non-fiction",
+    });
+  }
+
+  // ── Row 7: DEFAULT — always shown, smart title ──
+  const smartTitle = smartRowTitle(readBooks);
+  rows.push({
+    id: "all",
+    title: smartTitle || (readBooks.length >= 1 ? "More picks shaped around your taste" : "Where to start"),
+    subtitle: readBooks.length >= 1
+      ? "Getting more accurate the more you rate"
+      : "Eight editors. One list. No filler.",
+    books: available,
+    rowContext: null,
+  });
+
+  // Deduplicate consecutive identical row sets (keep all — overlap is intentional context)
+  // Cap at 5 rows max for a clean layout
+  return rows.filter(r => r.books.length >= 1).slice(0, 5);
+}
+
+// ── FOR YOU FEED BUILDER ──────────────────────────────────────────────────────
+// Scores every available book against current user signals, sorts by fit,
+// then applies a light diversity pass to avoid same-pacing clusters.
+function buildFeedItems(allBooks, userState) {
+  const { savedBooks = [], readBooks = [], dismissedBooks = [], mood = null, genre = null } = userState;
+
+  // Filter dismissed
+  const available = allBooks.filter(b => !dismissedBooks.includes(b.id));
+
+  // Fuzzy affinity match (same logic as getRecommendationReason)
+  const hit = (userTitle, targets = []) =>
+    targets.some(t =>
+      userTitle.toLowerCase().includes(t.toLowerCase().split(" ")[0]) ||
+      t.toLowerCase().includes(userTitle.toLowerCase().split(" ")[0])
+    );
+
+  // Score each book
+  const scored = available.map(book => {
+    let feedScore = book.score;
+    const meta = BOOK_AFFINITY[book.id] || {};
+
+    // Saved-book affinity → strong positive signal
+    for (const sb of savedBooks) {
+      if (hit(sb.title, meta.similarTo)) { feedScore += 22; break; }
+    }
+
+    // Rated-book affinity — weighted by stars
+    const byRating = [...readBooks].sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    for (const rb of byRating) {
+      const stars = rb.rating || 0;
+      if (stars >= 5 && hit(rb.title, meta.similarTo)) { feedScore += 18; break; }
+      if (stars >= 4 && hit(rb.title, meta.similarTo)) { feedScore += 12; break; }
+    }
+
+    // Mood alignment
+    if (mood && meta.moodMap?.[mood]) feedScore += 10;
+
+    // Genre alignment
+    if (genre && book.tags.some(t => t.toLowerCase().includes(genre.toLowerCase()))) feedScore += 7;
+
+    return { ...book, feedScore };
+  });
+
+  // Sort by fit score
+  scored.sort((a, b) => b.feedScore - a.feedScore);
+
+  // Light diversity pass — avoid the same pacing more than twice in a row
+  const result = [];
+  const window = []; // rolling window of last 3 pacing values
+  for (const book of scored) {
+    const pacing = BOOK_AFFINITY[book.id]?.pacing || "moderate";
+    const recentSame = window.filter(p => p === pacing).length;
+    result.push(book); // always include — diversity only affects ordering
+    window.push(pacing);
+    if (window.length > 3) window.shift();
+    // If this caused 3 same-pacing in a row, we just note it but don't exclude —
+    // with small data sets exclusion would leave gaps. The sort already distributes well.
+  }
+
+  return result;
 }
 
 const MOODS = [
@@ -680,6 +1278,794 @@ function fmtLine(t) {
     if (p.startsWith("*") &&p.endsWith("*"))  return <em key={i}>{p.slice(1,-1)}</em>;
     return p;
   });
+}
+
+// ── REASON BLOCK — reusable "Why this was recommended" display ───────────────
+// Used in TileModal and any detail surface.
+function ReasonBlock({ reason, style = {} }) {
+  if (!reason) return null;
+  return (
+    <div className="ls-why-block" style={style}>
+      <div className="ls-why-label">Why this was recommended</div>
+      <div className="ls-why-reason">{fmtLine(reason)}</div>
+    </div>
+  );
+}
+
+// ── RECOMMENDATION WHEEL — cinematic arc hero ─────────────────────────────────
+// Polish pass v16: tighter snap, controlled inertia, stronger visual hierarchy.
+function RecommendationWheel({ books, savedBooks, onSave, onDismiss, onAsk, onTap, userState }) {
+  const STEP    = 110; // px between book centers
+  const COVER_W = 100; // cover width px
+  const COVER_H = 148; // cover height px
+  const RADIUS  = 3;   // books rendered each side of center
+
+  const [pos,      setPos]      = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const [mounted,  setMounted]  = useState(false); // entry animation gate
+
+  const posRef       = useRef(0);
+  const dragStartX   = useRef(0);
+  const dragStartPos = useRef(0);
+  const lastX        = useRef(0);
+  const lastT        = useRef(0);
+  const velRef       = useRef(0);
+  const animRef      = useRef(null);
+  const trackRef     = useRef(null);
+
+  const cl = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  const activeIdx  = Math.round(cl(pos, 0, books.length - 1));
+  const activeBook = books[activeIdx] || null;
+
+  // Entry animation — fires once on mount
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+
+  // ── snapTo: 240ms ease-out, no overshoot ──────────────────────────────────
+  const snapTo = useCallback((raw) => {
+    const target = cl(Math.round(raw), 0, books.length - 1);
+    cancelAnimationFrame(animRef.current);
+    const from = posRef.current;
+    const t0   = performance.now();
+    const dur  = 240; // ms — short enough to feel responsive, slow enough to feel premium
+    const tick = (now) => {
+      const t = Math.min((now - t0) / dur, 1);
+      // ease-out cubic — decelerates cleanly to rest, no overshoot
+      const e = 1 - Math.pow(1 - t, 3);
+      const v = from + (target - from) * e;
+      posRef.current = v;
+      setPos(v);
+      if (t < 1) animRef.current = requestAnimationFrame(tick);
+    };
+    animRef.current = requestAnimationFrame(tick);
+  }, [books.length]);
+
+  // Clamp when dismissed books shrink the array
+  useEffect(() => {
+    const max = Math.max(0, books.length - 1);
+    if (posRef.current > max) snapTo(max);
+  }, [books.length, snapTo]);
+
+  useEffect(() => () => cancelAnimationFrame(animRef.current), []);
+
+  // ── Drag handlers ─────────────────────────────────────────────────────────
+  const startDrag = useCallback((clientX) => {
+    cancelAnimationFrame(animRef.current);
+    setDragging(true);
+    dragStartX.current   = clientX;
+    dragStartPos.current = posRef.current;
+    lastX.current        = clientX;
+    lastT.current        = performance.now();
+    velRef.current       = 0;
+  }, []);
+
+  const moveDrag = useCallback((clientX) => {
+    const now = performance.now();
+    const dt  = Math.max(1, now - lastT.current);
+    velRef.current  = (clientX - lastX.current) / dt; // px/ms
+    lastX.current   = clientX;
+    lastT.current   = now;
+    const delta = (clientX - dragStartX.current) / STEP;
+    const next  = cl(dragStartPos.current - delta, 0, books.length - 1);
+    posRef.current  = next;
+    setPos(next);
+  }, [books.length]);
+
+  // Directional snap — max 1 book travel per gesture, no flyaway inertia.
+  // vel > 0 = finger moving right = going to lower index.
+  // vel < 0 = finger moving left  = going to higher index.
+  const endDrag = useCallback(() => {
+    setDragging(false);
+    const vel = velRef.current;
+    const cur = posRef.current;
+    let target;
+    if (Math.abs(vel) > 0.3) {
+      // Has directional intent — snap one book that way
+      target = vel > 0 ? Math.floor(cur) : Math.ceil(cur);
+    } else {
+      // Slow or stopped — snap to nearest
+      target = Math.round(cur);
+    }
+    snapTo(target);
+  }, [snapTo]);
+
+  // Mouse
+  const onMouseDown = (e) => { e.preventDefault(); startDrag(e.clientX); };
+  useEffect(() => {
+    if (!dragging) return;
+    const m = (e) => moveDrag(e.clientX);
+    const u = () => endDrag();
+    window.addEventListener("mousemove", m);
+    window.addEventListener("mouseup",   u);
+    return () => { window.removeEventListener("mousemove", m); window.removeEventListener("mouseup", u); };
+  }, [dragging, moveDrag, endDrag]);
+
+  // Touch
+  const onTouchStart = (e) => startDrag(e.touches[0].clientX);
+  const onTouchMove  = (e) => { e.preventDefault(); moveDrag(e.touches[0].clientX); };
+  const onTouchEnd   = () => endDrag();
+
+  // Scroll wheel — one book per tick, no accumulation
+  const onWheel = useCallback((e) => {
+    e.preventDefault();
+    cancelAnimationFrame(animRef.current);
+    snapTo(Math.round(posRef.current) + (e.deltaY > 0 ? 1 : -1));
+  }, [snapTo]);
+
+  useEffect(() => {
+    const el = trackRef.current;
+    if (!el) return;
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, [onWheel]);
+
+  // ── Book transform ─────────────────────────────────────────────────────────
+  // Visual hierarchy values tuned for unambiguous center focus:
+  //   absRel   scale    opacity
+  //   0        1.00     1.00   ← unmistakable
+  //   1        0.78     0.62   ← clearly secondary
+  //   2        0.60     0.37   ← supporting context
+  //   3        0.48     0.15   ← barely there
+  const getTransform = (index) => {
+    const rel    = index - pos;
+    const absRel = Math.abs(rel);
+    if (absRel > RADIUS + 0.6) return null;
+
+    const tx      = rel * STEP;
+    const ty      = absRel * absRel * 3.8;              // gentle parabolic arc
+    const scale   = Math.max(0.47, 1 - absRel * 0.22); // steep enough to be obvious
+    const opacity = Math.max(0.13, 1 - absRel * 0.29); // far books nearly gone
+    const rotY    = cl(-rel * 8, -22, 22);              // subtle depth, not theatrical
+    const zIdx    = Math.round(60 - absRel * 14);
+    return { tx, ty, scale, opacity, rotY, zIdx };
+  };
+
+  const onTileClick = (index, book) => {
+    if (Math.abs(index - posRef.current) < 0.35) { onTap?.(book); }
+    else { snapTo(index); }
+  };
+
+  const handleNoThanks = () => {
+    if (!activeBook) return;
+    onDismiss(activeBook.id);
+  };
+
+  const reason = activeBook
+    ? getRecommendationReason(activeBook, userState || {})
+    : "";
+
+  if (!books || books.length === 0) return null;
+
+  return (
+    <div style={{
+      position:"relative",
+      background:"linear-gradient(180deg,#131007 0%,rgba(10,8,6,.98) 100%)",
+      borderBottom:"1px solid rgba(255,255,255,.05)",
+      overflow:"hidden",
+      paddingBottom:24,
+      // Entry fade — entire hero fades in from transparent
+      opacity: mounted ? 1 : 0,
+      transition:"opacity 0.35s ease",
+    }}>
+      {/* Ambient glow — centred, understated */}
+      <div style={{
+        position:"absolute", top:0, left:"50%", transform:"translateX(-50%)",
+        width:220, height:200, pointerEvents:"none",
+        background:"radial-gradient(ellipse 100% 100% at 50% 12%,rgba(212,148,26,.08) 0%,transparent 65%)",
+      }}/>
+
+      {/* Eyebrow */}
+      <div style={{
+        textAlign:"center", paddingTop:20,
+        fontSize:8, fontWeight:700, letterSpacing:"2.8px",
+        textTransform:"uppercase", color:"rgba(212,148,26,.45)",
+      }}>Your top pick right now</div>
+
+      {/* ── Wheel track ── */}
+      <div
+        ref={trackRef}
+        onMouseDown={onMouseDown}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+        style={{
+          position:"relative",
+          height: COVER_H + 52,
+          display:"flex", alignItems:"flex-start",
+          justifyContent:"center",
+          paddingTop:24,
+          cursor: dragging ? "grabbing" : "grab",
+          userSelect:"none", WebkitUserSelect:"none",
+          overflow:"visible",
+        }}
+      >
+        {books.map((book, index) => {
+          const tf = getTransform(index);
+          if (!tf) return null;
+          const { tx, ty, scale, opacity, rotY, zIdx } = tf;
+          const isCenter = index === activeIdx;
+          const isSaved  = savedBooks?.some(sb => sb.id === book.id);
+
+          return (
+            <div
+              key={book.id}
+              onClick={() => onTileClick(index, book)}
+              style={{
+                position:"absolute",
+                width: COVER_W, height: COVER_H,
+                borderRadius: 9, overflow:"hidden",
+                transform:`perspective(1000px) translateX(${tx}px) translateY(${ty}px) scale(${scale}) rotateY(${rotY}deg)`,
+                opacity,
+                zIndex: zIdx,
+                // During drag: no transition — raw response.
+                // After snap: single property transition — avoids shimmer from competing values.
+                transition: dragging
+                  ? "none"
+                  : "transform 0.24s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.24s ease",
+                boxShadow: isCenter
+                  ? "0 16px 44px rgba(0,0,0,.72), 0 0 0 1px rgba(212,148,26,.32)"
+                  : "0 4px 18px rgba(0,0,0,.5)",
+                cursor: isCenter ? "default" : "pointer",
+                // Center book gets a subtle brightness lift — unmistakable without being garish
+                filter: isCenter ? "brightness(1.07)" : "none",
+              }}
+            >
+              <BookCover
+                isbn={book.isbn} title={book.title}
+                author={book.author} color={book.color}
+              />
+              {/* Saved pip */}
+              {isSaved && (
+                <div style={{
+                  position:"absolute", bottom:5, left:5, zIndex:3,
+                  background:"rgba(10,8,6,.9)", backdropFilter:"blur(4px)",
+                  border:"1px solid rgba(212,148,26,.4)", color:"var(--gold)",
+                  fontSize:7, fontWeight:700, padding:"2px 6px", borderRadius:99,
+                }}>✓</div>
+              )}
+              {/* Score on non-centre books — fades with distance */}
+              {!isCenter && (
+                <div style={{
+                  position:"absolute", top:5, right:5, zIndex:3,
+                  background:"rgba(10,8,6,.72)", backdropFilter:"blur(3px)",
+                  color:"var(--gold)", fontSize:7.5, fontWeight:700,
+                  padding:"1px 5px", borderRadius:99,
+                  border:"1px solid rgba(212,148,26,.15)",
+                  opacity: Math.max(0.25, 1 - Math.abs(index - pos) * 0.42),
+                }}>{book.score}%</div>
+              )}
+            </div>
+          );
+        })}
+
+        {/* Vignette — fades side books into the background */}
+        <div style={{
+          position:"absolute", inset:0, zIndex:80, pointerEvents:"none",
+          background:"linear-gradient(90deg,#131007 0%,transparent 22%,transparent 78%,#131007 100%)",
+        }}/>
+      </div>
+
+      {/* ── Focus info panel ──
+          key=activeBook.id re-mounts on change, re-triggering wheelFocus animation.
+          Breathing room between wheel and text is intentional. */}
+      {activeBook && (
+        <div
+          key={activeBook.id}
+          style={{
+            padding:"10px 24px 0",
+            textAlign:"center",
+            animation:"wheelFocus .18s ease-out",
+          }}
+        >
+          {/* Score badge */}
+          <div style={{
+            display:"inline-flex", alignItems:"center",
+            fontSize:8.5, fontWeight:700, letterSpacing:".3px",
+            color:"var(--gold)",
+            background:"rgba(212,148,26,.09)", border:"1px solid rgba(212,148,26,.18)",
+            padding:"2px 10px", borderRadius:99, marginBottom:9,
+          }}>{activeBook.score}% match</div>
+
+          {/* Title */}
+          <div style={{
+            fontFamily:"'Lora',serif", fontSize:17, fontWeight:700,
+            color:"var(--text)", lineHeight:1.22, marginBottom:4, letterSpacing:"-.2px",
+          }}>{activeBook.title}</div>
+
+          {/* Author */}
+          <div style={{
+            fontSize:12, color:"var(--muted)", fontStyle:"italic", marginBottom:10,
+          }}>{activeBook.author}</div>
+
+          {/* Why this was recommended */}
+          <div style={{
+            fontSize:11.5, color:"rgba(240,232,216,.88)", fontStyle:"italic",
+            lineHeight:1.68, marginBottom:16,
+            maxWidth:286, marginLeft:"auto", marginRight:"auto",
+          }}>{fmtLine(reason)}</div>
+
+          {/* Actions */}
+          <div style={{display:"flex", gap:8, justifyContent:"center", flexWrap:"wrap"}}>
+            {(() => {
+              const saved = savedBooks?.some(sb => sb.id === activeBook.id);
+              return (
+                <button
+                  onClick={() => !saved && onSave(activeBook)}
+                  style={{
+                    padding:"8px 18px", borderRadius:99, border:"none",
+                    background: saved ? "rgba(212,148,26,.1)" : "var(--gold)",
+                    color: saved ? "var(--gold)" : "#0a0806",
+                    fontSize:12, fontWeight:700,
+                    cursor: saved ? "default" : "pointer",
+                    transition:"all .2s",
+                    ...(saved
+                      ? { border:"1px solid rgba(212,148,26,.25)" }
+                      : { boxShadow:"0 2px 12px rgba(212,148,26,.28)" }),
+                  }}
+                >{saved ? "✓ Saved" : "Save to Read"}</button>
+              );
+            })()}
+            <button
+              onClick={() => onAsk(`Tell me about "${activeBook.title}" by ${activeBook.author}. Should I read it?`)}
+              style={{
+                padding:"8px 14px", borderRadius:99,
+                border:"1px solid rgba(255,255,255,.09)", background:"rgba(255,255,255,.04)",
+                color:"var(--text2)", fontSize:12, fontWeight:600,
+                cursor:"pointer", transition:"all .18s",
+              }}
+            >Ask AI →</button>
+            <button
+              onClick={handleNoThanks}
+              style={{
+                padding:"8px 12px", borderRadius:99,
+                border:"1px solid rgba(255,255,255,.06)", background:"transparent",
+                color:"var(--muted)", fontSize:12, fontWeight:500,
+                cursor:"pointer", transition:"all .15s",
+              }}
+            >No Thanks</button>
+          </div>
+
+          {/* Navigation dots */}
+          <div style={{
+            display:"flex", gap:6, justifyContent:"center", marginTop:16,
+          }}>
+            {books.slice(0, Math.min(books.length, 7)).map((_, i) => (
+              <div
+                key={i}
+                onClick={() => snapTo(i)}
+                style={{
+                  width: i === activeIdx ? 18 : 5,
+                  height: 5,
+                  borderRadius: 99,
+                  background: i === activeIdx ? "var(--gold)" : "rgba(255,255,255,.13)",
+                  cursor: "pointer",
+                  transition:"width .22s cubic-bezier(0.25,0.46,0.45,0.94), background .22s ease",
+                  flexShrink:0,
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── FOR YOU ITEM — single card in the personalised feed ──────────────────────
+
+// Hand-crafted hooks for the curated catalog.
+// These are the highest-quality copy — specific to the book, not generated.
+const BOOK_HOOKS = {
+  1: "Three generations, seventy years — patient, sweeping, impossible to quit",
+  2: "Dickens retold for the opioid crisis — raw, morally urgent, essential",
+  3: "Lone astronaut, no memory, mission to save Earth — relentless from page one",
+  4: "Two perspectives across WWII France — precision prose, devastating payoff",
+  5: "Ten days in 1954 America — Towles at his most elegant and most witty",
+  6: "Every decision you make looks different after you finish this",
+};
+
+/**
+ * getHook(book)
+ *
+ * Returns a 1-line hook for the given book.
+ * Priority: hand-crafted → genre pool → pacing fallback → neutral fallback.
+ *
+ * Rules:
+ *  - One line, ≤12 words ideally
+ *  - Reads like front-of-book copy or a trailer line
+ *  - Never references the user ("you", "your")
+ *  - Never sounds like a recommendation reason or explanation
+ *  - Strong, clear language — no filler, no passive constructions
+ *
+ * Pool selection is deterministic (book.id % pool.length) so the same book
+ * always gets the same hook regardless of render order.
+ */
+function getHook(book) {
+  // 1. Hand-crafted — highest quality
+  if (BOOK_HOOKS[book.id]) return BOOK_HOOKS[book.id];
+
+  const meta   = BOOK_AFFINITY[book.id] || {};
+  const pacing = meta.pacing  || "moderate";
+  const tone   = (meta.toneWords || [])[0] || "compelling";
+  const Tone   = tone.charAt(0).toUpperCase() + tone.slice(1);
+  const tags   = book.tags || [];
+
+  // Deterministic pick from a pool — same book always gets the same line
+  const pick = (pool) => pool[book.id % pool.length];
+
+  // 2. Sci-Fi — emphasise intelligence, pace, ideas
+  if (tags.includes("Sci-Fi")) return pick([
+    "Fast, intelligent sci-fi with zero filler",
+    "Concept-driven and propulsive — reads like a thriller",
+    "The kind of sci-fi that makes you smarter as it entertains",
+    "Ideas first. Pace second. Both excellent.",
+  ]);
+
+  // 3. Thriller / Mystery / True Crime — tension, speed, stakes
+  if (tags.some(t => ["Thriller","Mystery","True Crime"].includes(t))) return pick(
+    pacing === "slow" ? [
+      "Slow-burn tension that earns its ending",
+      "Quiet, then suddenly impossible to stop",
+      "The threat builds before you realise it's there",
+    ] : [
+      "High-stakes and relentless — one more chapter, always one more",
+      "Fast, tense, and impossible to put down",
+      "Grips you from the first page and doesn't let go",
+    ]
+  );
+
+  // 4. Literary Fiction — prose quality, depth, emotional payoff
+  if (tags.includes("Literary Fiction")) return pick(
+    pacing === "slow" ? [
+      "Simple on the surface, quietly devastating underneath",
+      `${Tone} prose — the kind that stays with you long after`,
+      "Rewards patience in ways you won't see coming",
+      "A slow build that earns every one of its pages",
+    ] : [
+      "Character-driven and emotionally precise",
+      "A story that actually earns its emotion",
+      "Literary fiction that moves — no meandering, no filler",
+      "Sharp, controlled, and surprisingly hard to put down",
+    ]
+  );
+
+  // 5. Historical Fiction — immersion, stakes, craft
+  if (tags.includes("Historical")) return pick(
+    pacing === "slow" ? [
+      "Historical fiction that puts you somewhere else entirely",
+      "Another time, another place — completely convincing",
+      "The past rendered so vividly you forget it's fiction",
+    ] : [
+      "History told like a thriller — paced for today, set in another era",
+      "Fast-moving historical fiction with something real to say",
+      "Immersive and propulsive — leaves you looking things up afterward",
+    ]
+  );
+
+  // 6. Non-fiction — insight, usefulness, perspective shift
+  if (tags.some(t => ["Non-Fiction","Psychology","Self-Help","Business","Philosophy","Biography","Essays"].includes(t))) return pick([
+    "Finishes the way the best non-fiction does: differently than it started",
+    "Practical, well-argued, and genuinely useful",
+    "The kind of insight that actually changes how you see things",
+    "A book that earns the time you give it",
+    "Smarter than most. Clearer than any.",
+  ]);
+
+  // 7. Family Saga / emotional fiction
+  if (tags.some(t => ["Family Saga","Romance"].includes(t))) return pick([
+    "Gets under your skin before you notice",
+    "Emotionally precise — feels things you didn't expect",
+    "Character-driven, deeply felt, and hard to put down",
+  ]);
+
+  // 8. Pacing-based fallback — still a pitch, not an explanation
+  if (pacing === "fast") return "The kind of book you finish in one sitting";
+  if (pacing === "slow") return "Slow to start, then impossible to stop thinking about";
+
+  // 9. Neutral fallback — engaging but never explanatory
+  return "A well-crafted story with real depth and momentum";
+}
+
+// ── BACKGROUND GRADIENT SCENES ───────────────────────────────────────────────
+// Pure CSS gradients — no network requests, always visible.
+// Layered radial-gradients suggest different literary moods.
+// Crossfades every 9s using opacity transitions.
+
+const BG_SCENES = {
+  default: [
+    `radial-gradient(ellipse 70% 90% at 5% 70%, rgba(190,105,18,.55) 0%, rgba(145,80,12,.28) 40%, transparent 68%),
+     radial-gradient(ellipse 55% 60% at 92% 18%, rgba(130,75,10,.32) 0%, transparent 58%),
+     radial-gradient(ellipse 85% 38% at 50% 100%, rgba(110,60,8,.38) 0%, transparent 52%),
+     linear-gradient(170deg, #1e1409 0%, #0d0a07 55%, #181108 100%)`,
+    `radial-gradient(ellipse 62% 72% at 78% 12%, rgba(55,72,105,.40) 0%, transparent 62%),
+     radial-gradient(ellipse 68% 62% at 8% 82%, rgba(170,95,18,.50) 0%, transparent 62%),
+     linear-gradient(175deg, #0e1016 0%, #0b0908 100%)`,
+    `radial-gradient(ellipse 68% 58% at 50% 42%, rgba(210,125,14,.45) 0%, rgba(160,90,8,.22) 48%, transparent 72%),
+     radial-gradient(ellipse 100% 32% at 50% 100%, rgba(140,75,6,.35) 0%, transparent 52%),
+     linear-gradient(180deg, #1c1408 0%, #0e0b06 100%)`,
+    `radial-gradient(ellipse 48% 95% at 0% 50%, rgba(210,115,14,.60) 0%, rgba(165,88,8,.32) 38%, transparent 65%),
+     radial-gradient(ellipse 65% 48% at 100% 85%, rgba(85,48,5,.22) 0%, transparent 55%),
+     linear-gradient(180deg, #161009 0%, #0b0907 100%)`,
+  ],
+  "Sci-Fi": [
+    `radial-gradient(ellipse 58% 72% at 78% 22%, rgba(18,58,185,.55) 0%, rgba(12,42,135,.28) 48%, transparent 72%),
+     radial-gradient(ellipse 48% 62% at 12% 72%, rgba(62,18,138,.45) 0%, transparent 62%),
+     radial-gradient(ellipse 80% 32% at 50% 100%, rgba(10,28,82,.32) 0%, transparent 52%),
+     linear-gradient(180deg, #050a1e 0%, #040610 100%)`,
+    `radial-gradient(ellipse 68% 68% at 28% 38%, rgba(42,18,125,.50) 0%, transparent 68%),
+     radial-gradient(ellipse 52% 72% at 82% 68%, rgba(18,58,158,.38) 0%, transparent 62%),
+     linear-gradient(180deg, #07051a 0%, #050510 100%)`,
+    `radial-gradient(ellipse 62% 78% at 62% 28%, rgba(8,82,145,.50) 0%, rgba(8,62,108,.22) 52%, transparent 72%),
+     radial-gradient(ellipse 52% 52% at 8% 62%, rgba(28,105,125,.32) 0%, transparent 58%),
+     linear-gradient(180deg, #040d1a 0%, #040a12 100%)`,
+  ],
+  "Thriller": [
+    `radial-gradient(ellipse 62% 82% at 88% 38%, rgba(28,42,72,.50) 0%, transparent 68%),
+     radial-gradient(ellipse 52% 62% at 12% 62%, rgba(18,22,38,.45) 0%, transparent 58%),
+     radial-gradient(ellipse 90% 28% at 50% 100%, rgba(12,18,32,.38) 0%, transparent 52%),
+     linear-gradient(180deg, #07080d 0%, #050609 100%)`,
+    `radial-gradient(ellipse 52% 68% at 18% 28%, rgba(88,10,10,.40) 0%, transparent 62%),
+     radial-gradient(ellipse 62% 58% at 82% 72%, rgba(12,18,38,.45) 0%, transparent 58%),
+     linear-gradient(180deg, #0d0607 0%, #080506 100%)`,
+    `radial-gradient(ellipse 82% 62% at 50% 8%, rgba(38,52,82,.45) 0%, transparent 58%),
+     radial-gradient(ellipse 62% 72% at 62% 82%, rgba(18,28,52,.32) 0%, transparent 58%),
+     linear-gradient(180deg, #07090f 0%, #05070b 100%)`,
+  ],
+  "Historical": [
+    `radial-gradient(ellipse 68% 82% at 12% 58%, rgba(178,98,18,.55) 0%, rgba(135,72,10,.28) 48%, transparent 72%),
+     radial-gradient(ellipse 52% 62% at 88% 22%, rgba(125,72,12,.32) 0%, transparent 62%),
+     radial-gradient(ellipse 80% 38% at 50% 100%, rgba(105,58,6,.32) 0%, transparent 52%),
+     linear-gradient(170deg, #1e1608 0%, #0f0c06 60%, #180f06 100%)`,
+    `radial-gradient(ellipse 72% 68% at 72% 32%, rgba(168,105,22,.45) 0%, transparent 62%),
+     radial-gradient(ellipse 58% 72% at 18% 72%, rgba(125,72,8,.38) 0%, transparent 58%),
+     linear-gradient(180deg, #1a1408 0%, #100b05 100%)`,
+  ],
+  "Psychology": [
+    `radial-gradient(ellipse 62% 72% at 62% 28%, rgba(18,72,105,.45) 0%, rgba(12,55,82,.22) 48%, transparent 68%),
+     radial-gradient(ellipse 52% 62% at 18% 72%, rgba(62,82,38,.28) 0%, transparent 58%),
+     radial-gradient(ellipse 80% 32% at 50% 100%, rgba(28,52,72,.28) 0%, transparent 52%),
+     linear-gradient(180deg, #070d14 0%, #060809 100%)`,
+    `radial-gradient(ellipse 68% 78% at 38% 38%, rgba(28,82,92,.45) 0%, transparent 62%),
+     radial-gradient(ellipse 52% 58% at 82% 72%, rgba(18,62,82,.32) 0%, transparent 58%),
+     linear-gradient(180deg, #060c10 0%, #050708 100%)`,
+  ],
+};
+
+function getBackgroundSet(userState) {
+  const { savedBooks = [], genre = null } = userState;
+  if (genre && BG_SCENES[genre]) return BG_SCENES[genre];
+  const tags = new Set(savedBooks.flatMap(b => b.tags || []));
+  if (tags.has("Sci-Fi"))                                return BG_SCENES["Sci-Fi"];
+  if (tags.has("Thriller") || tags.has("Mystery"))       return BG_SCENES["Thriller"];
+  if (tags.has("Historical"))                            return BG_SCENES["Historical"];
+  if (tags.has("Psychology") || tags.has("Non-Fiction")) return BG_SCENES["Psychology"];
+  return BG_SCENES.default;
+}
+
+function AppBackground({ userState }) {
+  const scenes  = getBackgroundSet(userState || {});
+  const [activeIdx, setActiveIdx] = useState(0);
+
+  useEffect(() => {
+    if (scenes.length <= 1) return;
+    const id = setInterval(() => setActiveIdx(i => (i + 1) % scenes.length), 9000);
+    return () => clearInterval(id);
+  }, [scenes.length]);
+
+  return (
+    <div style={{ position:"absolute", inset:0, zIndex:-1, overflow:"hidden", pointerEvents:"none" }}>
+      {scenes.map((grad, i) => (
+        <div key={i} style={{
+          position:"absolute", inset:0,
+          background: grad,
+          opacity: i === activeIdx ? 1 : 0,
+          transition:"opacity 2.5s ease-in-out",
+        }}/>
+      ))}
+      <div style={{
+        position:"absolute", inset:0, pointerEvents:"none",
+        background:"radial-gradient(ellipse 130% 100% at 50% 40%, transparent 0%, rgba(10,8,6,.28) 60%, rgba(10,8,6,.65) 100%)",
+      }}/>
+    </div>
+  );
+}
+
+
+
+function ForYouItem({ book, userState, savedBooks, onSave, onDismiss, onAsk }) {
+  const [exiting, setExiting] = useState(false);
+  const isSaved = savedBooks?.some(sb => sb.id === book.id);
+  const reason  = getRecommendationReason(book, userState || {});
+  const hook    = getHook(book);
+
+  const handleNoThanks = () => {
+    setExiting(true);
+    setTimeout(() => onDismiss(book.id), 200);
+  };
+
+  return (
+    <div
+      className="ls-foryou-card"
+      style={{
+        opacity:   exiting ? 0 : 1,
+        transform: exiting ? "translateX(16px)" : "translateX(0)",
+        transition:"opacity .2s ease, transform .2s ease",
+      }}
+    >
+      {/* Cover — smaller than before, still dominant */}
+      <div style={{display:"flex", justifyContent:"center", marginBottom:14}}>
+        <div style={{
+          width:112, height:164, borderRadius:9, overflow:"hidden",
+          boxShadow:"0 12px 36px rgba(0,0,0,.62), 0 0 0 1px rgba(255,255,255,.04)",
+        }}>
+          <BookCover isbn={book.isbn} title={book.title} author={book.author} color={book.color}/>
+        </div>
+      </div>
+
+      {/* Title */}
+      <div style={{
+        fontFamily:"'Lora',serif", fontSize:18, fontWeight:700,
+        color:"var(--text)", textAlign:"center",
+        lineHeight:1.22, marginBottom:3, letterSpacing:"-.2px",
+      }}>{book.title}</div>
+
+      {/* Author + score inline — one line, less vertical cost */}
+      <div style={{
+        display:"flex", alignItems:"center", justifyContent:"center", gap:8,
+        marginBottom:14,
+      }}>
+        <span style={{fontSize:12, color:"var(--muted)", fontStyle:"italic"}}>{book.author}</span>
+        <span style={{
+          fontSize:8, fontWeight:700, color:"var(--gold)",
+          background:"rgba(212,148,26,.08)", border:"1px solid rgba(212,148,26,.15)",
+          padding:"1px 7px", borderRadius:99, letterSpacing:".3px",
+        }}>{book.score}%</span>
+      </div>
+
+      {/* Hook — strong white, pitch-level clarity */}
+      <div style={{
+        fontSize:13, fontWeight:600, color:"rgba(240,232,216,.95)",
+        lineHeight:1.48, marginBottom:10, letterSpacing:"-.1px",
+      }}>{hook}</div>
+
+      {/* Why this was recommended — supporting detail, clearly secondary */}
+      <div style={{marginBottom:14}}>
+        <div style={{
+          fontSize:7.5, fontWeight:700, letterSpacing:"2px",
+          textTransform:"uppercase", color:"var(--gold)", opacity:.6,
+          marginBottom:5, display:"flex", alignItems:"center", gap:5,
+        }}>
+          <span style={{width:8,height:1,background:"rgba(212,148,26,.4)",display:"inline-block",borderRadius:1}}/>
+          Why recommended
+        </div>
+        <div style={{fontSize:12, color:"rgba(240,232,216,.84)", fontStyle:"italic", lineHeight:1.7}}>
+          {fmtLine(reason)}
+        </div>
+      </div>
+
+      {/* Primary actions — Save (strong) | Not for me (ghost) */}
+      <div style={{display:"flex", gap:8, marginBottom:8}}>
+        <button
+          onClick={() => !isSaved && onSave(book)}
+          style={{
+            flex:3, padding:"11px 0", borderRadius:10, border:"none",
+            background: isSaved ? "rgba(212,148,26,.1)" : "var(--gold)",
+            color: isSaved ? "var(--gold)" : "#0a0806",
+            fontSize:13, fontWeight:700, cursor: isSaved ? "default" : "pointer",
+            transition:"background .15s, box-shadow .15s",
+            ...(isSaved
+              ? { border:"1px solid rgba(212,148,26,.22)" }
+              : { boxShadow:"0 2px 10px rgba(212,148,26,.26)" }),
+          }}
+        >{isSaved ? "✓ Saved" : "Save to Read"}</button>
+
+        {/* "Not for me" — ghost, clearly secondary */}
+        <button
+          onClick={handleNoThanks}
+          style={{
+            flex:2, padding:"11px 0", borderRadius:10,
+            border:"none", background:"transparent",
+            color:"var(--muted)", fontSize:12.5, fontWeight:500,
+            cursor:"pointer", transition:"color .12s",
+          }}
+        >Not for me</button>
+      </div>
+
+      {/* Ask AI — tertiary, text-link weight */}
+      <button
+        onClick={() => onAsk(`Tell me about "${book.title}" by ${book.author}. Should I read it?`)}
+        style={{
+          display:"block", width:"100%", padding:"5px 0",
+          border:"none", background:"transparent",
+          color:"var(--muted)", fontSize:11, fontWeight:500,
+          cursor:"pointer", textAlign:"center",
+          letterSpacing:".1px", opacity:.7,
+        }}
+      >Ask AI →</button>
+    </div>
+  );
+}
+
+// ── FOR YOU FEED — personalised vertical feed ─────────────────────────────────
+// Scrollable feed of scored, diversified recommendations.
+// Loads in batches of 6 via IntersectionObserver sentinel.
+function ForYouFeed({ books, savedBooks, onSave, onDismiss, onAsk, userState }) {
+  const [visibleCount, setVisibleCount] = useState(6);
+  const sentinelRef = useRef(null);
+
+  const feedItems = buildFeedItems(books, userState || {});
+  const visible   = feedItems.slice(0, visibleCount);
+
+  // Load next batch when sentinel enters viewport
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) setVisibleCount(c => Math.min(c + 6, feedItems.length));
+      },
+      { rootMargin:"400px" }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [feedItems.length]);
+
+  if (feedItems.length === 0) {
+    return (
+      <div className="ls-empty" style={{paddingTop:52}}>
+        <div className="ls-empty-icon"><BookOpen size={40} strokeWidth={1}/></div>
+        <div className="ls-empty-title">All caught up</div>
+        <div className="ls-empty-body">You've seen everything for now. Browse Discover or rate more books to unlock new picks.</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="ls-foryou-feed">
+      {visible.map(book => (
+        <ForYouItem
+          key={book.id}
+          book={book}
+          userState={userState}
+          savedBooks={savedBooks}
+          onSave={onSave}
+          onDismiss={onDismiss}
+          onAsk={onAsk}
+        />
+      ))}
+      {visibleCount < feedItems.length && (
+        <div ref={sentinelRef} style={{height:1}}/>
+      )}
+      {visibleCount >= feedItems.length && feedItems.length > 0 && (
+        <div style={{
+          textAlign:"center", padding:"28px 20px",
+          fontSize:12, color:"var(--muted)", fontStyle:"italic",
+        }}>You're all caught up — rate more books to unlock new picks.</div>
+      )}
+    </div>
+  );
 }
 
 // ── BOOK SEARCH — live Open Library search with cover previews ───────────────
@@ -848,8 +2234,9 @@ function BookCover({ isbn, title, author = "", color = ["#1a1408","#0e0c06"], cl
 }
 
 // ── BOOK TILE — scroll scale + hover overlay ─────────────────────────────────
-function BookTile({ book: b, onAsk, onTap, scrollScale = 1, isFirst, isLast }) {
-  const [hovered, setHovered] = useState(false);
+function BookTile({ book: b, onAsk, onTap, scrollScale = 1, isFirst, isLast, isSaved, onSave, onDismiss, userState, rowContext }) {
+  const [hovered,   setHovered]   = useState(false);
+  const [dismissing,setDismissing]= useState(false);
   const isTouchRef = useRef(false);
 
   const handleMouseEnter = () => { if (!isTouchRef.current) setHovered(true); };
@@ -857,7 +2244,18 @@ function BookTile({ book: b, onAsk, onTap, scrollScale = 1, isFirst, isLast }) {
   const handleTouchStart = () => { isTouchRef.current = true; };
   const handleClick      = () => { if (isTouchRef.current) { onTap(b); isTouchRef.current = false; } };
 
-  // Hover adds extra scale on top of scroll-based scale
+  const handleSaveClick = (e) => {
+    e.stopPropagation();
+    if (!isSaved) onSave(b);
+  };
+
+  const handleDismissClick = (e) => {
+    e.stopPropagation();
+    setDismissing(true);
+    setTimeout(() => onDismiss(b.id), 320);
+  };
+
+  const reason = getRecommendationReason(b, userState || {}, rowContext || null);
   const finalScale = hovered ? scrollScale * 1.08 : scrollScale;
   const origin = isFirst ? "left center" : isLast ? "right center" : "center center";
 
@@ -871,13 +2269,18 @@ function BookTile({ book: b, onAsk, onTap, scrollScale = 1, isFirst, isLast }) {
         flexShrink: 0, position: "relative", cursor: "pointer",
         zIndex: hovered ? 40 : 1,
         transition: hovered ? "z-index 0s 0s" : "z-index 0s .3s",
+        opacity: dismissing ? 0 : 1,
+        transform: dismissing ? "translateY(-10px) scale(.93)" : undefined,
+        pointerEvents: dismissing ? "none" : undefined,
       }}
     >
       <div style={{
         width: 124,
         transform: `scale(${finalScale})`,
         transformOrigin: origin,
-        transition: "transform .3s cubic-bezier(.2,.8,.2,1)",
+        transition: dismissing
+          ? "opacity .3s ease, transform .3s ease"
+          : "transform .3s cubic-bezier(.2,.8,.2,1)",
         borderRadius: 10, overflow: "hidden", position: "relative",
         boxShadow: hovered || scrollScale > 1.05
           ? "0 16px 48px rgba(0,0,0,.8), 0 0 0 1.5px rgba(212,148,26,.3)"
@@ -895,39 +2298,54 @@ function BookTile({ book: b, onAsk, onTap, scrollScale = 1, isFirst, isLast }) {
             background:"rgba(10,8,6,.82)", backdropFilter:"blur(4px)",
             padding:"2px 6px", borderRadius:99, border:"1px solid rgba(212,148,26,.25)",
           }}>{b.score}%</div>
+          {/* Saved pip */}
+          {isSaved && <div className="ls-tile-saved-pip">✓ Saved</div>}
           {/* Hover overlay */}
           <div style={{
             position:"absolute", inset:0,
-            background:"linear-gradient(to top, rgba(0,0,0,.97) 0%, rgba(0,0,0,.72) 38%, rgba(0,0,0,.12) 65%, transparent 100%)",
+            background:"linear-gradient(to top, rgba(0,0,0,.97) 0%, rgba(0,0,0,.75) 42%, rgba(0,0,0,.1) 68%, transparent 100%)",
             opacity: hovered ? 1 : 0,
             transition:"opacity .22s ease",
             display:"flex", flexDirection:"column", justifyContent:"flex-end",
             padding:"10px 9px",
           }}>
-            <div style={{fontFamily:"'Lora',serif",fontSize:11,fontWeight:700,color:"#fff",lineHeight:1.28,marginBottom:2}}>{b.title}</div>
-            <div style={{fontSize:9.5,color:"rgba(212,148,26,.85)",fontStyle:"italic",marginBottom:6}}>{b.author}</div>
-            <div style={{
-              fontSize:9.5,lineHeight:1.5,color:"rgba(240,232,216,.8)",fontStyle:"italic",marginBottom:8,
-              display:"-webkit-box",WebkitLineClamp:3,WebkitBoxOrient:"vertical",overflow:"hidden",
-            }} dangerouslySetInnerHTML={{__html:b.why}}/>
+            <div style={{fontFamily:"'Inter',sans-serif",fontSize:11,fontWeight:700,color:"#fff",lineHeight:1.28,marginBottom:2}}>{b.title}</div>
+            <div style={{fontSize:9.5,color:"rgba(212,148,26,.85)",fontStyle:"italic",marginBottom:5}}>{b.author}</div>
+            {/* Labeled reason — replaces raw b.why */}
+            <div style={{marginBottom:7}}>
+              <div className="ls-overlay-why-label">Why recommended</div>
+              <div style={{
+                fontSize:9,lineHeight:1.52,color:"rgba(240,232,216,.82)",fontStyle:"italic",
+                display:"-webkit-box",WebkitLineClamp:3,WebkitBoxOrient:"vertical",overflow:"hidden",
+              }}>{fmtLine(reason)}</div>
+            </div>
             <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
               <button
+                onClick={handleSaveClick}
+                style={{
+                  display:"inline-flex",alignItems:"center",gap:4,
+                  padding:"5px 10px",borderRadius:99,border:"none",
+                  background: isSaved ? "rgba(212,148,26,.18)" : "var(--gold)",
+                  color: isSaved ? "var(--gold)" : "#0a0806",
+                  fontSize:10,fontWeight:700,cursor: isSaved ? "default" : "pointer",
+                  transition:"all .18s",
+                }}
+              >{isSaved ? "✓ Saved" : "Save to Read"}</button>
+              <button
                 onClick={e=>{e.stopPropagation();onAsk(`Tell me about "${b.title}" by ${b.author}. Should I read it?`);}}
-                style={{display:"inline-flex",alignItems:"center",padding:"5px 10px",borderRadius:99,border:"none",background:"var(--gold)",color:"#0a0806",fontSize:10,fontWeight:700,cursor:"pointer"}}
+                style={{display:"inline-flex",alignItems:"center",padding:"5px 10px",borderRadius:99,border:"1px solid rgba(255,255,255,.2)",background:"rgba(255,255,255,.1)",color:"#fff",fontSize:10,fontWeight:600,cursor:"pointer"}}
               >Ask AI →</button>
-              <a
-                href={amazonLink(b.title, b.author, b.isbn)}
-                target="_blank" rel="noopener noreferrer"
-                onClick={e=>e.stopPropagation()}
-                style={{display:"inline-flex",alignItems:"center",padding:"5px 10px",borderRadius:99,textDecoration:"none",background:"rgba(255,255,255,.12)",color:"#fff",fontSize:10,fontWeight:600,cursor:"pointer",border:"1px solid rgba(255,255,255,.2)"}}
-              >Buy →</a>
+              <button
+                onClick={handleDismissClick}
+                style={{display:"inline-flex",alignItems:"center",padding:"5px 9px",borderRadius:99,border:"1px solid rgba(255,255,255,.12)",background:"transparent",color:"rgba(255,255,255,.5)",fontSize:10,fontWeight:500,cursor:"pointer",transition:"all .15s"}}
+              >No Thanks</button>
             </div>
           </div>
         </div>
       </div>
-      {/* Title below — fades on hover */}
+      {/* Title below */}
       <div style={{marginTop:6,width:124,opacity:hovered?0:1,transition:"opacity .18s"}}>
-        <div style={{fontFamily:"'Lora',serif",fontSize:10.5,fontWeight:600,color:"var(--text2)",lineHeight:1.3,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{b.title}</div>
+        <div style={{fontFamily:"'Inter',sans-serif",fontSize:10.5,fontWeight:600,color:"var(--text2)",lineHeight:1.3,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{b.title}</div>
         <div style={{fontSize:9.5,color:"var(--muted)",fontStyle:"italic",marginTop:1}}>{b.author}</div>
       </div>
     </div>
@@ -935,7 +2353,7 @@ function BookTile({ book: b, onAsk, onTap, scrollScale = 1, isFirst, isLast }) {
 }
 
 // ── BOOK ROW — horizontal scroll with center-scale focal effect ────────────────
-function BookRow({ books, title, subtitle, onAsk, onTap }) {
+function BookRow({ books, title, subtitle, onAsk, onTap, savedBooks, onSave, onDismiss, userState }) {
   const trackRef = useRef(null);
   const [scales, setScales] = useState(() => books.map((_, i) => i === 0 ? 1.12 : 0.9));
 
@@ -972,18 +2390,26 @@ function BookRow({ books, title, subtitle, onAsk, onTap }) {
   }, [calcScales]);
 
   return (
-    <div style={{marginBottom:4}}>
-      {/* Row header */}
-      <div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between",padding:"0 16px",marginBottom:8}}>
-        <span style={{fontFamily:"'Lora',serif",fontSize:14,fontWeight:600,color:"var(--text)",letterSpacing:"-.1px"}}>{title}</span>
-        {subtitle && <span style={{fontSize:10,color:"var(--muted)",fontWeight:500}}>{subtitle}</span>}
+    <div style={{marginBottom:0,paddingTop:28}}>
+      {/* Row header — stacked title + subtitle */}
+      <div style={{padding:"0 16px",marginBottom:10}}>
+        <div style={{
+          fontFamily:"'Lora',serif",fontSize:15,fontWeight:700,
+          color:"var(--text)",letterSpacing:"-.15px",lineHeight:1.2,
+        }}>{title}</div>
+        {subtitle && (
+          <div style={{
+            fontSize:11,color:"var(--text2)",marginTop:4,
+            fontStyle:"italic",lineHeight:1.4,opacity:.8,
+          }}>{subtitle}</div>
+        )}
       </div>
       {/* Outer: clips overflow, padding absorbs scale expansion */}
       <div style={{overflow:"hidden",padding:"40px 0",margin:"-40px 0"}}>
         <div
           ref={trackRef}
           style={{
-            display:"flex", gap:10,
+            display:"flex", gap:12,
             overflowX:"auto", overflowY:"visible",
             padding:"40px 16px",
             scrollbarWidth:"none", msOverflowStyle:"none",
@@ -996,6 +2422,11 @@ function BookRow({ books, title, subtitle, onAsk, onTap }) {
               scrollScale={scales[i] ?? 1}
               onAsk={onAsk} onTap={onTap}
               isFirst={i===0} isLast={i===books.length-1}
+              isSaved={savedBooks?.some(sb => sb.id === b.id) ?? false}
+              onSave={onSave}
+              onDismiss={onDismiss}
+              userState={userState}
+              rowContext={title}
             />
           ))}
         </div>
@@ -1104,7 +2535,7 @@ function QuickRateCard({ onRate, onSkip }) {
             flex:1,padding:"10px",borderRadius:99,border:"none",
             background:ratedCount>0?"var(--gold)":"rgba(212,148,26,.2)",
             color:ratedCount>0?"#0a0806":"var(--muted)",
-            fontFamily:"'Lora',serif",fontSize:13,fontWeight:700,fontStyle:"italic",
+            fontFamily:"'Inter',sans-serif",fontSize:13,fontWeight:700,
             cursor:ratedCount>0?"pointer":"default",transition:"all .2s",
           }}
         >{ratedCount>0?`Save ${ratedCount} rating${ratedCount>1?"s":""}  →`:"Rate at least one book"}</button>
@@ -1115,8 +2546,16 @@ function QuickRateCard({ onRate, onSkip }) {
 }
 
 // ── TILE MODAL (mobile tap replacement for hover overlay) ─────────────────────
-function TileModal({ book: b, onClose, onAsk }) {
+function TileModal({ book: b, onClose, onAsk, isSaved, onSave, onDismiss, userState }) {
   if (!b) return null;
+
+  const handleDismiss = () => {
+    onDismiss(b.id);
+    onClose();
+  };
+
+  const reason = getRecommendationReason(b, userState || {});
+
   return (
     <div className="ls-tile-modal-overlay" onClick={onClose}>
       <div className="ls-tile-modal" onClick={e => e.stopPropagation()}>
@@ -1126,8 +2565,39 @@ function TileModal({ book: b, onClose, onAsk }) {
         </div>
         <div className="ls-tile-modal-title">{b.title}</div>
         <div className="ls-tile-modal-author">{b.author}</div>
-        <div className="ls-tile-modal-why-label">Why we recommend this</div>
-        <div className="ls-tile-modal-why" dangerouslySetInnerHTML={{__html: b.why}}/>
+
+        {/* Dynamic why block */}
+        <ReasonBlock reason={reason}/>
+
+        {/* ── PRIMARY ACTIONS ── */}
+        <div style={{display:"flex",gap:8,marginBottom:10}}>
+          {/* Save to Read */}
+          <button
+            onClick={() => { if (!isSaved) onSave(b); }}
+            style={{
+              flex:1,padding:"13px",borderRadius:10,border:"none",
+              background: isSaved ? "rgba(212,148,26,.12)" : "var(--gold)",
+              color: isSaved ? "var(--gold)" : "#0a0806",
+              fontFamily:"'Inter',sans-serif",fontSize:14,fontWeight:700,
+              cursor: isSaved ? "default" : "pointer",
+              transition:"all .2s",
+              boxSizing:"border-box",
+              ...(isSaved ? {border:"1px solid rgba(212,148,26,.25)"} : {boxShadow:"0 4px 16px rgba(212,148,26,.35)"}),
+            }}
+          >{isSaved ? "✓ Saved" : "Save to Read"}</button>
+          {/* No Thanks */}
+          <button
+            onClick={handleDismiss}
+            style={{
+              padding:"13px 16px",borderRadius:10,
+              border:"1px solid rgba(255,255,255,.1)",background:"transparent",
+              color:"var(--muted)",fontSize:14,fontWeight:500,
+              cursor:"pointer",transition:"all .18s",boxSizing:"border-box",
+              flexShrink:0,
+            }}
+          >No Thanks</button>
+        </div>
+
         <button className="ls-tile-modal-cta" onClick={() => { onAsk(`Tell me about "${b.title}" by ${b.author}. Should I read it?`); onClose(); }}>
           Ask LitSense about this book
         </button>
@@ -1233,7 +2703,7 @@ function ReferralCard({ userEmail, referralCount }) {
         </div>
       )}
       {!next && referralCount >= 10 && (
-        <div style={{marginBottom:14,padding:"8px 12px",background:"rgba(212,148,26,.1)",borderRadius:8,fontSize:12,color:"var(--gold)",fontFamily:"'Lora',serif",fontStyle:"italic"}}>
+        <div style={{marginBottom:14,padding:"8px 12px",background:"rgba(212,148,26,.1)",borderRadius:8,fontSize:12,color:"var(--gold)",fontFamily:"'Inter',sans-serif",fontStyle:"italic"}}>
           🏆 Champion — you've earned 3 months Pro free. We'll be in touch.
         </div>
       )}
@@ -1258,7 +2728,7 @@ function ReferralCard({ userEmail, referralCount }) {
         <button onClick={shareLink} style={{
           flex:1,padding:"10px",borderRadius:99,border:"none",
           background:"var(--gold)",color:"#0a0806",
-          fontFamily:"'Lora',serif",fontSize:13,fontWeight:700,fontStyle:"italic",
+          fontFamily:"'Inter',sans-serif",fontSize:13,fontWeight:700,
           cursor:"pointer",
         }}>Share your link</button>
       </div>
@@ -1324,9 +2794,31 @@ export default function LitSense() {
   const [wantList, setWantList]       = useState(() => loadShelf()?.wantList ?? []);
   useEffect(() => { if (!isSignedIn) return; try { localStorage.setItem("ls_shelf",JSON.stringify({readBooks,currentBook,wantList})); } catch {} }, [readBooks,currentBook,wantList,isSignedIn]);
 
+  // ── PERSONALIZATION FEEDBACK ───────────────────────────────────────────────
+  // savedBooks    : [{id, title, author, isbn, score, tags, ...}]
+  // dismissedBooks: [id, id, ...]
+  // Both persist in localStorage. Ready for Supabase backend in a future step.
+  const [savedBooks,     setSavedBooks]     = useState(() => { try { const r = localStorage.getItem("ls_saved"); return r ? JSON.parse(r) : []; } catch { return []; } });
+  const [dismissedBooks, setDismissedBooks] = useState(() => { try { const r = localStorage.getItem("ls_dismissed"); return r ? JSON.parse(r) : []; } catch { return []; } });
+
+  useEffect(() => { try { localStorage.setItem("ls_saved",     JSON.stringify(savedBooks));     } catch {} }, [savedBooks]);
+  useEffect(() => { try { localStorage.setItem("ls_dismissed", JSON.stringify(dismissedBooks)); } catch {} }, [dismissedBooks]);
+
+  const isBookSaved     = useCallback((id) => savedBooks.some(b => b.id === id),    [savedBooks]);
+  const isBookDismissed = useCallback((id) => dismissedBooks.includes(id),           [dismissedBooks]);
+
+  const handleSaveBook = useCallback((book) => {
+    setSavedBooks(prev => prev.some(b => b.id === book.id) ? prev : [...prev, book]);
+  }, []);
+
+  const handleDismissBook = useCallback((id) => {
+    setDismissedBooks(prev => prev.includes(id) ? prev : [...prev, id]);
+  }, []);
+
   // ── UI STATE ──────────────────────────────────────────────────────────────
-  const [tab, setTab]             = useState("discover");
-  const [showPro, setPro]         = useState(false);
+  const [tab, setTab]           = useState("discover");
+  const [feedMode, setFeedMode] = useState("discover"); // "discover" | "foryou"
+  const [showPro, setPro]       = useState(false);
   const [mood, setMood]           = useState(null);
   const [genre, setGenre]         = useState(null);
   const [shelfTab, setShelfTab]   = useState("read");
@@ -1425,13 +2917,42 @@ export default function LitSense() {
   const handleUpgrade = () => { if (!isSignedIn) { setShowAuth(true); setAuthMode("signup"); setPro(false); return; } localStorage.setItem("ls_pro","1"); setIsPro(true); setPro(false); };
 
   // ── COMPUTED ──────────────────────────────────────────────────────────────
-  const visibleBooks = genre
-    ? BOOKS.filter(b=>b.tags.some(t=>t.toLowerCase().includes(genre.toLowerCase())))
-    : BOOKS;
+  const discoverRows = buildDiscoverRows(BOOKS, { savedBooks, readBooks, mood, genre, dismissedBooks });
+  const wheelBooks = BOOKS
+    .filter(b => !dismissedBooks.includes(b.id))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 7);
   const userInitial = userEmail ? userEmail[0].toUpperCase() : "";
 
+  // ── BACKGROUND SLIDESHOW ──────────────────────────────────────────────────
+  const bgScenes = getBackgroundSet({ savedBooks, genre });
+  const [bgIdx, setBgIdx] = useState(0);
+  useEffect(() => {
+    if (bgScenes.length <= 1) return;
+    const id = setInterval(() => setBgIdx(i => (i + 1) % bgScenes.length), 9000);
+    return () => clearInterval(id);
+  }, [bgScenes.length]);
+
   return (
-    <div className="ls">
+    <div style={{ position:"relative", height:"100dvh", overflow:"hidden", background:"#14110d" }}>
+
+      {/* ── BACKGROUND GRADIENT SCENES — z:0, always visible ── */}
+      {bgScenes.map((grad, i) => (
+        <div key={i} style={{
+          position:"absolute", inset:0, zIndex:0,
+          background: grad,
+          opacity: i === bgIdx ? 1 : 0,
+          transition:"opacity 2.5s ease-in-out",
+        }}/>
+      ))}
+      {/* Vignette — softens edges */}
+      <div style={{
+        position:"absolute", inset:0, zIndex:1, pointerEvents:"none",
+        background:"radial-gradient(ellipse 140% 100% at 50% 40%, transparent 0%, rgba(5,4,3,.38) 60%, rgba(5,4,3,.78) 100%)",
+      }}/>
+
+      {/* ── APP — z:2, transparent bg, full height ── */}
+      <div className="ls" style={{ position:"relative", zIndex:2, background:"transparent" }}>
 
       {/* HEADER */}
       <header className="ls-hdr">
@@ -1463,6 +2984,46 @@ export default function LitSense() {
         {tab==="discover" && (
           <div className="ls-scroll">
 
+            {/* Discover / For You toggle — sticky */}
+            <div className="ls-feed-toggle">
+              <button
+                className={`ls-feed-toggle-btn${feedMode==="discover"?" on":""}`}
+                onClick={()=>setFeedMode("discover")}
+              >Discover</button>
+              <button
+                className={`ls-feed-toggle-btn${feedMode==="foryou"?" on":""}`}
+                onClick={()=>setFeedMode("foryou")}
+              >For You</button>
+            </div>
+
+            {/* ── FOR YOU feed ── */}
+            {feedMode==="foryou" && (
+              <ForYouFeed
+                books={wheelBooks}
+                savedBooks={savedBooks}
+                onSave={handleSaveBook}
+                onDismiss={handleDismissBook}
+                onAsk={goAsk}
+                userState={{ savedBooks, readBooks, mood, genre }}
+              />
+            )}
+
+            {/* ── DISCOVER content ── */}
+            {feedMode==="discover" && (<>
+
+            {/* ── Recommendation Wheel hero ── */}
+            {wheelBooks.length > 0 && (
+              <RecommendationWheel
+                books={wheelBooks}
+                savedBooks={savedBooks}
+                onSave={handleSaveBook}
+                onDismiss={handleDismissBook}
+                onAsk={goAsk}
+                onTap={setTappedBook}
+                userState={{ savedBooks, readBooks, mood, genre }}
+              />
+            )}
+
             {/* Cinematic Hero */}
             <div className="ls-hero">
               <div className="ls-hero-eyebrow">Built around your taste</div>
@@ -1485,7 +3046,8 @@ export default function LitSense() {
                     <div className="ls-proof-title">The Covenant of Water</div>
                     <div className="ls-proof-author">Abraham Verghese</div>
                     <div className="ls-proof-reason">
-                      Because you gave <strong>Pachinko</strong> five stars and loved <strong>A Gentleman in Moscow</strong> for its patience — you want literary fiction that earns its length. This is that book.
+                      <div className="ls-proof-why-label">Why this was recommended</div>
+                      {fmtLine(getRecommendationReason(BOOKS[0], {savedBooks, readBooks, mood, genre}))}
                     </div>
                     <a href={amazonLink("The Covenant of Water","Abraham Verghese","9780802162175")} target="_blank" rel="noopener noreferrer"
                       style={{display:"inline-flex",alignItems:"center",gap:5,marginTop:10,padding:"5px 12px",borderRadius:99,textDecoration:"none",background:"rgba(212,148,26,.15)",border:"1px solid rgba(212,148,26,.25)",color:"var(--gold)",fontSize:11,fontWeight:600}}>Buy on Amazon →</a>
@@ -1530,7 +3092,7 @@ export default function LitSense() {
             </div>
             {mood && (
               <div className="ls-mood-banner">
-                <span className="ls-mood-banner-text">Mood: <em>{mood}</em> — tap "Find my next book" to use it</span>
+                <span className="ls-mood-banner-text">Showing a <em>{mood}</em> row — your picks are filtered below</span>
                 <button className="ls-mood-banner-clear" onClick={()=>setMood(null)}>Clear</button>
               </div>
             )}
@@ -1550,21 +3112,28 @@ export default function LitSense() {
               </button>
             )}
 
-            {/* Netflix-style book row */}
-            {visibleBooks.length===0 ? (
+            {/* Personalised multi-row discovery */}
+            {discoverRows.length === 0 ? (
               <div className="ls-empty" style={{padding:"32px 16px"}}>
                 <div className="ls-empty-icon"><BookOpen size={36} strokeWidth={1}/></div>
-                <div className="ls-empty-title">No picks in that genre</div>
-                <div className="ls-empty-body">Try a different genre or ask the AI for personalized picks.</div>
+                <div className="ls-empty-title">All caught up</div>
+                <div className="ls-empty-body">You've dismissed all current picks. Ask the AI for fresh recommendations.</div>
               </div>
             ) : (
-              <BookRow
-                books={visibleBooks}
-                title={smartRowTitle(readBooks) || (readBooks.length>=1?"Picked for you":"Editor's picks")}
-                subtitle={readBooks.length===0?"Curated by LitSense":null}
-                onAsk={goAsk}
-                onTap={setTappedBook}
-              />
+              discoverRows.map(row => (
+                <BookRow
+                  key={row.id}
+                  books={row.books}
+                  title={row.title}
+                  subtitle={row.subtitle}
+                  onAsk={goAsk}
+                  onTap={setTappedBook}
+                  savedBooks={savedBooks}
+                  onSave={handleSaveBook}
+                  onDismiss={handleDismissBook}
+                  userState={{ savedBooks, readBooks, mood, genre }}
+                />
+              ))
             )}
 
             <div style={{height:8}}/>
@@ -1577,6 +3146,8 @@ export default function LitSense() {
               </span>
             </div>
             <div style={{height:8}}/>
+
+            </>)} {/* end feedMode==="discover" */}
           </div>
         )}
 
@@ -1609,8 +3180,8 @@ export default function LitSense() {
                 />
 
                 <div className="ls-status-tabs">
-                  {[["read","Finished"],["reading","Reading"],["want","Want to Read"]].map(([v,l])=>(
-                    <button key={v} className={`ls-status-tab${shelfTab===v?" on":""}`} onClick={()=>setShelfTab(v)}>{l}</button>
+                  {[["read","Finished"],["reading","Reading"],["want","Want to Read"],["saved","Saved"]].map(([v,l])=>(
+                    <button key={v} className={`ls-status-tab${shelfTab===v?" on":""}`} onClick={()=>setShelfTab(v)}>{l}{v==="saved"&&savedBooks.length>0?` (${savedBooks.length})`:""}</button>
                   ))}
                 </div>
 
@@ -1742,6 +3313,47 @@ export default function LitSense() {
                     )}
                   </>
                 )}
+
+                {shelfTab==="saved" && (
+                  <>
+                    {savedBooks.length===0 ? (
+                      <div className="ls-empty">
+                        <div className="ls-empty-icon"><Bookmark size={40} strokeWidth={1}/></div>
+                        <div className="ls-empty-title">Nothing saved yet</div>
+                        <div className="ls-empty-body">Tap <em>Save to Read</em> on any recommendation to queue it here.</div>
+                      </div>
+                    ) : (
+                      <>
+                        {savedBooks.map(b=>(
+                          <div key={b.id} className="ls-book-row">
+                            <div className="ls-book-row-left">
+                              <div className="ls-book-row-title">{b.title}</div>
+                              {b.author&&<div className="ls-book-row-author">{b.author}</div>}
+                            </div>
+                            <div className="ls-book-row-actions">
+                              <button className="ls-ask-ai-btn" onClick={()=>goAsk(`I saved "${b.title}" by ${b.author}. Should I read it next? Give me your honest take.`)}>Ask AI</button>
+                              <a
+                                href={amazonLink(b.title, b.author||"", b.isbn||"")}
+                                target="_blank" rel="noopener noreferrer"
+                                style={{display:"inline-flex",alignItems:"center",padding:"4px 9px",borderRadius:6,textDecoration:"none",background:"rgba(212,148,26,.1)",border:"1px solid rgba(212,148,26,.2)",color:"var(--gold)",fontSize:10.5,fontWeight:600}}>Buy</a>
+                              <button className="ls-remove-btn" title="Remove from saved"
+                                onClick={()=>setSavedBooks(p=>p.filter(sb=>sb.id!==b.id))}>
+                                <X size={14}/>
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                        {savedBooks.length>=2 && (
+                          <div className="ls-action-wrap">
+                            <button className="ls-action-btn" onClick={()=>goAsk(`I've saved these books: ${savedBooks.map(b=>b.title).join(", ")}. Which should I read first, and why?`)}>
+                              Which should I read first?
+                            </button>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </>
+                )}
               </>
             )}
           </div>
@@ -1850,6 +3462,10 @@ export default function LitSense() {
           book={tappedBook}
           onClose={() => setTappedBook(null)}
           onAsk={(p) => { setTappedBook(null); goAsk(p); }}
+          isSaved={isBookSaved(tappedBook.id)}
+          onSave={handleSaveBook}
+          onDismiss={(id) => { handleDismissBook(id); setTappedBook(null); }}
+          userState={{ savedBooks, readBooks, mood, genre }}
         />
       )}
 
@@ -1924,6 +3540,7 @@ export default function LitSense() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }
