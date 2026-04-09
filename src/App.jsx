@@ -548,6 +548,93 @@ textarea.ls-chat-input::placeholder{color:var(--muted);}
 .ls-foryou-feed{flex:1;overflow-y:auto;}
 .ls-foryou-card{padding:22px 20px 18px;border-bottom:1px solid rgba(255,255,255,.05);animation:feedItemIn .22s var(--ease);}
 @keyframes feedItemIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── CINEMATIC BACKGROUND — VOICE THEMES ─────────────────────────────────────
+   Applied via data-bg attribute on .ls, driven by getUserVoiceProfile().
+   Each theme overrides the ::before gradient palette only.
+   ::after overlay stays constant — keeps text contrast stable across themes.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* Literary — warm amber pools, candlelit, patient */
+.ls[data-bg="literary"]::before {
+  background:
+    radial-gradient(ellipse 72% 88% at 4%  68%, rgba(195,108,18,.42) 0%, transparent 58%),
+    radial-gradient(ellipse 58% 70% at 88% 16%, rgba(155,92,14,.32)  0%, transparent 54%),
+    radial-gradient(ellipse 88% 52% at 50% 102%,rgba(130,70,8,.26)   0%, transparent 52%),
+    radial-gradient(ellipse 52% 60% at 78% 72%, rgba(80,52,12,.20)   0%, transparent 50%),
+    radial-gradient(ellipse 48% 55% at 22% 22%, rgba(100,62,10,.22)  0%, transparent 50%);
+}
+
+/* Nonfiction / Analytical — cool slate-blue, clinical clarity */
+.ls[data-bg="nonfiction"]::before {
+  background:
+    radial-gradient(ellipse 68% 82% at 12% 58%, rgba(52,75,128,.38)  0%, transparent 58%),
+    radial-gradient(ellipse 62% 72% at 85% 22%, rgba(38,58,105,.28)  0%, transparent 54%),
+    radial-gradient(ellipse 82% 48% at 50% 105%,rgba(28,42,88,.22)   0%, transparent 52%),
+    radial-gradient(ellipse 55% 65% at 72% 78%, rgba(62,52,32,.18)   0%, transparent 50%),
+    radial-gradient(ellipse 45% 52% at 18% 18%, rgba(35,55,95,.20)   0%, transparent 50%);
+}
+
+/* Thriller — deep crimson tension, compressed darkness */
+.ls[data-bg="thriller"]::before {
+  background:
+    radial-gradient(ellipse 65% 85% at 8%  72%, rgba(128,18,18,.40)  0%, transparent 56%),
+    radial-gradient(ellipse 55% 68% at 88% 18%, rgba(32,28,48,.35)   0%, transparent 54%),
+    radial-gradient(ellipse 85% 50% at 50% 105%,rgba(88,12,12,.28)   0%, transparent 52%),
+    radial-gradient(ellipse 58% 62% at 80% 80%, rgba(18,22,42,.22)   0%, transparent 50%),
+    radial-gradient(ellipse 42% 52% at 20% 20%, rgba(72,10,10,.18)   0%, transparent 50%);
+}
+
+/* Sci-Fi — deep blue-violet, cosmic, expansive */
+.ls[data-bg="sciFi"]::before {
+  background:
+    radial-gradient(ellipse 70% 88% at 6%  65%, rgba(18,52,175,.40)  0%, transparent 58%),
+    radial-gradient(ellipse 60% 72% at 86% 20%, rgba(58,18,138,.30)  0%, transparent 54%),
+    radial-gradient(ellipse 85% 52% at 50% 104%,rgba(10,28,105,.24)  0%, transparent 52%),
+    radial-gradient(ellipse 55% 65% at 76% 76%, rgba(28,14,85,.20)   0%, transparent 50%),
+    radial-gradient(ellipse 45% 55% at 18% 20%, rgba(38,62,145,.22)  0%, transparent 50%);
+}
+
+/* Curious / default — mixed warm-cool, balanced, open */
+.ls[data-bg="curious"]::before,
+.ls::before {
+  background:
+    radial-gradient(ellipse 72% 88% at 4%  68%, rgba(195,108,18,.38) 0%, transparent 58%),
+    radial-gradient(ellipse 58% 70% at 88% 16%, rgba(140,82,14,.28)  0%, transparent 54%),
+    radial-gradient(ellipse 88% 52% at 50% 102%,rgba(120,65,8,.24)   0%, transparent 52%),
+    radial-gradient(ellipse 62% 72% at 82% 78%, rgba(52,68,108,.20)  0%, transparent 52%),
+    radial-gradient(ellipse 48% 55% at 20% 22%, rgba(88,58,12,.18)   0%, transparent 50%);
+  filter:blur(48px) saturate(0.7);
+  opacity:0.65;
+  animation:lsBgBreath 28s ease-in-out infinite alternate;
+}
+
+/* Theme transitions — fade only, no movement */
+.ls::before {
+  transition: opacity 3s ease-in-out, filter 3s ease-in-out;
+}
+
+@keyframes lsBgBreath {
+  from { opacity:0.55; filter:blur(48px) saturate(0.65); }
+  to   { opacity:0.72; filter:blur(44px) saturate(0.75); }
+}
+
+.ls::after {
+  content:'';
+  position:absolute;inset:0;z-index:-1;
+  pointer-events:none;
+  background:
+    radial-gradient(ellipse 120% 95% at 50% 38%,
+      rgba(20,16,10,.05) 0%,
+      rgba(14,11,8,.30)  55%,
+      rgba(10,8,6,.65)   100%
+    ),
+    linear-gradient(170deg,
+      rgba(24,18,10,.18) 0%,
+      rgba(12,9,6,.08)   50%,
+      rgba(20,14,8,.28)  100%
+    );
+}
 `;
 
 
@@ -1793,104 +1880,132 @@ function getHook(book) {
 // Layered radial-gradients suggest different literary moods.
 // Crossfades every 9s using opacity transitions.
 
-const BG_SCENES = {
-  default: [
-    `radial-gradient(ellipse 70% 90% at 5% 70%, rgba(190,105,18,.55) 0%, rgba(145,80,12,.28) 40%, transparent 68%),
-     radial-gradient(ellipse 55% 60% at 92% 18%, rgba(130,75,10,.32) 0%, transparent 58%),
-     radial-gradient(ellipse 85% 38% at 50% 100%, rgba(110,60,8,.38) 0%, transparent 52%),
-     linear-gradient(170deg, #1e1409 0%, #0d0a07 55%, #181108 100%)`,
-    `radial-gradient(ellipse 62% 72% at 78% 12%, rgba(55,72,105,.40) 0%, transparent 62%),
-     radial-gradient(ellipse 68% 62% at 8% 82%, rgba(170,95,18,.50) 0%, transparent 62%),
-     linear-gradient(175deg, #0e1016 0%, #0b0908 100%)`,
-    `radial-gradient(ellipse 68% 58% at 50% 42%, rgba(210,125,14,.45) 0%, rgba(160,90,8,.22) 48%, transparent 72%),
-     radial-gradient(ellipse 100% 32% at 50% 100%, rgba(140,75,6,.35) 0%, transparent 52%),
-     linear-gradient(180deg, #1c1408 0%, #0e0b06 100%)`,
-    `radial-gradient(ellipse 48% 95% at 0% 50%, rgba(210,115,14,.60) 0%, rgba(165,88,8,.32) 38%, transparent 65%),
-     radial-gradient(ellipse 65% 48% at 100% 85%, rgba(85,48,5,.22) 0%, transparent 55%),
-     linear-gradient(180deg, #161009 0%, #0b0907 100%)`,
+// ── VOICE-KEYED BACKGROUND SCENES ────────────────────────────────────────────
+// 3 gradient variants per voice theme. Positions shift subtly between scenes
+// so the light feels like it's slowly moving — imperceptibly, cinematically.
+// Rotation: 18s interval, 4s crossfade → change takes ~22s total, subliminal.
+
+const VOICE_SCENES = {
+  // Literary — warm amber candlelight, patient and golden
+  literary: [
+    `radial-gradient(ellipse 72% 88% at 4%  68%, rgba(195,108,18,.42) 0%, transparent 58%),
+     radial-gradient(ellipse 58% 70% at 88% 16%, rgba(155,92,14,.32)  0%, transparent 54%),
+     radial-gradient(ellipse 88% 52% at 50% 102%,rgba(130,70,8,.26)   0%, transparent 52%),
+     radial-gradient(ellipse 52% 60% at 78% 72%, rgba(80,52,12,.20)   0%, transparent 50%),
+     linear-gradient(170deg,#1e1409 0%,#0d0a07 60%,#181108 100%)`,
+    `radial-gradient(ellipse 68% 92% at 14% 58%, rgba(185,98,16,.40)  0%, transparent 56%),
+     radial-gradient(ellipse 52% 65% at 82% 28%, rgba(145,85,12,.28)  0%, transparent 52%),
+     radial-gradient(ellipse 82% 55% at 44% 98%, rgba(120,65,8,.24)   0%, transparent 50%),
+     radial-gradient(ellipse 58% 65% at 68% 78%, rgba(72,48,10,.18)   0%, transparent 48%),
+     linear-gradient(175deg,#1c1308 0%,#0f0b06 55%,#1a1008 100%)`,
+    `radial-gradient(ellipse 75% 85% at 6%  75%, rgba(200,112,20,.38) 0%, transparent 60%),
+     radial-gradient(ellipse 62% 68% at 85% 12%, rgba(160,95,15,.30)  0%, transparent 55%),
+     radial-gradient(ellipse 85% 48% at 55% 105%,rgba(135,72,10,.22)  0%, transparent 52%),
+     radial-gradient(ellipse 45% 58% at 82% 68%, rgba(85,55,14,.16)   0%, transparent 48%),
+     linear-gradient(168deg,#1d1408 0%,#0e0a06 58%,#191008 100%)`,
   ],
-  "Sci-Fi": [
-    `radial-gradient(ellipse 58% 72% at 78% 22%, rgba(18,58,185,.55) 0%, rgba(12,42,135,.28) 48%, transparent 72%),
-     radial-gradient(ellipse 48% 62% at 12% 72%, rgba(62,18,138,.45) 0%, transparent 62%),
-     radial-gradient(ellipse 80% 32% at 50% 100%, rgba(10,28,82,.32) 0%, transparent 52%),
-     linear-gradient(180deg, #050a1e 0%, #040610 100%)`,
-    `radial-gradient(ellipse 68% 68% at 28% 38%, rgba(42,18,125,.50) 0%, transparent 68%),
-     radial-gradient(ellipse 52% 72% at 82% 68%, rgba(18,58,158,.38) 0%, transparent 62%),
-     linear-gradient(180deg, #07051a 0%, #050510 100%)`,
-    `radial-gradient(ellipse 62% 78% at 62% 28%, rgba(8,82,145,.50) 0%, rgba(8,62,108,.22) 52%, transparent 72%),
-     radial-gradient(ellipse 52% 52% at 8% 62%, rgba(28,105,125,.32) 0%, transparent 58%),
-     linear-gradient(180deg, #040d1a 0%, #040a12 100%)`,
+
+  // Nonfiction / Analytical — cool slate-blue, structured, clear-headed
+  nonfiction: [
+    `radial-gradient(ellipse 68% 82% at 12% 58%, rgba(52,75,128,.38)  0%, transparent 58%),
+     radial-gradient(ellipse 62% 72% at 85% 22%, rgba(38,58,105,.28)  0%, transparent 54%),
+     radial-gradient(ellipse 82% 48% at 50% 105%,rgba(28,42,88,.22)   0%, transparent 52%),
+     radial-gradient(ellipse 48% 60% at 72% 75%, rgba(42,35,18,.14)   0%, transparent 48%),
+     linear-gradient(178deg,#0a0c12 0%,#070809 55%,#0b0c10 100%)`,
+    `radial-gradient(ellipse 72% 78% at 18% 62%, rgba(48,68,118,.36)  0%, transparent 56%),
+     radial-gradient(ellipse 58% 70% at 80% 28%, rgba(34,52,98,.26)   0%, transparent 52%),
+     radial-gradient(ellipse 78% 52% at 55% 100%,rgba(25,38,82,.20)   0%, transparent 50%),
+     radial-gradient(ellipse 52% 55% at 68% 80%, rgba(38,30,15,.12)   0%, transparent 46%),
+     linear-gradient(180deg,#090b11 0%,#060708 55%,#0a0b0f 100%)`,
+    `radial-gradient(ellipse 65% 85% at 8%  55%, rgba(55,78,132,.40)  0%, transparent 60%),
+     radial-gradient(ellipse 65% 68% at 88% 18%, rgba(40,62,110,.30)  0%, transparent 56%),
+     radial-gradient(ellipse 85% 45% at 48% 108%,rgba(30,45,92,.24)   0%, transparent 52%),
+     radial-gradient(ellipse 45% 58% at 75% 72%, rgba(45,38,20,.14)   0%, transparent 48%),
+     linear-gradient(175deg,#080a10 0%,#060708 55%,#090a0e 100%)`,
   ],
-  "Thriller": [
-    `radial-gradient(ellipse 62% 82% at 88% 38%, rgba(28,42,72,.50) 0%, transparent 68%),
-     radial-gradient(ellipse 52% 62% at 12% 62%, rgba(18,22,38,.45) 0%, transparent 58%),
-     radial-gradient(ellipse 90% 28% at 50% 100%, rgba(12,18,32,.38) 0%, transparent 52%),
-     linear-gradient(180deg, #07080d 0%, #050609 100%)`,
-    `radial-gradient(ellipse 52% 68% at 18% 28%, rgba(88,10,10,.40) 0%, transparent 62%),
-     radial-gradient(ellipse 62% 58% at 82% 72%, rgba(12,18,38,.45) 0%, transparent 58%),
-     linear-gradient(180deg, #0d0607 0%, #080506 100%)`,
-    `radial-gradient(ellipse 82% 62% at 50% 8%, rgba(38,52,82,.45) 0%, transparent 58%),
-     radial-gradient(ellipse 62% 72% at 62% 82%, rgba(18,28,52,.32) 0%, transparent 58%),
-     linear-gradient(180deg, #07090f 0%, #05070b 100%)`,
+
+  // Thriller — deep crimson threat, compressed shadows
+  thriller: [
+    `radial-gradient(ellipse 65% 85% at 8%  72%, rgba(128,18,18,.42)  0%, transparent 56%),
+     radial-gradient(ellipse 55% 68% at 88% 18%, rgba(32,28,48,.36)   0%, transparent 54%),
+     radial-gradient(ellipse 85% 50% at 50% 105%,rgba(88,12,12,.28)   0%, transparent 52%),
+     radial-gradient(ellipse 52% 60% at 75% 78%, rgba(18,22,42,.20)   0%, transparent 50%),
+     linear-gradient(172deg,#0e0707 0%,#080505 55%,#0c0606 100%)`,
+    `radial-gradient(ellipse 70% 80% at 4%  65%, rgba(118,15,15,.40)  0%, transparent 54%),
+     radial-gradient(ellipse 60% 72% at 85% 25%, rgba(28,24,45,.33)   0%, transparent 52%),
+     radial-gradient(ellipse 80% 55% at 55% 100%,rgba(95,14,14,.26)   0%, transparent 50%),
+     radial-gradient(ellipse 48% 65% at 72% 82%, rgba(22,18,40,.18)   0%, transparent 48%),
+     linear-gradient(175deg,#0d0606 0%,#070404 55%,#0b0505 100%)`,
+    `radial-gradient(ellipse 62% 88% at 12% 78%, rgba(135,20,20,.44)  0%, transparent 58%),
+     radial-gradient(ellipse 52% 65% at 90% 15%, rgba(35,30,52,.38)   0%, transparent 54%),
+     radial-gradient(ellipse 88% 48% at 48% 108%,rgba(82,10,10,.24)   0%, transparent 52%),
+     radial-gradient(ellipse 55% 62% at 78% 75%, rgba(15,18,38,.16)   0%, transparent 48%),
+     linear-gradient(168deg,#0f0707 0%,#080505 55%,#0d0606 100%)`,
   ],
-  "Historical": [
-    `radial-gradient(ellipse 68% 82% at 12% 58%, rgba(178,98,18,.55) 0%, rgba(135,72,10,.28) 48%, transparent 72%),
-     radial-gradient(ellipse 52% 62% at 88% 22%, rgba(125,72,12,.32) 0%, transparent 62%),
-     radial-gradient(ellipse 80% 38% at 50% 100%, rgba(105,58,6,.32) 0%, transparent 52%),
-     linear-gradient(170deg, #1e1608 0%, #0f0c06 60%, #180f06 100%)`,
-    `radial-gradient(ellipse 72% 68% at 72% 32%, rgba(168,105,22,.45) 0%, transparent 62%),
-     radial-gradient(ellipse 58% 72% at 18% 72%, rgba(125,72,8,.38) 0%, transparent 58%),
-     linear-gradient(180deg, #1a1408 0%, #100b05 100%)`,
+
+  // Sci-Fi — deep blue-violet, expansive, cosmic
+  sciFi: [
+    `radial-gradient(ellipse 70% 88% at 6%  65%, rgba(18,52,175,.42)  0%, transparent 58%),
+     radial-gradient(ellipse 60% 72% at 86% 20%, rgba(58,18,138,.32)  0%, transparent 54%),
+     radial-gradient(ellipse 85% 52% at 50% 104%,rgba(10,28,105,.24)  0%, transparent 52%),
+     radial-gradient(ellipse 52% 65% at 76% 76%, rgba(28,14,85,.20)   0%, transparent 50%),
+     linear-gradient(180deg,#050a1c 0%,#04060f 55%,#060812 100%)`,
+    `radial-gradient(ellipse 65% 85% at 14% 60%, rgba(22,58,165,.40)  0%, transparent 56%),
+     radial-gradient(ellipse 65% 68% at 82% 25%, rgba(52,15,128,.30)  0%, transparent 52%),
+     radial-gradient(ellipse 80% 55% at 52% 100%,rgba(14,32,112,.22)  0%, transparent 50%),
+     radial-gradient(ellipse 48% 62% at 72% 80%, rgba(22,10,78,.16)   0%, transparent 48%),
+     linear-gradient(178deg,#04091a 0%,#03050e 55%,#050710 100%)`,
+    `radial-gradient(ellipse 72% 90% at 4%  70%, rgba(15,48,180,.44)  0%, transparent 60%),
+     radial-gradient(ellipse 55% 75% at 88% 18%, rgba(62,20,142,.34)  0%, transparent 56%),
+     radial-gradient(ellipse 88% 48% at 48% 106%,rgba(8,24,98,.22)    0%, transparent 52%),
+     radial-gradient(ellipse 55% 60% at 78% 74%, rgba(32,16,92,.18)   0%, transparent 48%),
+     linear-gradient(175deg,#050a1e 0%,#040610 55%,#060814 100%)`,
   ],
-  "Psychology": [
-    `radial-gradient(ellipse 62% 72% at 62% 28%, rgba(18,72,105,.45) 0%, rgba(12,55,82,.22) 48%, transparent 68%),
-     radial-gradient(ellipse 52% 62% at 18% 72%, rgba(62,82,38,.28) 0%, transparent 58%),
-     radial-gradient(ellipse 80% 32% at 50% 100%, rgba(28,52,72,.28) 0%, transparent 52%),
-     linear-gradient(180deg, #070d14 0%, #060809 100%)`,
-    `radial-gradient(ellipse 68% 78% at 38% 38%, rgba(28,82,92,.45) 0%, transparent 62%),
-     radial-gradient(ellipse 52% 58% at 82% 72%, rgba(18,62,82,.32) 0%, transparent 58%),
-     linear-gradient(180deg, #060c10 0%, #050708 100%)`,
+
+  // Curious — balanced warm-cool mix, open and varied
+  curious: [
+    `radial-gradient(ellipse 72% 88% at 4%  68%, rgba(195,108,18,.38) 0%, transparent 58%),
+     radial-gradient(ellipse 58% 70% at 88% 16%, rgba(140,82,14,.28)  0%, transparent 54%),
+     radial-gradient(ellipse 88% 52% at 50% 102%,rgba(120,65,8,.24)   0%, transparent 52%),
+     radial-gradient(ellipse 62% 72% at 82% 78%, rgba(52,68,108,.20)  0%, transparent 52%),
+     linear-gradient(170deg,#191208 0%,#0d0a06 55%,#171008 100%)`,
+    `radial-gradient(ellipse 68% 85% at 10% 62%, rgba(180,98,16,.36)  0%, transparent 56%),
+     radial-gradient(ellipse 62% 68% at 84% 22%, rgba(48,68,118,.26)  0%, transparent 52%),
+     radial-gradient(ellipse 82% 50% at 52% 100%,rgba(110,58,8,.22)   0%, transparent 50%),
+     radial-gradient(ellipse 55% 68% at 78% 80%, rgba(38,52,88,.16)   0%, transparent 48%),
+     linear-gradient(172deg,#171108 0%,#0c0906 55%,#150f08 100%)`,
+    `radial-gradient(ellipse 75% 82% at 6%  72%, rgba(188,104,18,.40) 0%, transparent 58%),
+     radial-gradient(ellipse 55% 72% at 86% 18%, rgba(130,76,12,.26)  0%, transparent 54%),
+     radial-gradient(ellipse 85% 48% at 50% 106%,rgba(115,62,8,.20)   0%, transparent 50%),
+     radial-gradient(ellipse 58% 68% at 78% 82%, rgba(45,62,105,.18)  0%, transparent 50%),
+     linear-gradient(168deg,#1a1308 0%,#0e0a06 55%,#181108 100%)`,
   ],
 };
 
-function getBackgroundSet(userState) {
-  const { savedBooks = [], genre = null } = userState;
-  if (genre && BG_SCENES[genre]) return BG_SCENES[genre];
-  const tags = new Set(savedBooks.flatMap(b => b.tags || []));
-  if (tags.has("Sci-Fi"))                                return BG_SCENES["Sci-Fi"];
-  if (tags.has("Thriller") || tags.has("Mystery"))       return BG_SCENES["Thriller"];
-  if (tags.has("Historical"))                            return BG_SCENES["Historical"];
-  if (tags.has("Psychology") || tags.has("Non-Fiction")) return BG_SCENES["Psychology"];
-  return BG_SCENES.default;
+// Map getUserVoiceProfile() result → VOICE_SCENES key.
+// Genre filter is the strongest signal — overrides voice inference.
+function getVoiceScenes(userState) {
+  const { savedBooks = [], readBooks = [], mood = null, genre = null } = userState;
+
+  // Explicit genre filter overrides everything
+  if (genre === "Sci-Fi" || genre === "Fantasy")               return VOICE_SCENES.sciFi;
+  if (genre === "Thriller" || genre === "Mystery" || genre === "True Crime") return VOICE_SCENES.thriller;
+  if (genre === "Literary Fiction" || genre === "Historical" || genre === "Essays") return VOICE_SCENES.literary;
+  if (genre === "Psychology" || genre === "Non-Fiction" || genre === "Biography"
+   || genre === "Self-Help"  || genre === "Business" || genre === "Philosophy")    return VOICE_SCENES.nonfiction;
+
+  // Voice profile from reading history
+  const voice = getUserVoiceProfile({ savedBooks, readBooks, mood, genre });
+
+  if (voice === "analytical")                   return VOICE_SCENES.nonfiction;
+  if (voice === "literary" || voice === "emotional") return VOICE_SCENES.literary;
+  if (voice === "fast") {
+    const hasSci = savedBooks.some(b => (b.tags||[]).includes("Sci-Fi")) || genre === "Sci-Fi";
+    return hasSci ? VOICE_SCENES.sciFi : VOICE_SCENES.thriller;
+  }
+  return VOICE_SCENES.curious; // curious or no signal → neutral warm-cool
 }
 
-function AppBackground({ userState }) {
-  const scenes  = getBackgroundSet(userState || {});
-  const [activeIdx, setActiveIdx] = useState(0);
-
-  useEffect(() => {
-    if (scenes.length <= 1) return;
-    const id = setInterval(() => setActiveIdx(i => (i + 1) % scenes.length), 9000);
-    return () => clearInterval(id);
-  }, [scenes.length]);
-
-  return (
-    <div style={{ position:"absolute", inset:0, zIndex:-1, overflow:"hidden", pointerEvents:"none" }}>
-      {scenes.map((grad, i) => (
-        <div key={i} style={{
-          position:"absolute", inset:0,
-          background: grad,
-          opacity: i === activeIdx ? 1 : 0,
-          transition:"opacity 2.5s ease-in-out",
-        }}/>
-      ))}
-      <div style={{
-        position:"absolute", inset:0, pointerEvents:"none",
-        background:"radial-gradient(ellipse 130% 100% at 50% 40%, transparent 0%, rgba(10,8,6,.28) 60%, rgba(10,8,6,.65) 100%)",
-      }}/>
-    </div>
-  );
-}
 
 
 
@@ -2924,12 +3039,35 @@ export default function LitSense() {
     .slice(0, 7);
   const userInitial = userEmail ? userEmail[0].toUpperCase() : "";
 
-  // ── BACKGROUND SLIDESHOW ──────────────────────────────────────────────────
-  const bgScenes = getBackgroundSet({ savedBooks, genre });
+  // ── BACKGROUND THEME — driven by voice profile ────────────────────────────
+  // Maps getUserVoiceProfile() → data-bg attribute on .ls
+  // CSS attribute selectors handle the actual palette swap.
+  const lsRef = useRef(null);
+  useEffect(() => {
+    const el = lsRef.current;
+    if (!el) return;
+    const voice = getUserVoiceProfile({ savedBooks, readBooks, mood, genre });
+    // fast voice: check saved/genre tags to pick thriller vs sciFi
+    let theme = voice;
+    if (voice === "fast") {
+      const hasSci = savedBooks.some(b => (b.tags||[]).includes("Sci-Fi"))
+                  || genre === "Sci-Fi";
+      theme = hasSci ? "sciFi" : "thriller";
+    }
+    if (voice === "emotional") theme = "literary";
+    el.dataset.bg = theme; // → .ls[data-bg="literary"]::before { … }
+  }, [savedBooks, readBooks, mood, genre]);
+
+  // ── BACKGROUND ROTATION ───────────────────────────────────────────────────
+  // Voice-keyed scenes — 3 gradient variants per theme, 18s apart.
+  // Reset to scene 0 whenever the theme set changes (new voice/genre signal).
+  const bgScenes = getVoiceScenes({ savedBooks, readBooks, mood, genre });
   const [bgIdx, setBgIdx] = useState(0);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { setBgIdx(0); }, [bgScenes]); // theme changed → restart from scene 0
   useEffect(() => {
     if (bgScenes.length <= 1) return;
-    const id = setInterval(() => setBgIdx(i => (i + 1) % bgScenes.length), 9000);
+    const id = setInterval(() => setBgIdx(i => (i + 1) % bgScenes.length), 18000);
     return () => clearInterval(id);
   }, [bgScenes.length]);
 
@@ -2942,7 +3080,7 @@ export default function LitSense() {
           position:"absolute", inset:0, zIndex:0,
           background: grad,
           opacity: i === bgIdx ? 1 : 0,
-          transition:"opacity 2.5s ease-in-out",
+          transition:"opacity 4s ease-in-out",
         }}/>
       ))}
       {/* Vignette — softens edges */}
@@ -2952,7 +3090,7 @@ export default function LitSense() {
       }}/>
 
       {/* ── APP — z:2, transparent bg, full height ── */}
-      <div className="ls" style={{ position:"relative", zIndex:2, background:"transparent" }}>
+      <div ref={lsRef} className="ls" style={{ position:"relative", zIndex:2, background:"transparent" }}>
 
       {/* HEADER */}
       <header className="ls-hdr">
