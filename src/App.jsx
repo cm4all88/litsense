@@ -1863,7 +1863,7 @@ function RecommendationWheel({ books, savedBooks, onSave, onDismiss, onAsk, onTa
                 color:"var(--muted)", fontSize:12, fontWeight:500,
                 cursor:"pointer", transition:"all .15s",
               }}
-            >No Thanks</button>
+            >Not for me</button>
           </div>
 
           {/* Navigation dots */}
@@ -2875,7 +2875,7 @@ function TileModal({ book: b, onClose, onAsk, isSaved, onSave, onDismiss, userSt
               cursor:"pointer",transition:"all .18s",boxSizing:"border-box",
               flexShrink:0,
             }}
-          >No Thanks</button>
+          >Not for me</button>
         </div>
 
         <button className="ls-tile-modal-cta" onClick={() => { onAsk(`Tell me about "${b.title}" by ${b.author}. Should I read it?`); onClose(); }}>
