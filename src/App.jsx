@@ -1808,20 +1808,20 @@ function RecommendationWheel({ books, savedBooks, onSave, onDismiss, onAsk, onTa
 
           {/* Why this could be your next favorite */}
           <div style={{
-            maxWidth:304, marginLeft:"auto", marginRight:"auto",
-            marginBottom:16, textAlign:"left",
+            maxWidth:320, marginLeft:"auto", marginRight:"auto",
+            marginBottom:18, textAlign:"left",
           }}>
             <div style={{
-              fontSize:7.5, fontWeight:700, letterSpacing:"2.2px",
-              textTransform:"uppercase", color:"var(--gold)", opacity:.7,
-              marginBottom:7, display:"flex", alignItems:"center", gap:6,
+              fontSize:8, fontWeight:700, letterSpacing:"2px",
+              textTransform:"uppercase", color:"var(--gold)", opacity:.88,
+              marginBottom:9, display:"flex", alignItems:"center", gap:7,
             }}>
-              <span style={{width:10,height:1,background:"rgba(212,148,26,.45)",display:"inline-block",borderRadius:1,flexShrink:0}}/>
+              <span style={{width:12,height:1.5,background:"rgba(212,148,26,.6)",display:"inline-block",borderRadius:1,flexShrink:0}}/>
               Why this could be your next favorite
             </div>
             <div style={{
-              fontSize:12, color:"rgba(240,232,216,.88)",
-              lineHeight:1.72, fontStyle:"italic",
+              fontSize:13.5, color:"rgba(240,232,216,.93)",
+              lineHeight:1.74, fontStyle:"italic",
             }}>{pitch}</div>
           </div>
 
@@ -2525,86 +2525,101 @@ function BookTile({ book: b, onAsk, onTap, scrollScale = 1, isFirst, isLast, isS
     >
       <div style={{
         width: 124,
+        /* Tile expands vertically on hover — cover stays 178px, extra space holds the pitch */
+        height: hovered ? 268 : 178,
         transform: `scale(${finalScale})`,
         transformOrigin: origin,
         transition: dismissing
-          ? "opacity .3s ease, transform .3s ease"
-          : "transform .3s cubic-bezier(.2,.8,.2,1)",
-        borderRadius: 10, overflow: "hidden", position: "relative",
+          ? "opacity .3s ease, transform .3s ease, height .3s ease"
+          : "transform .3s cubic-bezier(.2,.8,.2,1), height .3s cubic-bezier(.2,.8,.2,1)",
+        borderRadius: hovered ? 12 : 10,
+        overflow: "hidden", position: "relative",
         boxShadow: hovered || scrollScale > 1.05
-          ? "0 16px 48px rgba(0,0,0,.8), 0 0 0 1.5px rgba(212,148,26,.3)"
+          ? "0 20px 56px rgba(0,0,0,.85), 0 0 0 1.5px rgba(212,148,26,.35)"
           : "0 2px 8px rgba(0,0,0,.4)",
       }}>
+        {/* Cover — always 178px, pinned to top */}
         <div style={{
-          width: 124, height: 178, position: "relative",
+          position:"absolute", top:0, left:0, right:0, height:178,
           background: `linear-gradient(155deg, ${b.color[0]}, ${b.color[1]})`,
         }}>
           <BookCover isbn={b.isbn} title={b.title} author={b.author} color={b.color}/>
-          {/* Score badge */}
-          <div style={{
-            position:"absolute", top:7, right:7, zIndex:2,
-            fontSize:9, fontWeight:700, color:"var(--gold)",
-            background:"rgba(10,8,6,.82)", backdropFilter:"blur(4px)",
-            padding:"2px 6px", borderRadius:99, border:"1px solid rgba(212,148,26,.25)",
-          }}>{b.score}%</div>
-          {/* Saved pip */}
-          {isSaved && <div className="ls-tile-saved-pip">✓ Saved</div>}
-          {/* Hover overlay — conviction level */}
-          <div style={{
-            position:"absolute", inset:0,
-            background:"linear-gradient(to top, rgba(0,0,0,.97) 0%, rgba(0,0,0,.88) 48%, rgba(0,0,0,.3) 80%, transparent 100%)",
-            opacity: hovered ? 1 : 0,
-            transition:"opacity .22s ease",
-            display:"flex", flexDirection:"column", justifyContent:"flex-end",
-            padding:"9px 9px 10px",
-          }}>
-            {/* Hook — bold, immediate */}
-            <div style={{
-              fontSize:10, fontWeight:700, color:"#fff",
-              lineHeight:1.3, marginBottom:6,
-              display:"-webkit-box", WebkitLineClamp:2,
-              WebkitBoxOrient:"vertical", overflow:"hidden",
-            }}>{hook}</div>
+        </div>
 
-            {/* Conviction label + pitch */}
-            <div style={{marginBottom:7}}>
-              <div style={{
-                fontSize:6.5, fontWeight:700, letterSpacing:"1.8px",
-                textTransform:"uppercase", color:"rgba(212,148,26,.65)",
-                marginBottom:4,
-              }}>Why this could be your next favorite</div>
-              <div style={{
-                fontSize:8.5, lineHeight:1.58,
-                color:"rgba(240,232,216,.85)",
-                display:"-webkit-box", WebkitLineClamp:5,
-                WebkitBoxOrient:"vertical", overflow:"hidden",
-                maskImage:"linear-gradient(180deg,#000 55%,transparent 100%)",
-                WebkitMaskImage:"linear-gradient(180deg,#000 55%,transparent 100%)",
-              }}>{pitch}</div>
-            </div>
+        {/* Score badge */}
+        <div style={{
+          position:"absolute", top:7, right:7, zIndex:2,
+          fontSize:9, fontWeight:700, color:"var(--gold)",
+          background:"rgba(10,8,6,.82)", backdropFilter:"blur(4px)",
+          padding:"2px 6px", borderRadius:99, border:"1px solid rgba(212,148,26,.25)",
+        }}>{b.score}%</div>
 
-            {/* Actions */}
-            <div style={{display:"flex",gap:5}}>
-              <button
-                onClick={handleSaveClick}
-                style={{
-                  flex:2, padding:"5px 8px", borderRadius:99, border:"none",
-                  background: isSaved ? "rgba(212,148,26,.18)" : "var(--gold)",
-                  color: isSaved ? "var(--gold)" : "#0a0806",
-                  fontSize:9.5, fontWeight:700,
-                  cursor: isSaved ? "default" : "pointer", transition:"all .18s",
-                }}
-              >{isSaved ? "✓ Saved" : "Save to Read"}</button>
-              <button
-                onClick={handleDismissClick}
-                style={{
-                  flex:1, padding:"5px 6px", borderRadius:99,
-                  border:"1px solid rgba(255,255,255,.15)", background:"transparent",
-                  color:"rgba(255,255,255,.55)", fontSize:9.5, fontWeight:500,
-                  cursor:"pointer", transition:"all .15s",
-                }}
-              >No Thanks</button>
-            </div>
+        {/* Saved pip */}
+        {isSaved && <div className="ls-tile-saved-pip">✓ Saved</div>}
+
+        {/* Conviction overlay — fills the full expanded tile */}
+        <div style={{
+          position:"absolute", inset:0,
+          /* Gradient: transparent at very top (cover shows), dark from midpoint down */
+          background:"linear-gradient(to top, rgba(0,0,0,.98) 0%, rgba(0,0,0,.96) 36%, rgba(0,0,0,.72) 52%, rgba(0,0,0,.18) 68%, transparent 82%)",
+          opacity: hovered ? 1 : 0,
+          transition:"opacity .24s ease",
+          display:"flex", flexDirection:"column", justifyContent:"flex-end",
+          padding:"0 11px 11px",
+        }}>
+          {/* Title — entry point, compact */}
+          <div style={{
+            fontSize:11, fontWeight:700, color:"rgba(255,255,255,.95)",
+            lineHeight:1.25, marginBottom:2,
+            overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap",
+          }}>{b.title}</div>
+
+          {/* Author — small, gold-tinted */}
+          <div style={{
+            fontSize:9, color:"rgba(212,148,26,.8)",
+            marginBottom:8,
+          }}>{b.author}</div>
+
+          {/* Label — intentional, gold, readable */}
+          <div style={{
+            fontSize:7, fontWeight:700, letterSpacing:"1.8px",
+            textTransform:"uppercase", color:"rgba(212,148,26,.82)",
+            marginBottom:5,
+          }}>Why this could be your next favorite</div>
+
+          {/* Pitch — THE primary element */}
+          <div style={{
+            fontSize:10.5, lineHeight:1.65,
+            color:"rgba(240,232,216,.92)",
+            marginBottom:9,
+            display:"-webkit-box", WebkitLineClamp:6,
+            WebkitBoxOrient:"vertical", overflow:"hidden",
+            /* Soft fade at bottom — not hard cut */
+            maskImage:"linear-gradient(180deg,#000 62%,transparent 100%)",
+            WebkitMaskImage:"linear-gradient(180deg,#000 62%,transparent 100%)",
+          }}>{pitch}</div>
+
+          {/* Actions */}
+          <div style={{display:"flex", gap:5}}>
+            <button
+              onClick={handleSaveClick}
+              style={{
+                flex:2, padding:"6px 8px", borderRadius:99, border:"none",
+                background: isSaved ? "rgba(212,148,26,.18)" : "var(--gold)",
+                color: isSaved ? "var(--gold)" : "#060402",
+                fontSize:10, fontWeight:700,
+                cursor: isSaved ? "default" : "pointer", transition:"all .18s",
+              }}
+            >{isSaved ? "✓ Saved" : "Save to Read"}</button>
+            <button
+              onClick={handleDismissClick}
+              style={{
+                flex:1, padding:"6px 0", borderRadius:99,
+                border:"1px solid rgba(255,255,255,.16)", background:"transparent",
+                color:"rgba(255,255,255,.5)", fontSize:10, fontWeight:500,
+                cursor:"pointer", transition:"all .15s",
+              }}
+            >No</button>
           </div>
         </div>
       </div>
