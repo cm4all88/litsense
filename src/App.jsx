@@ -545,9 +545,26 @@ textarea.ls-chat-input::placeholder{color:var(--muted);}
 .ls-feed-toggle-btn.on{background:var(--gold);color:#060402;box-shadow:0 3px 16px var(--glow);}
 .ls-feed-toggle-btn:not(.on){background:transparent;color:var(--muted);}
 .ls-feed-toggle-btn:not(.on):hover{color:var(--text2);}
-.ls-foryou-feed{flex:1;overflow-y:auto;}
-.ls-foryou-card{padding:22px 20px 18px;border-bottom:1px solid rgba(255,255,255,.05);animation:feedItemIn .22s var(--ease);}
-@keyframes feedItemIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+/* ── FOR YOU FEED — full-screen snap scroll ── */
+.ls-foryou-feed{
+  flex:1;
+  overflow-y:scroll;
+  scroll-snap-type:y mandatory;
+  -webkit-overflow-scrolling:touch;
+}
+.ls-foryou-card{
+  position:relative;
+  width:100%;
+  height:100%;
+  min-height:calc(100dvh - 58px - 56px); /* viewport minus header and nav */
+  scroll-snap-align:start;
+  scroll-snap-stop:always;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
+}
+@keyframes feedItemIn{from{opacity:0}to{opacity:1}}
 
 /* ── CINEMATIC BACKGROUND — VOICE THEMES ─────────────────────────────────────
    Outer wrapper structure:
@@ -2072,155 +2089,154 @@ function getHook(book) {
 
 function ForYouItem({ book, userState, savedBooks, onSave, onDismiss, onAsk }) {
   const [exiting, setExiting] = useState(false);
+  const [showPitch, setShowPitch] = useState(false);
   const isSaved = savedBooks?.some(sb => sb.id === book.id);
-  const reason  = getRecommendationReason(book, userState || {});
   const hook    = getHook(book);
+  const pitch   = getFavoriteBookPitch(book, userState || {});
 
-  const handleNoThanks = () => {
+  const handleDismiss = () => {
     setExiting(true);
-    setTimeout(() => onDismiss(book.id), 200);
+    setTimeout(() => onDismiss(book.id), 350);
   };
 
   return (
     <div
       className="ls-foryou-card"
       style={{
-        opacity:   exiting ? 0 : 1,
-        transform: exiting ? "translateX(16px)" : "translateX(0)",
-        transition:"opacity .2s ease, transform .2s ease",
+        opacity: exiting ? 0 : 1,
+        transition: exiting ? "opacity .35s ease" : "none",
       }}
     >
-      {/* Cover — smaller than before, still dominant */}
-      <div style={{display:"flex", justifyContent:"center", marginBottom:14}}>
+      {/* Full-bleed cover background */}
+      <div style={{ position:"absolute", inset:0, zIndex:0, overflow:"hidden" }}>
         <div style={{
-          width:112, height:164, borderRadius:9, overflow:"hidden",
-          boxShadow:"0 12px 36px rgba(0,0,0,.62), 0 0 0 1px rgba(255,255,255,.04)",
+          width:"100%", height:"100%",
+          background:`linear-gradient(155deg,${book.color[0]},${book.color[1]})`,
         }}>
           <BookCover isbn={book.isbn} title={book.title} author={book.author} color={book.color}/>
         </div>
       </div>
 
-      {/* Title */}
+      {/* Heavy bottom gradient for text legibility */}
       <div style={{
-        fontFamily:"'Lora',serif", fontSize:18, fontWeight:700,
-        color:"var(--text)", textAlign:"center",
-        lineHeight:1.22, marginBottom:3, letterSpacing:"-.2px",
-      }}>{book.title}</div>
+        position:"absolute", inset:0, zIndex:1, pointerEvents:"none",
+        background:"linear-gradient(to top, rgba(4,2,1,.97) 0%, rgba(4,2,1,.88) 28%, rgba(4,2,1,.50) 52%, rgba(4,2,1,.15) 72%, transparent 100%)",
+      }}/>
 
-      {/* Author + score inline — one line, less vertical cost */}
+      {/* Score badge — top right */}
       <div style={{
-        display:"flex", alignItems:"center", justifyContent:"center", gap:8,
-        marginBottom:14,
-      }}>
-        <span style={{fontSize:12, color:"var(--muted)", fontStyle:"italic"}}>{book.author}</span>
-        <span style={{
-          fontSize:8, fontWeight:700, color:"var(--gold)",
-          background:"rgba(212,148,26,.08)", border:"1px solid rgba(212,148,26,.15)",
-          padding:"1px 7px", borderRadius:99, letterSpacing:".3px",
-        }}>{book.score}%</span>
-      </div>
+        position:"absolute", top:16, right:16, zIndex:3,
+        fontSize:10, fontWeight:700, color:"var(--gold)",
+        background:"rgba(10,8,6,.75)", backdropFilter:"blur(8px)",
+        WebkitBackdropFilter:"blur(8px)",
+        padding:"3px 10px", borderRadius:99,
+        border:"1px solid rgba(212,148,26,.3)",
+      }}>{book.score}% match</div>
 
-      {/* Hook — strong white, pitch-level clarity */}
-      <div style={{
-        fontSize:13, fontWeight:600, color:"rgba(240,232,216,.95)",
-        lineHeight:1.48, marginBottom:10, letterSpacing:"-.1px",
-      }}>{hook}</div>
+      {/* Content pinned to bottom */}
+      <div style={{ position:"relative", zIndex:2, padding:"0 22px 32px" }}>
 
-      {/* Why this was recommended — supporting detail, clearly secondary */}
-      <div style={{marginBottom:14}}>
         <div style={{
-          fontSize:7.5, fontWeight:700, letterSpacing:"2px",
-          textTransform:"uppercase", color:"var(--gold)", opacity:.6,
-          marginBottom:5, display:"flex", alignItems:"center", gap:5,
-        }}>
-          <span style={{width:8,height:1,background:"rgba(212,148,26,.4)",display:"inline-block",borderRadius:1}}/>
-          Why recommended
+          fontFamily:"'Lora',serif", fontSize:26, fontWeight:700,
+          color:"#fff", lineHeight:1.15, marginBottom:4, letterSpacing:"-.4px",
+          textShadow:"0 2px 20px rgba(0,0,0,.5)",
+        }}>{book.title}</div>
+
+        <div style={{
+          fontSize:14, color:"rgba(255,255,255,.65)",
+          fontStyle:"italic", marginBottom:16,
+        }}>{book.author}</div>
+
+        <div style={{
+          fontSize:15, fontWeight:600, color:"rgba(255,255,255,.95)",
+          lineHeight:1.45, marginBottom:14,
+          textShadow:"0 1px 12px rgba(0,0,0,.4)",
+        }}>{hook}</div>
+
+        {showPitch ? (
+          <div
+            style={{
+              fontSize:13, color:"rgba(255,255,255,.82)",
+              lineHeight:1.7, marginBottom:18, fontStyle:"italic",
+              textShadow:"0 1px 8px rgba(0,0,0,.4)",
+            }}
+            onClick={() => setShowPitch(false)}
+          >
+            {pitch}
+            <span style={{display:"block",marginTop:8,fontSize:11,color:"rgba(212,148,26,.7)",fontStyle:"normal"}}>Tap to collapse</span>
+          </div>
+        ) : (
+          <button
+            onClick={() => setShowPitch(true)}
+            style={{
+              display:"flex", alignItems:"center", gap:6,
+              background:"none", border:"none",
+              color:"rgba(212,148,26,.85)", fontSize:12.5, fontWeight:600,
+              cursor:"pointer", padding:0, marginBottom:18,
+            }}
+          >
+            <span style={{width:10,height:1,background:"rgba(212,148,26,.55)",display:"inline-block",borderRadius:1}}/>
+            Why this could be your next favorite
+          </button>
+        )}
+
+        <div style={{display:"flex", gap:10}}>
+          <button
+            onClick={() => !isSaved && onSave(book)}
+            style={{
+              flex:2, padding:"13px 0", borderRadius:12, border:"none",
+              background: isSaved ? "rgba(212,148,26,.15)" : "var(--gold)",
+              color: isSaved ? "var(--gold)" : "#060402",
+              fontSize:14, fontWeight:700,
+              cursor: isSaved ? "default" : "pointer",
+              transition:"all .18s",
+              boxShadow: isSaved ? "none" : "0 4px 20px rgba(212,148,26,.4)",
+              ...(isSaved ? {border:"1px solid rgba(212,148,26,.3)"} : {}),
+            }}
+          >{isSaved ? "✓ Saved" : "Save to Read"}</button>
+
+          <button
+            onClick={handleDismiss}
+            style={{
+              flex:1, padding:"13px 0", borderRadius:12,
+              border:"1px solid rgba(255,255,255,.22)", background:"rgba(0,0,0,.3)",
+              backdropFilter:"blur(8px)", WebkitBackdropFilter:"blur(8px)",
+              color:"rgba(255,255,255,.7)", fontSize:13, fontWeight:500,
+              cursor:"pointer",
+            }}
+          >Not for me</button>
         </div>
-        <div style={{fontSize:12, color:"rgba(240,232,216,.84)", fontStyle:"italic", lineHeight:1.7}}>
-          {fmtLine(reason)}
-        </div>
-      </div>
 
-      {/* Primary actions — Save (strong) | Not for me (ghost) */}
-      <div style={{display:"flex", gap:8, marginBottom:8}}>
         <button
-          onClick={() => !isSaved && onSave(book)}
+          onClick={() => onAsk(`Tell me about "${book.title}" by ${book.author}. Should I read it?`)}
           style={{
-            flex:3, padding:"11px 0", borderRadius:10, border:"none",
-            background: isSaved ? "rgba(212,148,26,.1)" : "var(--gold)",
-            color: isSaved ? "var(--gold)" : "#0a0806",
-            fontSize:13, fontWeight:700, cursor: isSaved ? "default" : "pointer",
-            transition:"background .15s, box-shadow .15s",
-            ...(isSaved
-              ? { border:"1px solid rgba(212,148,26,.22)" }
-              : { boxShadow:"0 2px 10px rgba(212,148,26,.26)" }),
+            display:"block", width:"100%", marginTop:12, padding:"6px 0",
+            background:"none", border:"none",
+            color:"rgba(255,255,255,.35)", fontSize:11.5,
+            cursor:"pointer", textAlign:"center",
           }}
-        >{isSaved ? "✓ Saved" : "Save to Read"}</button>
-
-        {/* "Not for me" — ghost, clearly secondary */}
-        <button
-          onClick={handleNoThanks}
-          style={{
-            flex:2, padding:"11px 0", borderRadius:10,
-            border:"none", background:"transparent",
-            color:"var(--muted)", fontSize:12.5, fontWeight:500,
-            cursor:"pointer", transition:"color .12s",
-          }}
-        >Not for me</button>
+        >Ask AI about this book →</button>
       </div>
-
-      {/* Ask AI — tertiary, text-link weight */}
-      <button
-        onClick={() => onAsk(`Tell me about "${book.title}" by ${book.author}. Should I read it?`)}
-        style={{
-          display:"block", width:"100%", padding:"5px 0",
-          border:"none", background:"transparent",
-          color:"var(--muted)", fontSize:11, fontWeight:500,
-          cursor:"pointer", textAlign:"center",
-          letterSpacing:".1px", opacity:.7,
-        }}
-      >Ask AI →</button>
     </div>
   );
 }
 
-// ── FOR YOU FEED — personalised vertical feed ─────────────────────────────────
-// Scrollable feed of scored, diversified recommendations.
-// Loads in batches of 6 via IntersectionObserver sentinel.
 function ForYouFeed({ books, savedBooks, onSave, onDismiss, onAsk, userState }) {
-  const [visibleCount, setVisibleCount] = useState(6);
-  const sentinelRef = useRef(null);
-
   const feedItems = buildFeedItems(books, userState || {});
-  const visible   = feedItems.slice(0, visibleCount);
-
-  // Load next batch when sentinel enters viewport
-  useEffect(() => {
-    const el = sentinelRef.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) setVisibleCount(c => Math.min(c + 6, feedItems.length));
-      },
-      { rootMargin:"400px" }
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, [feedItems.length]);
 
   if (feedItems.length === 0) {
     return (
       <div className="ls-empty" style={{paddingTop:52}}>
         <div className="ls-empty-icon"><BookOpen size={40} strokeWidth={1}/></div>
         <div className="ls-empty-title">All caught up</div>
-        <div className="ls-empty-body">You've seen everything for now. Browse Discover or rate more books to unlock new picks.</div>
+        <div className="ls-empty-body">Browse Discover or rate more books to unlock new picks.</div>
       </div>
     );
   }
 
   return (
     <div className="ls-foryou-feed">
-      {visible.map(book => (
+      {feedItems.map(book => (
         <ForYouItem
           key={book.id}
           book={book}
@@ -2231,15 +2247,6 @@ function ForYouFeed({ books, savedBooks, onSave, onDismiss, onAsk, userState }) 
           onAsk={onAsk}
         />
       ))}
-      {visibleCount < feedItems.length && (
-        <div ref={sentinelRef} style={{height:1}}/>
-      )}
-      {visibleCount >= feedItems.length && feedItems.length > 0 && (
-        <div style={{
-          textAlign:"center", padding:"28px 20px",
-          fontSize:12, color:"var(--muted)", fontStyle:"italic",
-        }}>You're all caught up — rate more books to unlock new picks.</div>
-      )}
     </div>
   );
 }
