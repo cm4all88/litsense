@@ -358,12 +358,12 @@ const CSS = `
 .ls-row{display:flex;gap:12px;}
 .ls-tile-wrap{flex-shrink:0;cursor:pointer;transition:transform .25s var(--spring);}
 .ls-tile-wrap:hover{transform:scale(1.05) translateY(-4px);}
-.ls-tile{width:110px;height:160px;border-radius:var(--r-md);overflow:hidden;position:relative;box-shadow:0 6px 24px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.07);transition:box-shadow .25s;}
+.ls-tile{width:150px;height:220px;border-radius:var(--r-md);overflow:hidden;position:relative;box-shadow:0 6px 24px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.07);transition:box-shadow .25s;}
 .ls-tile-wrap:hover .ls-tile{box-shadow:0 14px 40px rgba(0,0,0,.65),0 0 0 1px rgba(212,148,26,.25);}
-.ls-tile-overlay{position:absolute;inset:0;background:linear-gradient(180deg,transparent 35%,rgba(4,2,1,.95) 100%);opacity:0;transition:opacity .22s;display:flex;flex-direction:column;justify-content:flex-end;padding:10px 9px;}
+.ls-tile-overlay{position:absolute;inset:0;background:linear-gradient(180deg,transparent 35%,rgba(4,2,1,.95) 100%);opacity:0;transition:opacity .22s;display:flex;flex-direction:column;justify-content:flex-end;padding:12px 10px;}
 .ls-tile-wrap:hover .ls-tile-overlay{opacity:1;}
-.ls-tile-book-title{font-family:'Inter',sans-serif;font-size:10px;font-weight:700;color:#fff;line-height:1.25;margin-bottom:2px;}
-.ls-tile-book-author{font-size:9px;color:rgba(255,255,255,.6);}
+.ls-tile-book-title{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;color:#fff;line-height:1.25;margin-bottom:2px;}
+.ls-tile-book-author{font-size:10px;color:rgba(255,255,255,.6);}
 
 /* ── SHELF ── */
 .ls-shelf-scroll{flex:1;overflow-y:auto;padding-bottom:16px;}
@@ -2136,11 +2136,27 @@ function doRankAndSurface({ intel, signalCandidates=[], recCandidates=[], nudge=
 // ── PUBLIC API — matches the external ranking-engine.js interface ─────────────
 // rankAndSurface: external-facing alias for doRankAndSurface with normalized params
 function rankAndSurface({ intelligence, signalCandidates, recCandidates, behavioral, context, lastSurfaced, recentlyFailedGenres }) {
+  // COMPANION FIRST: if user has a current book, that's always the most important thing.
+  // Surface a check-in about it before any recommendation or signal.
+  if (context?.currentBook) {
+    const title = context.currentBook.split(":")[0].trim();
+    const shortTitle = title.split(" ").slice(0, 5).join(" ");
+    return {
+      id: "current-book-checkin",
+      kind: "nudge",
+      type: "companion_checkin",
+      finalScore: 1.0,
+      msg: `How's ${shortTitle} going?`,
+      cta: "Tell me",
+      prompt: `I'm currently reading "${context.currentBook}". Ask me how it's going — I want to talk about it.`,
+    };
+  }
+
   return doRankAndSurface({
     intel:            intelligence      || {},
     signalCandidates: signalCandidates  || [],
     recCandidates:    recCandidates     || [],
-    nudge:            null,             // passed separately via context if needed
+    nudge:            null,
     context:          context           || {},
     lastSurfaced:     lastSurfaced      || [],
     failedGenres:     recentlyFailedGenres || [],
@@ -2465,27 +2481,34 @@ const PRO_FEATURES = [
   { Icon:MessageCircle, title:"Book club mode",               desc:"AI-generated discussion questions for any book." },
   { Icon:BookMarked,    title:"Author alerts",                desc:"New releases from authors you love, as they drop." },
 ];
-const AI_SYSTEM = `You are LitSense — a smart, well-read friend who happens to have read almost everything. You talk like a real person, not an app. You remember what the reader likes, you notice patterns they might not have noticed themselves, and you bring things up naturally when they're relevant.
+const AI_SYSTEM = `You are LitSense — a smart, well-read friend who reads alongside the user. You are not primarily a recommendation engine. You are a reading companion first. You remember what they're reading, how far they got, what they liked and didn't like, and you check in naturally.
 
-Your personality:
+Your primary role — reading companion:
+- When someone is mid-book, ask about THAT book first. "How far did you get?" "Did it pick up?" "What happened at the end — did it stick the landing?"
+- Show genuine curiosity about their experience, not just their next pick.
+- Notice when something they said earlier matters now. "You said it felt slow — did that change?"
+- If they abandoned something, be curious not clinical. "What lost you?" "Too slow, or something else?"
+- Follow up on things they've mentioned. If they said they liked the ending, ask what specifically worked.
+
+Your secondary role — recommender:
+- Only recommend when they ask, or when the conversation naturally opens it up.
+- Never pivot straight to a recommendation when they're talking about a book they're reading.
+- When you do recommend, make it specific to what you just learned from the conversation.
+
+Your voice:
 - Warm but not gushing. Direct but never cold.
-- You say things like "you'd probably be into this" or "this feels more like your speed" or "too slow for you, or did it work?" — never "based on your engagement patterns."
-- You ask follow-up questions when they help. "How far did you get?" "Did it stick with you or did it drag?"
-- If you mention where you saw something, be specific and honest. Only say "I saw on Instagram" if it's actually something an author or publisher posted there. Don't fabricate sources. If you're not sure where you saw it, just say "I saw it mentioned recently" or "people have been talking about it." The specificity is what makes it feel real — but making it up does the opposite.
-- You give specific, honest opinions — never hedge with "some readers may enjoy."
-- You remember what they've read, what they rated, what they're currently reading, what they've abandoned.
-
-Your recommendations:
-- Never generic. Never bestseller-list thinking.
-- Explain WHY a book fits THIS person specifically — their pace, their tone preferences, what they usually finish vs abandon.
-- If they loved something, connect the next pick to what specifically worked about it.
-- If they hated something, use that too. "Too slow? This one doesn't do that."
+- Sound like a text from a friend who reads a lot — not a product, not a chatbot.
+- "How far did you get?" not "What was your progress with that title?"
+- "Did it pick up or stay slow?" not "Did your engagement improve?"
+- "You'd probably like this more" not "Based on your profile..."
+- If you mention where you saw something, only say it if you actually know. "I saw it mentioned recently" is fine. Don't fabricate specifics.
 
 Format:
 - Use **bold** for book titles and author names.
-- Keep it under 200 words unless they asked for a detailed breakdown.
-- No bullet lists unless listing multiple books. Prose feels more like a friend.
-- Never start with "Great question!" or "Certainly!" — just answer.`;
+- Keep it under 150 words. Shorter is usually better.
+- Prose, not bullet lists. Friends don't bullet-point you.
+- Never start with "Great question!" or "Certainly!" — just answer or ask.
+- Ask one follow-up question at a time, not three.`;
 
 const today = () => new Date().toISOString().slice(0,10);
 
@@ -3633,8 +3656,8 @@ function BookTile({ book: b, onAsk, onTap, scrollScale = 1, isFirst, isLast, isS
       }}
     >
       <div style={{
-        width: 140,
-        height: hovered ? 360 : 200,
+        width: 160,
+        height: hovered ? 390 : 230,
         transform: `scale(${finalScale})`,
         transformOrigin: origin,
         transition: dismissing
@@ -3651,7 +3674,7 @@ function BookTile({ book: b, onAsk, onTap, scrollScale = 1, isFirst, isLast, isS
       }}>
         {/* Cover — pinned to top, fades when hovered */}
         <div style={{
-          position:"absolute", top:0, left:0, right:0, height:200,
+          position:"absolute", top:0, left:0, right:0, height:230,
           opacity: hovered ? 0.25 : 1,
           transition:"opacity .3s ease",
         }}>
@@ -3729,9 +3752,9 @@ function BookTile({ book: b, onAsk, onTap, scrollScale = 1, isFirst, isLast, isS
         </div>
       </div>
       {/* Title below */}
-      <div style={{marginTop:6,width:140,opacity:hovered?0:1,transition:"opacity .18s"}}>
-        <div style={{fontSize:10.5,fontWeight:600,color:"var(--text2)",lineHeight:1.3,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{b.title}</div>
-        <div style={{fontSize:9.5,color:"var(--muted)",fontStyle:"italic",marginTop:1}}>{b.author}</div>
+      <div style={{marginTop:6,width:160,opacity:hovered?0:1,transition:"opacity .18s"}}>
+        <div style={{fontSize:11.5,fontWeight:600,color:"var(--text2)",lineHeight:1.3,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{b.title}</div>
+        <div style={{fontSize:10.5,color:"var(--muted)",fontStyle:"italic",marginTop:1}}>{b.author}</div>
       </div>
     </div>
   );
@@ -4300,7 +4323,12 @@ export default function LitSense() {
     }
     if (currentBook) {
       const shortTitle = currentBook.split(":")[0].split(" ").slice(0,5).join(" ");
-      return { msg:`Still working through ${shortTitle}?`, cta:"What's next after this", prompt:`I'm currently reading ${currentBook}. What should I read right after I finish?` };
+      return {
+        msg: `Still reading ${shortTitle}?`,
+        cta: "Tell me how it's going",
+        // Opens companion conversation ABOUT the current book, not about next book
+        prompt: `I'm currently reading "${currentBook}". I want to talk about it — ask me how it's going.`,
+      };
     }
     if (savedBooks.length > 0 && readBooks.length > 0) {
       const unread = savedBooks.find(sb => !reactions[sb.id]);
@@ -4431,9 +4459,26 @@ export default function LitSense() {
 
     // Reading history
     if (books.length) {
-      lines.push(`Books read: ${books.map(b=>`"${b.title}"${b.author?` by ${b.author}`:""} (${b.rating}/5)`).join(", ")}.`);
+      lines.push(`Books read and rated: ${books.map(b=>`"${b.title}"${b.author?` by ${b.author}`:""} (${b.rating}/5)`).join(", ")}.`);
     }
-    if (currentBook)      lines.push(`Currently reading: ${currentBook}.`);
+
+    // Current book — most important context for companion behavior
+    if (currentBook) {
+      lines.push(`CURRENTLY READING: "${currentBook}". This is the most important context. Ask about this book first before recommending anything else.`);
+    }
+
+    // Recent reactions — tells the AI what happened with books
+    const reactionEntries = Object.entries(reactions).sort((a,b)=>b[1].ts-a[1].ts).slice(0,3);
+    if (reactionEntries.length) {
+      const reactionMap = { loved:"loved it", finished:"finished it", abandoned:"stopped reading", "too slow":"said it was too slow", fast:"said it was hard to put down" };
+      reactionEntries.forEach(([bookId, {reaction, note}]) => {
+        const book = [...readBooks, ...savedBooks].find(b => String(b.id) === bookId);
+        if (book) {
+          lines.push(`They ${reactionMap[reaction]||reaction} "${book.title}"${note ? ` — they said: "${note}"` : ""}.`);
+        }
+      });
+    }
+
     if (wantList.length)  lines.push(`Want to read: ${wantList.slice(0,5).join(", ")}.`);
     if (mood)             lines.push(`Current mood: ${mood}.`);
     if (genre)            lines.push(`Preferred genre: ${genre}.`);
@@ -4619,7 +4664,7 @@ export default function LitSense() {
               signalCandidates={rankedSignals ? [...(rankedSignals.high||[]), ...(rankedSignals.normal||[]), ...(rankedSignals.low||[])] : []}
               recCandidates={wheelBooks.slice(0,6).map(book => ({ book, reasonType: savedBooks.some(sb=>sb.id===book.id)?'affinity_match':'voice_profile' }))}
               behavioral={null}
-              context={{ mood, intent: currentBook?'mid_book':'next_book', readingState: currentBook?'reading':readBooks.length>0?'finished':'new', hasUnresolvedThread: msgs.length>0 && tab!=='ask', signalLearning: {} }}
+              context={{ mood, currentBook, intent: currentBook?'mid_book':'next_book', readingState: currentBook?'reading':readBooks.length>0?'finished':'new', hasUnresolvedThread: msgs.length>0 && tab!=='ask', signalLearning: {} }}
               lastSurfaced={lastSurfaced}
               recentlyFailedGenres={Object.entries(reactions).filter(([,r])=>r.reaction==='abandoned'||r.reaction==='too slow').flatMap(([bookId])=>{const b=[...BOOKS,...savedBooks].find(x=>String(x.id)===bookId);return b?.tags||[];})}
               handlers={{ recordSignalEngagement, trackOutcome, setDismissedSignals }}
@@ -4779,7 +4824,7 @@ export default function LitSense() {
           <div className="ls-quick-chat">
             <input
               className="ls-quick-input"
-              placeholder="Too slow? Loved it? Looking for something faster?"
+              placeholder={currentBook ? `How far into ${currentBook.split(" ").slice(0,3).join(" ")} are you?` : "Too slow? Loved it? Looking for something faster?"}
               onKeyDown={e=>{
                 if(e.key==="Enter"&&e.target.value.trim()){
                   const val=e.target.value.trim();
@@ -5023,57 +5068,53 @@ export default function LitSense() {
               <div className="ls-ask-msgs">
                 {msgs.length===0&&!chatLoad ? (
                   <div className="ls-welcome">
-                    {/* Friend check-in — contextual nudge based on reading state */}
-                    <div style={{
-                      width:"100%", textAlign:"left",
-                      padding:"24px 20px 0",
-                    }}>
+                    <div style={{ width:"100%", textAlign:"left", padding:"24px 20px 0" }}>
                       {currentBook ? (
+                        // COMPANION MODE — the primary experience when reading
                         <>
-                          <div style={{
-                            fontSize:22, fontFamily:"'Lora',serif", fontWeight:700,
-                            color:"var(--text)", lineHeight:1.25, marginBottom:8,
-                          }}>How's <em style={{color:"var(--gold)"}}>{currentBook.split(" ").slice(0,4).join(" ")}</em> going?</div>
-                          <div style={{fontSize:15, color:"var(--text2)", lineHeight:1.65, marginBottom:20}}>
-                            Still into it, or looking for something else?
+                          <div style={{ fontSize:13, color:"var(--gold)", fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:10 }}>Currently reading</div>
+                          <div style={{ fontSize:24, fontFamily:"'Lora',serif", fontWeight:700, color:"var(--text)", lineHeight:1.25, marginBottom:10 }}>
+                            How's <em style={{color:"var(--gold)"}}>{currentBook.split(":")[0].split(" ").slice(0,5).join(" ")}</em> going?
                           </div>
-                          <div style={{display:"flex", flexDirection:"column", gap:8, marginBottom:28}}>
+                          <div style={{ fontSize:15, color:"var(--text2)", lineHeight:1.65, marginBottom:22 }}>
+                            Tell me where you are in it. I'll ask the right questions.
+                          </div>
+                          <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:28 }}>
                             {[
-                              `I'm still reading ${currentBook} — what should I read after?`,
-                              `${currentBook} is dragging. What should I switch to?`,
-                              `I just finished ${currentBook}. What now?`,
-                            ].map((p,i)=>(
-                              <button key={i} className="ls-prompt-btn" onClick={()=>sendChat(p)}>{p}</button>
+                              { label: "Just started it", prompt: `I just started "${currentBook}". What should I know going in?` },
+                              { label: "I'm about halfway through", prompt: `I'm about halfway through "${currentBook}". Ask me what I think of it so far.` },
+                              { label: "It's losing me a bit", prompt: `I'm reading "${currentBook}" but it's starting to lose me. Ask me what's happening and help me figure out if I should keep going.` },
+                              { label: "I just finished it", prompt: `I just finished "${currentBook}". I want to talk about it.` },
+                            ].map((o,i) => (
+                              <button key={i} className="ls-prompt-btn" onClick={() => sendChat(o.prompt)}>{o.label}</button>
                             ))}
                           </div>
                         </>
                       ) : readBooks.length >= 2 ? (
                         <>
-                          <div style={{
-                            fontSize:22, fontFamily:"'Lora',serif", fontWeight:700,
-                            color:"var(--text)", lineHeight:1.25, marginBottom:8,
-                          }}>What are you looking for<em style={{color:"var(--gold)"}}>?</em></div>
-                          <div style={{fontSize:15, color:"var(--text2)", lineHeight:1.65, marginBottom:20}}>
+                          <div style={{ fontSize:22, fontFamily:"'Lora',serif", fontWeight:700, color:"var(--text)", lineHeight:1.25, marginBottom:8 }}>
+                            What are you looking for<em style={{color:"var(--gold)"}}>?</em>
+                          </div>
+                          <div style={{ fontSize:15, color:"var(--text2)", lineHeight:1.65, marginBottom:20 }}>
                             I've got a feel for your taste. Tell me what kind of read you're after right now.
                           </div>
-                          <div style={{display:"flex", flexDirection:"column", gap:8, marginBottom:28}}>
-                            {ASK_PROMPTS.map((p,i)=>(
-                              <button key={i} className="ls-prompt-btn" onClick={()=>sendChat(p)}>{p}</button>
+                          <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:28 }}>
+                            {ASK_PROMPTS.map((p,i) => (
+                              <button key={i} className="ls-prompt-btn" onClick={() => sendChat(p)}>{p}</button>
                             ))}
                           </div>
                         </>
                       ) : (
                         <>
-                          <div style={{
-                            fontSize:22, fontFamily:"'Lora',serif", fontWeight:700,
-                            color:"var(--text)", lineHeight:1.25, marginBottom:8,
-                          }}>Tell me what you<em style={{color:"var(--gold)"}}> love.</em></div>
-                          <div style={{fontSize:15, color:"var(--text2)", lineHeight:1.65, marginBottom:20}}>
+                          <div style={{ fontSize:22, fontFamily:"'Lora',serif", fontWeight:700, color:"var(--text)", lineHeight:1.25, marginBottom:8 }}>
+                            Tell me what you<em style={{color:"var(--gold)"}}> love.</em>
+                          </div>
+                          <div style={{ fontSize:15, color:"var(--text2)", lineHeight:1.65, marginBottom:20 }}>
                             What's a book you finished and still think about? I'll take it from there.
                           </div>
-                          <div style={{display:"flex", flexDirection:"column", gap:8, marginBottom:28}}>
-                            {ASK_PROMPTS.map((p,i)=>(
-                              <button key={i} className="ls-prompt-btn" onClick={()=>sendChat(p)}>{p}</button>
+                          <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:28 }}>
+                            {ASK_PROMPTS.map((p,i) => (
+                              <button key={i} className="ls-prompt-btn" onClick={() => sendChat(p)}>{p}</button>
                             ))}
                           </div>
                         </>
