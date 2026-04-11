@@ -1,30 +1,24 @@
 // api/ai.js — Vercel Edge Function
 // Proxies streaming requests to Anthropic.
-// Edge runtime streams the response directly — no buffering.
 
-export const config = { runtime: "edge" };
-
-const RATE_LIMIT = 15;
-const WINDOW_MS  = 60 * 1000;
-const ipMap      = new Map();
-
-function checkRateLimit(ip) {
-  const now  = Date.now();
-  const data = ipMap.get(ip) || { count: 0, start: now };
-  if (now - data.start > WINDOW_MS) { data.count = 0; data.start = now; }
-  data.count++;
-  ipMap.set(ip, data);
-  return data.count <= RATE_LIMIT;
-}
+export const config = {
+  runtime: "edge",
+  maxDuration: 60, // seconds — allow long responses
+};
 
 export default async function handler(req) {
-  if (req.method !== "POST") {
-    return new Response("Method not allowed", { status: 405 });
+  if (req.method === "OPTIONS") {
+    return new Response(null, {
+      headers: {
+        "Access-Control-Allow-Origin":  "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
+      },
+    });
   }
 
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0] || "unknown";
-  if (!checkRateLimit(ip)) {
-    return new Response("Too many requests. Please wait a moment.", { status: 429 });
+  if (req.method !== "POST") {
+    return new Response("Method not allowed", { status: 405 });
   }
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -32,7 +26,15 @@ export default async function handler(req) {
     return new Response("API key not configured.", { status: 500 });
   }
 
-  const body = await req.json();
+  let body;
+  try {
+    body = await req.json();
+  } catch {
+    return new Response("Invalid JSON", { status: 400 });
+  }
+
+  // Remove stream from body if present — we always force it here
+  const { stream: _stream, ...rest } = body;
 
   const upstream = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -41,7 +43,7 @@ export default async function handler(req) {
       "x-api-key":         apiKey,
       "anthropic-version": "2023-06-01",
     },
-    body: JSON.stringify({ ...body, stream: true }),
+    body: JSON.stringify({ ...rest, stream: true }),
   });
 
   if (!upstream.ok) {
@@ -49,11 +51,13 @@ export default async function handler(req) {
     return new Response(err, { status: upstream.status });
   }
 
-  // Stream straight through to the browser
+  // Pipe the SSE stream straight through to the browser
   return new Response(upstream.body, {
+    status: 200,
     headers: {
-      "Content-Type":                "text/event-stream",
-      "Cache-Control":               "no-cache",
+      "Content-Type":                "text/event-stream; charset=utf-8",
+      "Cache-Control":               "no-cache, no-transform",
+      "X-Accel-Buffering":           "no",
       "Access-Control-Allow-Origin": "*",
     },
   });
