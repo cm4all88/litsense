@@ -1,8 +1,8 @@
-// api/ai.js — Vercel serverless function
-// This is the proxy that keeps your ANTHROPIC_API_KEY safe on the server.
-// The app calls /api/ai instead of Anthropic directly.
-//
-// Rate limiting: 15 requests per 60 seconds per IP (adjust as needed)
+// api/ai.js — Vercel Edge Function
+// Proxies streaming requests to Anthropic.
+// Edge runtime streams the response directly — no buffering.
+
+export const config = { runtime: "edge" };
 
 const RATE_LIMIT = 15;
 const WINDOW_MS  = 60 * 1000;
@@ -17,35 +17,44 @@ function checkRateLimit(ip) {
   return data.count <= RATE_LIMIT;
 }
 
-export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+export default async function handler(req) {
+  if (req.method !== "POST") {
+    return new Response("Method not allowed", { status: 405 });
   }
 
-  const ip = req.headers['x-forwarded-for']?.split(',')[0] || 'unknown';
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0] || "unknown";
   if (!checkRateLimit(ip)) {
-    return res.status(429).json({ error: 'Too many requests. Please wait a moment.' });
+    return new Response("Too many requests. Please wait a moment.", { status: 429 });
   }
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    return res.status(500).json({ error: 'API key not configured.' });
+    return new Response("API key not configured.", { status: 500 });
   }
 
-  try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method:  'POST',
-      headers: {
-        'Content-Type':      'application/json',
-        'x-api-key':         apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify(req.body),
-    });
+  const body = await req.json();
 
-    const data = await response.json();
-    return res.status(response.status).json(data);
-  } catch (err) {
-    return res.status(500).json({ error: 'Failed to reach AI service.' });
+  const upstream = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type":      "application/json",
+      "x-api-key":         apiKey,
+      "anthropic-version": "2023-06-01",
+    },
+    body: JSON.stringify({ ...body, stream: true }),
+  });
+
+  if (!upstream.ok) {
+    const err = await upstream.text();
+    return new Response(err, { status: upstream.status });
   }
+
+  // Stream straight through to the browser
+  return new Response(upstream.body, {
+    headers: {
+      "Content-Type":                "text/event-stream",
+      "Cache-Control":               "no-cache",
+      "Access-Control-Allow-Origin": "*",
+    },
+  });
 }
