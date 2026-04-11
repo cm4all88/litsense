@@ -340,7 +340,7 @@ const CSS = `
 
 /* ── BOOK COVER ── */
 .ls-book-cover{width:72px;min-width:72px;height:104px;border-radius:9px;overflow:hidden;flex-shrink:0;box-shadow:0 4px 20px rgba(0,0,0,.5);position:relative;background:#1a1408;}
-.ls-book-cover.fill{width:100%;min-width:unset;height:100%;border-radius:0;box-shadow:none;}
+.ls-book-cover.fill{width:100%!important;min-width:unset!important;height:100%!important;border-radius:0!important;box-shadow:none!important;position:absolute;inset:0;}
 .ls-book-cover img{width:100%;height:100%;object-fit:cover;display:block;}
 .ls-book-info{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:space-between;}
 .ls-book-title{font-family:'Lora',serif;font-size:15px;font-weight:700;line-height:1.28;color:var(--text);letter-spacing:-.1px;}
@@ -644,6 +644,8 @@ textarea.ls-chat-input::placeholder{color:var(--muted);}
 .ls-moment-dismiss:hover{color:var(--text2);}
 
 
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.ls-cursor{display:inline-block;width:2px;height:14px;background:var(--gold);margin-left:2px;vertical-align:middle;animation:blink .7s ease infinite;}
 .ls-friend-prompt{
   margin:12px 16px 6px;
   padding:12px 16px;
@@ -2916,23 +2918,25 @@ const BOOK_SCENES = {
 
 // ── BOOK SCENE BACKGROUND — renders behind the wheel, crossfades on change ────
 function BookSceneBackground({ bookId }) {
-  const [currentId, setCurrentId] = useState(bookId);
+  // bookId may be a book object or a raw id number
+  const resolveId = (v) => (v && typeof v === 'object') ? v.id : v;
+
+  const [currentId, setCurrentId] = useState(() => resolveId(bookId));
   const [prevId,    setPrevId]    = useState(null);
   const [opacity,   setOpacity]   = useState(0);
 
-  // Fade in on mount
   useEffect(() => {
-    const t = setTimeout(() => setOpacity(1), 50);
+    const t = setTimeout(() => setOpacity(1), 60);
     return () => clearTimeout(t);
   }, []);
 
   useEffect(() => {
-    if (bookId === currentId) return;
+    const id = resolveId(bookId);
+    if (id === currentId) return;
     setPrevId(currentId);
-    setCurrentId(bookId);
+    setCurrentId(id);
   }, [bookId]);
 
-  // Clear prev after crossfade
   useEffect(() => {
     if (!prevId) return;
     const t = setTimeout(() => setPrevId(null), 1000);
@@ -2942,34 +2946,34 @@ function BookSceneBackground({ bookId }) {
   const SceneCurrent = BOOK_SCENES[currentId];
   const ScenePrev    = BOOK_SCENES[prevId];
 
+  // Fixed height — matches wheel component's total rendered height
+  // COVER_H(296) + track padding(52+24) + eyebrow(40) + info panel(~170) = ~582
+  const H = 580;
+
   return (
-    <div style={{ width:"100%", height:"100%", position:"relative" }}>
-      {/* Previous scene fades out */}
+    <div style={{ width:"100%", height:H, position:"relative", overflow:"hidden" }}>
       {ScenePrev && (
         <div style={{
-          position:"absolute", top:0, left:0, right:0, bottom:0,
-          opacity: 0,
-          transition:"opacity 900ms ease",
-          filter:"brightness(1.8) saturate(1.4)",
+          position:"absolute", inset:0,
+          opacity:0, transition:"opacity 900ms ease",
+          filter:"brightness(2.2) saturate(1.5)",
         }}>
           <ScenePrev opacity={1}/>
         </div>
       )}
-      {/* Current scene */}
       {SceneCurrent && (
         <div style={{
-          position:"absolute", top:0, left:0, right:0, bottom:0,
-          opacity,
-          transition: prevId ? "opacity 900ms ease" : "opacity 600ms ease",
-          filter:"brightness(1.8) saturate(1.4)",
+          position:"absolute", inset:0,
+          opacity, transition:"opacity 700ms ease",
+          filter:"brightness(2.2) saturate(1.5)",
         }}>
           <SceneCurrent opacity={1}/>
         </div>
       )}
-      {/* Edge vignette — keeps wheel text readable */}
+      {/* Vignette keeps wheel text readable */}
       <div style={{
-        position:"absolute", top:0, left:0, right:0, bottom:0,
-        background:"radial-gradient(ellipse 90% 70% at 50% 45%, transparent 30%, rgba(8,6,4,.75) 100%)",
+        position:"absolute", inset:0,
+        background:"radial-gradient(ellipse 90% 65% at 50% 40%, transparent 25%, rgba(8,6,4,.80) 100%)",
         pointerEvents:"none",
       }}/>
     </div>
@@ -4049,7 +4053,7 @@ function BookCover({ isbn, title, author = "", color = ["#1a1408","#0e0c06"], cl
   );
 }
 
-// ── BOOK TILE — scroll scale + hover overlay ─────────────────────────────────
+// ── BOOK TILE — scroll scale + tap-to-expand on mobile ───────────────────────
 function BookTile({ book: b, onAsk, onTap, scrollScale = 1, isFirst, isLast, isSaved, onSave, onDismiss, userState, rowContext }) {
   const [hovered,   setHovered]   = useState(false);
   const [dismissing,setDismissing]= useState(false);
@@ -4057,8 +4061,24 @@ function BookTile({ book: b, onAsk, onTap, scrollScale = 1, isFirst, isLast, isS
 
   const handleMouseEnter = () => { if (!isTouchRef.current) setHovered(true); };
   const handleMouseLeave = () => setHovered(false);
+
   const handleTouchStart = () => { isTouchRef.current = true; };
-  const handleClick      = () => { if (isTouchRef.current) { onTap(b); isTouchRef.current = false; } };
+
+  // Mobile: first tap expands to show description, second tap opens modal
+  const handleClick = () => {
+    if (isTouchRef.current) {
+      isTouchRef.current = false;
+      if (!hovered) {
+        setHovered(true);  // first tap: expand and show description
+      } else {
+        setHovered(false);
+        onTap(b);          // second tap: open full modal
+      }
+    }
+  };
+
+  // Collapse when tapping outside
+  const handleBlur = () => { if (hovered) setHovered(false); };
 
   const handleSaveClick = (e) => {
     e.stopPropagation();
@@ -4083,6 +4103,7 @@ function BookTile({ book: b, onAsk, onTap, scrollScale = 1, isFirst, isLast, isS
       onMouseLeave={handleMouseLeave}
       onTouchStart={handleTouchStart}
       onClick={handleClick}
+      onBlur={handleBlur}
       style={{
         flexShrink: 0, position: "relative", cursor: "pointer",
         zIndex: hovered ? 40 : 1,
@@ -4109,13 +4130,13 @@ function BookTile({ book: b, onAsk, onTap, scrollScale = 1, isFirst, isLast, isS
             ? "0 12px 32px rgba(0,0,0,.7), 0 0 0 1px rgba(212,148,26,.2)"
             : "0 2px 8px rgba(0,0,0,.4)",
       }}>
-        {/* Cover — pinned to top, fades when hovered */}
+        {/* Cover — fills tile, fades when expanded */}
         <div style={{
-          position:"absolute", top:0, left:0, right:0, height:230,
+          position:"absolute", top:0, left:0, right:0, bottom:0,
           opacity: hovered ? 0.25 : 1,
           transition:"opacity .3s ease",
         }}>
-          <BookCover isbn={b.isbn} title={b.title} author={b.author} color={b.color}/>
+          <BookCover isbn={b.isbn} title={b.title} author={b.author} color={b.color} className="fill"/>
         </div>
 
         {/* Score badge */}
@@ -4967,19 +4988,76 @@ export default function LitSense() {
     setQuestionsUsed(next); saveCounter(next);
     const sys = `${AI_SYSTEM}\n\nReader profile: ${buildProfile()||"No reading history yet."}`;
     try {
-      // ⚠️ PRODUCTION: Replace with "/api/ai"
+      // ⚠️ PRODUCTION: Replace with "/api/ai" (streaming endpoint)
       const res = await fetch("https://api.anthropic.com/v1/messages",{
-        method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:700,system:sys,messages:newMsgs}),
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          model:"claude-sonnet-4-20250514",
+          max_tokens:700,
+          stream:true,
+          system:sys,
+          messages:newMsgs,
+        }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const d = await res.json();
-      const text = d.content?.[0]?.text;
-      if (!text) throw new Error("Empty");
-      setMsgs([...newMsgs,{role:"assistant",content:text}]);
+
+      // Add an empty assistant message that we'll fill in as chunks arrive
+      const streamingMsg = {role:"assistant", content:"", streaming:true};
+      setMsgs(prev => [...prev, streamingMsg]);
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let accumulated = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        // SSE chunks — split on newlines, parse each event
+        const chunk = decoder.decode(value, {stream:true});
+        const lines = chunk.split("\n");
+
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          const data = line.slice(6).trim();
+          if (data === "[DONE]") break;
+          try {
+            const parsed = JSON.parse(data);
+            // content_block_delta carries the text
+            if (parsed.type === "content_block_delta" && parsed.delta?.type === "text_delta") {
+              accumulated += parsed.delta.text;
+              // Update the streaming message in place
+              setMsgs(prev => {
+                const updated = [...prev];
+                const last = updated[updated.length - 1];
+                if (last?.streaming) {
+                  updated[updated.length - 1] = {...last, content: accumulated};
+                }
+                return updated;
+              });
+            }
+          } catch { /* skip malformed chunks */ }
+        }
+      }
+
+      // Mark streaming done
+      setMsgs(prev => {
+        const updated = [...prev];
+        const last = updated[updated.length - 1];
+        if (last?.streaming) {
+          updated[updated.length - 1] = {role:"assistant", content: accumulated};
+        }
+        return updated;
+      });
+
     } catch {
       setQuestionsUsed(questionsUsed); saveCounter(questionsUsed);
-      setMsgs([...newMsgs,{role:"assistant",content:"Something went quiet — check your connection and try again.",isError:true,retryMsg:msg}]);
+      setMsgs(prev => {
+        // Remove the empty streaming placeholder if it exists
+        const cleaned = prev[prev.length-1]?.streaming ? prev.slice(0,-1) : prev;
+        return [...cleaned, {role:"assistant",content:"Something went quiet — check your connection and try again.",isError:true,retryMsg:msg}];
+      });
     }
     setLoad(false);
   };
@@ -5143,14 +5221,17 @@ export default function LitSense() {
 
             {/* ── Recommendation Wheel + Scene Background ── */}
             {wheelBooks.length > 0 && (
-              <div style={{ position:"relative" }}>
-                {/* Scene illustration — sits behind wheel, crossfades on swipe */}
+              <div style={{ position:"relative", isolation:"isolate" }}>
+                {/* Scene — absolutely positioned, stretches to match wheel height */}
                 <div style={{
-                  position:"absolute", top:0, left:0, right:0, bottom:0,
-                  overflow:"hidden", zIndex:0, pointerEvents:"none",
+                  position:"absolute",
+                  top:0, left:0, right:0, bottom:0,
+                  zIndex:0, pointerEvents:"none",
+                  overflow:"hidden",
                 }}>
-                  <BookSceneBackground bookId={activeWheelBook?.id || wheelBooks[0]?.id} />
+                  <BookSceneBackground bookId={activeWheelBook?.id ?? wheelBooks[0]?.id} />
                 </div>
+                {/* Wheel — renders at natural height, scene stretches behind it */}
                 <div style={{ position:"relative", zIndex:1 }}>
                   <RecommendationWheel
                     books={wheelBooks}
@@ -5606,7 +5687,9 @@ export default function LitSense() {
                         <div className={`ls-bubble ${m.isError?"error":m.role==="assistant"?"ai":"user"}`}>
                           {m.isError?(
                             <><span>{m.content}</span><button className="ls-retry-btn" onClick={()=>sendChat(m.retryMsg,true)}><RotateCcw size={12} strokeWidth={2}/> Try again</button></>
-                          ):m.role==="assistant"?renderAI(m.content):m.content}
+                          ):m.role==="assistant"?(
+                            <>{renderAI(m.content)}{m.streaming && <span className="ls-cursor"/>}</>
+                          ):m.content}
                         </div>
                       </div>
                     ))}
