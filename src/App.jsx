@@ -1,5 +1,5 @@
 /**
- * LitSense — AI Book Advisor
+ * LitSense — Your Reading Companion
  * v21 · Readability & Color Refinement
  *
  * Changes from v20 (style values only — no layout, logic, or component changes):
@@ -2476,9 +2476,9 @@ const REACTION_TYPES = {
 const PRO_FEATURES = [
   { Icon:BookOpen,      title:"Unlimited reading advisor",    desc:"Ask anything about books, anytime, without limits." },
   { Icon:Library,       title:"Complete shelf history",       desc:"Track every book you've ever read, rated, or loved." },
-  { Icon:Sparkles,      title:"Deep taste analysis",          desc:"AI maps your reading DNA and surfaces your patterns." },
-  { Icon:Bookmark,      title:"Want-to-read intelligence",    desc:"AI tells you which book on your list to read first." },
-  { Icon:MessageCircle, title:"Book club mode",               desc:"AI-generated discussion questions for any book." },
+  { Icon:Sparkles,      title:"Deep taste analysis",          desc:"Maps your reading DNA and surfaces your patterns." },
+  { Icon:Bookmark,      title:"Want-to-read intelligence",    desc:"Tells you which book on your list to read first." },
+  { Icon:MessageCircle, title:"Book club mode",               desc:"Discussion questions for any book." },
   { Icon:BookMarked,    title:"Author alerts",                desc:"New releases from authors you love, as they drop." },
 ];
 const AI_SYSTEM = `You are LitSense — a smart, well-read friend who reads alongside the user. You are not primarily a recommendation engine. You are a reading companion first. You remember what they're reading, how far they got, what they liked and didn't like, and you check in naturally.
@@ -2543,7 +2543,433 @@ function ReasonBlock({ reason, style = {} }) {
 
 // ── RECOMMENDATION WHEEL — cinematic arc hero ─────────────────────────────────
 // Polish pass v16: tighter snap, controlled inertia, stronger visual hierarchy.
-function RecommendationWheel({ books, savedBooks, onSave, onDismiss, onAsk, onTap, onReact, userState }) {
+// ── BOOK SCENE ILLUSTRATIONS ──────────────────────────────────────────────────
+// One atmospheric SVG scene per book.
+// Dark engraving / woodcut style — barely-there, literary, not decorative.
+// Crossfades when the active wheel book changes.
+
+const BOOK_SCENES = {
+  // The Covenant of Water — Kerala backwaters, a boat at dusk
+  1: ({ opacity }) => (
+    <svg viewBox="0 0 390 320" xmlns="http://www.w3.org/2000/svg" style={{width:"100%",height:"100%",opacity}}>
+      <defs>
+        <radialGradient id="s1sky" cx="50%" cy="30%" r="70%">
+          <stop offset="0%" stopColor="#3d2a12" stopOpacity="0.9"/>
+          <stop offset="100%" stopColor="#0d0a06" stopOpacity="1"/>
+        </radialGradient>
+        <radialGradient id="s1moon" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#d4941a" stopOpacity="0.6"/>
+          <stop offset="100%" stopColor="#d4941a" stopOpacity="0"/>
+        </radialGradient>
+      </defs>
+      <rect width="390" height="320" fill="url(#s1sky)"/>
+      {/* Moon glow */}
+      <ellipse cx="290" cy="60" rx="60" ry="60" fill="url(#s1moon)"/>
+      <circle cx="290" cy="60" r="14" fill="#c4841a" opacity="0.7"/>
+      {/* Water reflections — horizontal strokes */}
+      {[180,190,200,210,220,230,240,250,260,270,280,290,300,310].map((y,i) => (
+        <line key={i} x1={10+i*2} y1={y} x2={380-i} y2={y}
+          stroke="#d4941a" strokeOpacity={0.04+i*0.01} strokeWidth="1.5"/>
+      ))}
+      {/* Moon reflection in water */}
+      <ellipse cx="290" cy="240" rx="8" ry="40" fill="#d4941a" opacity="0.08"/>
+      {/* Far treeline — palm silhouettes */}
+      {[20,50,80,110,140,170,200,230,260,290,320,350].map((x,i) => (
+        <g key={i} transform={`translate(${x},${155+Math.sin(i)*6})`}>
+          <line x1="0" y1="0" x2="0" y2={-35-Math.abs(Math.sin(i*1.7))*15}
+            stroke="#1a1208" strokeWidth="2.5"/>
+          {/* Palm fronds */}
+          {[-30,-20,-10,0,10,20,30].map((angle,j) => (
+            <line key={j}
+              x1="0" y1={-35-Math.abs(Math.sin(i*1.7))*15}
+              x2={Math.sin(angle*Math.PI/180)*20}
+              y2={-35-Math.abs(Math.sin(i*1.7))*15 - Math.cos(angle*Math.PI/180)*12}
+              stroke="#251a0a" strokeWidth="1.5" opacity="0.9"/>
+          ))}
+        </g>
+      ))}
+      {/* Water surface */}
+      <rect x="0" y="175" width="390" height="145" fill="#0d0a06" opacity="0.6"/>
+      {/* Boat hull */}
+      <path d="M130 210 Q195 195 260 210 L275 228 Q195 238 115 228 Z"
+        fill="#1a1208" stroke="#2a1e0e" strokeWidth="1"/>
+      {/* Boat cabin */}
+      <rect x="170" y="196" width="48" height="18" rx="3"
+        fill="#221608" stroke="#3a2810" strokeWidth="1"/>
+      {/* Warm cabin light */}
+      <ellipse cx="194" cy="205" rx="6" ry="4" fill="#d4941a" opacity="0.25"/>
+      {/* Mast */}
+      <line x1="194" y1="178" x2="194" y2="210" stroke="#1a1208" strokeWidth="2"/>
+      {/* Ripples around boat */}
+      <ellipse cx="194" cy="232" rx="65" ry="6" fill="none"
+        stroke="#d4941a" strokeOpacity="0.06" strokeWidth="1"/>
+      <ellipse cx="194" cy="238" rx="80" ry="8" fill="none"
+        stroke="#d4941a" strokeOpacity="0.04" strokeWidth="1"/>
+      {/* Stars */}
+      {[[40,30],[70,18],[120,25],[180,12],[240,22],[310,15],[350,35],[320,50]].map(([x,y],i) => (
+        <circle key={i} cx={x} cy={y} r="1" fill="#f5efe5" opacity={0.3+Math.sin(i)*0.2}/>
+      ))}
+    </svg>
+  ),
+
+  // Demon Copperhead — Appalachian hills at dusk, a lone figure on a ridge
+  2: ({ opacity }) => (
+    <svg viewBox="0 0 390 320" xmlns="http://www.w3.org/2000/svg" style={{width:"100%",height:"100%",opacity}}>
+      <defs>
+        <linearGradient id="s2sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#1a0a04"/>
+          <stop offset="60%" stopColor="#3d1a08"/>
+          <stop offset="100%" stopColor="#0d0805"/>
+        </linearGradient>
+      </defs>
+      <rect width="390" height="320" fill="url(#s2sky)"/>
+      {/* Sunset band */}
+      <rect x="0" y="90" width="390" height="50" fill="#8B2500" opacity="0.12"/>
+      {/* Distant ridge — far */}
+      <path d="M0 155 Q60 130 120 145 Q180 128 240 140 Q300 125 390 138 L390 320 L0 320 Z"
+        fill="#1a0e06"/>
+      {/* Mid ridge */}
+      <path d="M0 175 Q40 155 90 168 Q150 148 210 162 Q270 145 330 160 Q360 152 390 158 L390 320 L0 320 Z"
+        fill="#14080403"/>
+      {/* Near ridge — main */}
+      <path d="M0 210 Q50 185 100 200 Q160 178 220 195 Q280 175 350 190 Q370 185 390 188 L390 320 L0 320 Z"
+        fill="#0d0604"/>
+      {/* Trees on ridge */}
+      {[15,35,55,72,88,105,125,145,165,185,205,225,248,268,288,308,328,348,368].map((x,i) => {
+        const h = 20 + Math.abs(Math.sin(i*0.8+1))*18;
+        const y = 188 + Math.sin(i*0.5)*8;
+        return (
+          <g key={i}>
+            <line x1={x} y1={y} x2={x} y2={y-h} stroke="#0d0604" strokeWidth="2"/>
+            <polygon
+              points={`${x},${y-h} ${x-6},${y-h+12} ${x+6},${y-h+12}`}
+              fill="#0d0604"/>
+            <polygon
+              points={`${x},${y-h+6} ${x-8},${y-h+18} ${x+8},${y-h+18}`}
+              fill="#110804"/>
+          </g>
+        );
+      })}
+      {/* Lone figure on ridge */}
+      <line x1="195" y1="182" x2="195" y2="198" stroke="#0a0604" strokeWidth="3"/>
+      <circle cx="195" cy="179" r="4" fill="#0a0604"/>
+      {/* Faint ember glow — fire pit far off */}
+      <ellipse cx="80" cy="200" rx="6" ry="3" fill="#d4941a" opacity="0.15"/>
+      <ellipse cx="80" cy="198" rx="3" ry="6" fill="#d4941a" opacity="0.08"/>
+      {/* Stars */}
+      {[[30,20],[80,35],[130,15],[200,28],[260,18],[320,30],[355,22],[15,45]].map(([x,y],i) => (
+        <circle key={i} cx={x} cy={y} r="1" fill="#f5efe5" opacity={0.25+Math.cos(i)*0.15}/>
+      ))}
+    </svg>
+  ),
+
+  // Project Hail Mary — deep space, a lone spacecraft, alien star system
+  3: ({ opacity }) => (
+    <svg viewBox="0 0 390 320" xmlns="http://www.w3.org/2000/svg" style={{width:"100%",height:"100%",opacity}}>
+      <defs>
+        <radialGradient id="s3nebula" cx="60%" cy="40%" r="60%">
+          <stop offset="0%" stopColor="#1a3060" stopOpacity="0.5"/>
+          <stop offset="50%" stopColor="#0a1830" stopOpacity="0.3"/>
+          <stop offset="100%" stopColor="#020408" stopOpacity="0"/>
+        </radialGradient>
+        <radialGradient id="s3star1" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#e8d4a0" stopOpacity="0.9"/>
+          <stop offset="100%" stopColor="#e8d4a0" stopOpacity="0"/>
+        </radialGradient>
+        <radialGradient id="s3star2" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#a0c8e8" stopOpacity="0.7"/>
+          <stop offset="100%" stopColor="#a0c8e8" stopOpacity="0"/>
+        </radialGradient>
+      </defs>
+      <rect width="390" height="320" fill="#020408"/>
+      {/* Nebula cloud */}
+      <ellipse cx="240" cy="130" rx="180" ry="120" fill="url(#s3nebula)"/>
+      {/* Tau Ceti — warm star */}
+      <ellipse cx="280" cy="80" rx="40" ry="40" fill="url(#s3star1)"/>
+      <circle cx="280" cy="80" r="8" fill="#e8d4a0" opacity="0.9"/>
+      {/* Eridani — cool blue companion */}
+      <ellipse cx="110" cy="200" rx="25" ry="25" fill="url(#s3star2)"/>
+      <circle cx="110" cy="200" r="5" fill="#a0c8e8" opacity="0.8"/>
+      {/* Star field */}
+      {Array.from({length: 60}, (_,i) => ({
+        x: (i*47+13) % 390,
+        y: (i*83+7)  % 320,
+        r: i%5===0 ? 1.5 : 0.8,
+        o: 0.2 + (i%7)*0.08
+      })).map((s,i) => (
+        <circle key={i} cx={s.x} cy={s.y} r={s.r} fill="#f5efe5" opacity={s.o}/>
+      ))}
+      {/* Spacecraft — Hail Mary, rough cylinder */}
+      <g transform="translate(175 145) rotate(-15)">
+        {/* Main hull */}
+        <rect x="-8" y="-28" width="16" height="56" rx="4"
+          fill="#1a2030" stroke="#2a3848" strokeWidth="1"/>
+        {/* Engine bell */}
+        <path d="M-6 28 Q-10 38 -12 48 L12 48 Q10 38 6 28 Z"
+          fill="#141820" stroke="#202830" strokeWidth="1"/>
+        {/* Engine glow */}
+        <ellipse cx="0" cy="48" rx="10" ry="5" fill="#4060d0" opacity="0.4"/>
+        <ellipse cx="0" cy="52" rx="6" ry="8" fill="#4060d0" opacity="0.2"/>
+        {/* Solar panels */}
+        <rect x="-28" y="-8" width="20" height="8" rx="1"
+          fill="#1a3050" stroke="#203848" strokeWidth="0.5"/>
+        <rect x="8" y="-8" width="20" height="8" rx="1"
+          fill="#1a3050" stroke="#203848" strokeWidth="0.5"/>
+        {/* Panel lines */}
+        {[0,5,10,15].map(dx => (
+          <line key={dx} x1={-28+dx} y1="-8" x2={-28+dx} y2="0"
+            stroke="#203848" strokeWidth="0.5"/>
+        ))}
+        {/* Cockpit window */}
+        <ellipse cx="0" cy="-16" rx="4" ry="3" fill="#304060" opacity="0.8"/>
+        <ellipse cx="0" cy="-16" rx="2" ry="1.5" fill="#6080a0" opacity="0.5"/>
+      </g>
+      {/* Astrophage trail — the orange cloud */}
+      <ellipse cx="195" cy="240" rx="120" ry="20" fill="#d4941a" opacity="0.04"/>
+      <ellipse cx="195" cy="248" rx="80" ry="12" fill="#d4941a" opacity="0.03"/>
+    </svg>
+  ),
+
+  // All the Light We Cannot See — Saint-Malo, radio tower, sea
+  4: ({ opacity }) => (
+    <svg viewBox="0 0 390 320" xmlns="http://www.w3.org/2000/svg" style={{width:"100%",height:"100%",opacity}}>
+      <defs>
+        <linearGradient id="s4sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#08080e"/>
+          <stop offset="100%" stopColor="#181424"/>
+        </linearGradient>
+        <radialGradient id="s4light" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#f5efe5" stopOpacity="0.15"/>
+          <stop offset="100%" stopColor="#f5efe5" stopOpacity="0"/>
+        </radialGradient>
+      </defs>
+      <rect width="390" height="320" fill="url(#s4sky)"/>
+      {/* Sea */}
+      <rect x="0" y="230" width="390" height="90" fill="#080c14" opacity="0.9"/>
+      {/* Waves */}
+      {[240,252,264,276,288].map((y,i) => (
+        <path key={i}
+          d={`M0 ${y} Q${40+i*5} ${y-5} ${80+i*3} ${y} Q${130+i*4} ${y+5} ${170+i*2} ${y} Q${220+i*3} ${y-5} ${260+i*2} ${y} Q${310+i*4} ${y+5} 390 ${y}`}
+          fill="none" stroke="#1a2030" strokeOpacity={0.3-i*0.04} strokeWidth="1"/>
+      ))}
+      {/* City wall / ramparts */}
+      <path d="M0 220 L30 220 L30 210 L45 210 L45 220 L70 220 L70 208 L85 208 L85 220 L120 220 L120 212 L135 212 L135 220 L390 220 L390 320 L0 320 Z"
+        fill="#141018"/>
+      {/* Buildings — Saint-Malo townhouses */}
+      {[[40,170,22,50],[90,155,18,65],[130,168,20,52],[175,150,24,70],[210,162,18,58],[255,148,22,72],[295,160,20,60],[330,155,24,65],[360,165,18,55]].map(([x,y,w,h],i) => (
+        <g key={i}>
+          <rect x={x-w/2} y={y} width={w} height={h} fill="#100c18" stroke="#1a1528" strokeWidth="0.5"/>
+          {/* Roof */}
+          <polygon points={`${x-w/2} ${y} ${x} ${y-15} ${x+w/2} ${y}`} fill="#0c0a14"/>
+          {/* Dim window */}
+          {i%3===0 && <rect x={x-4} y={y+h/2-6} width="8" height="10" rx="1" fill="#d4941a" opacity="0.12"/>}
+        </g>
+      ))}
+      {/* Radio tower — tall, center */}
+      <line x1="194" y1="60" x2="194" y2="220" stroke="#1a1528" strokeWidth="3"/>
+      <line x1="194" y1="80" x2="194" y2="220" stroke="#201c30" strokeWidth="1.5"/>
+      {/* Tower cross beams */}
+      {[100,130,160,190].map((y,i) => {
+        const w = 8+i*6;
+        return <line key={i} x1={194-w} y1={y} x2={194+w} y2={y} stroke="#1a1528" strokeWidth="1.5"/>;
+      })}
+      {/* Guy wires */}
+      <line x1="194" y1="80" x2="130" y2="215" stroke="#1a1528" strokeWidth="0.8" opacity="0.6"/>
+      <line x1="194" y1="80" x2="258" y2="215" stroke="#1a1528" strokeWidth="0.8" opacity="0.6"/>
+      {/* Tower light beacon */}
+      <circle cx="194" cy="62" r="4" fill="#f5efe5" opacity="0.6"/>
+      <ellipse cx="194" cy="62" rx="40" ry="40" fill="url(#s4light)"/>
+      {/* Radio waves emanating */}
+      {[20,35,50].map((r,i) => (
+        <circle key={i} cx="194" cy="62" r={r} fill="none"
+          stroke="#f5efe5" strokeOpacity={0.06-i*0.015} strokeWidth="1"/>
+      ))}
+      {/* Stars / searchlight streaks */}
+      {[[30,25],[80,18],[280,22],[340,30],[360,15]].map(([x,y],i) => (
+        <circle key={i} cx={x} cy={y} r="1" fill="#f5efe5" opacity="0.3"/>
+      ))}
+    </svg>
+  ),
+
+  // The Lincoln Highway — open American road, 1950s, vast sky
+  5: ({ opacity }) => (
+    <svg viewBox="0 0 390 320" xmlns="http://www.w3.org/2000/svg" style={{width:"100%",height:"100%",opacity}}>
+      <defs>
+        <linearGradient id="s5sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#050810"/>
+          <stop offset="70%" stopColor="#0e1828"/>
+          <stop offset="100%" stopColor="#1a1408"/>
+        </linearGradient>
+        <radialGradient id="s5moon" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#f5efe5" stopOpacity="0.5"/>
+          <stop offset="100%" stopColor="#f5efe5" stopOpacity="0"/>
+        </radialGradient>
+      </defs>
+      <rect width="390" height="320" fill="url(#s5sky)"/>
+      {/* Milky Way band */}
+      <ellipse cx="195" cy="140" rx="300" ry="60" fill="#1a2040" opacity="0.15" transform="rotate(-20 195 140)"/>
+      {/* Moon */}
+      <ellipse cx="320" cy="55" rx="35" ry="35" fill="url(#s5moon)"/>
+      <circle cx="320" cy="55" r="11" fill="#e8e0d0" opacity="0.5"/>
+      {/* Stars */}
+      {Array.from({length:50},(_,i) => ({
+        x:(i*73+17)%390, y:(i*41+9)%200, o:0.15+(i%6)*0.08
+      })).map((s,i) => (
+        <circle key={i} cx={s.x} cy={s.y} r={i%8===0?1.5:0.8} fill="#f5efe5" opacity={s.o}/>
+      ))}
+      {/* Flat horizon — Great Plains */}
+      <rect x="0" y="218" width="390" height="102" fill="#0a0c08"/>
+      {/* Road — vanishing point center */}
+      <path d="M155 320 L172 218 L218 218 L235 320 Z" fill="#141410"/>
+      {/* Road center dashes */}
+      {[230,252,270,288,306].map((y,i) => (
+        <rect key={i} x="192" y={y} width="6" height="14" rx="1" fill="#d4941a" opacity="0.15"/>
+      ))}
+      {/* Road shoulders — white lines */}
+      <line x1="155" y1="320" x2="172" y2="218" stroke="#f5efe5" strokeOpacity="0.08" strokeWidth="1"/>
+      <line x1="235" y1="320" x2="218" y2="218" stroke="#f5efe5" strokeOpacity="0.08" strokeWidth="1"/>
+      {/* Car headlights — far off */}
+      <circle cx="191" cy="224" r="2" fill="#f5efe5" opacity="0.5"/>
+      <circle cx="199" cy="224" r="2" fill="#f5efe5" opacity="0.5"/>
+      <ellipse cx="195" cy="226" rx="15" ry="4" fill="#f5efe5" opacity="0.04"/>
+      {/* Telephone poles */}
+      {[60,130,260,330].map((x,i) => (
+        <g key={i}>
+          <line x1={x} y1="180" x2={x} y2="270" stroke="#0e0c08" strokeWidth="2.5"/>
+          <line x1={x-14} y1="188" x2={x+14} y2="188" stroke="#0e0c08" strokeWidth="1.5"/>
+          <line x1={x-10} y1="196" x2={x+10} y2="196" stroke="#0e0c08" strokeWidth="1.5"/>
+          {/* Wire to road */}
+          <line x1={x} y1="188" x2={195} y2="220"
+            stroke="#0e0c08" strokeOpacity="0.5" strokeWidth="0.5"/>
+        </g>
+      ))}
+      {/* Gas station far right — warm glow */}
+      <rect x="340" y="205" width="30" height="18" fill="#100e08"/>
+      <rect x="336" y="198" width="38" height="8" fill="#0e0c06"/>
+      <ellipse cx="355" cy="206" rx="20" ry="12" fill="#d4941a" opacity="0.08"/>
+    </svg>
+  ),
+
+  // Thinking Fast and Slow — dual minds, two paths diverging, abstract
+  6: ({ opacity }) => (
+    <svg viewBox="0 0 390 320" xmlns="http://www.w3.org/2000/svg" style={{width:"100%",height:"100%",opacity}}>
+      <defs>
+        <radialGradient id="s6left" cx="30%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#1a3018" stopOpacity="0.5"/>
+          <stop offset="100%" stopColor="#1a3018" stopOpacity="0"/>
+        </radialGradient>
+        <radialGradient id="s6right" cx="70%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#182030" stopOpacity="0.5"/>
+          <stop offset="100%" stopColor="#182030" stopOpacity="0"/>
+        </radialGradient>
+      </defs>
+      <rect width="390" height="320" fill="#06080a"/>
+      {/* Two ambient hemispheres — intuition (warm) vs reason (cool) */}
+      <ellipse cx="110" cy="160" rx="200" ry="180" fill="url(#s6left)"/>
+      <ellipse cx="280" cy="160" rx="200" ry="180" fill="url(#s6right)"/>
+      {/* Central dividing line — the brain split */}
+      <line x1="195" y1="0" x2="195" y2="320" stroke="#f5efe5" strokeOpacity="0.04" strokeWidth="1"/>
+      {/* System 1 — intuitive, organic curves */}
+      {[0,1,2,3,4].map(i => (
+        <path key={i}
+          d={`M${40+i*8} ${60+i*10} Q${80+i*15} ${120+i*8} ${50+i*12} ${180+i*6} Q${30+i*8} ${240+i*5} ${70+i*10} ${290}`}
+          fill="none" stroke="#4a8040" strokeOpacity={0.12-i*0.02} strokeWidth={2-i*0.3}/>
+      ))}
+      {/* System 2 — logical, geometric lines */}
+      {[0,1,2,3,4].map(i => (
+        <g key={i}>
+          <line x1={220+i*18} y1={50+i*5} x2={240+i*14} y2={160+i*8}
+            stroke="#4060a0" strokeOpacity={0.12-i*0.02} strokeWidth={1.5-i*0.25}/>
+          <line x1={240+i*14} y1={160+i*8} x2={225+i*16} y2={280+i*5}
+            stroke="#4060a0" strokeOpacity={0.10-i*0.02} strokeWidth={1.5-i*0.25}/>
+        </g>
+      ))}
+      {/* Convergence point — where they meet */}
+      <circle cx="195" cy="160" r="3" fill="#d4941a" opacity="0.4"/>
+      <circle cx="195" cy="160" r="18" fill="none" stroke="#d4941a" strokeOpacity="0.08" strokeWidth="1"/>
+      <circle cx="195" cy="160" r="35" fill="none" stroke="#d4941a" strokeOpacity="0.05" strokeWidth="1"/>
+      {/* Data points — scattered nodes System 1 */}
+      {[[60,90],[45,140],[80,180],[55,240],[90,275]].map(([x,y],i) => (
+        <circle key={i} cx={x} cy={y} r="2.5" fill="#4a8040" opacity={0.2+i*0.04}/>
+      ))}
+      {/* Data points — structured nodes System 2 */}
+      {[[320,80],[340,130],[310,185],[335,235],[315,280]].map(([x,y],i) => (
+        <circle key={i} cx={x} cy={y} r="2" fill="#4060a0" opacity={0.2+i*0.04}/>
+      ))}
+      {/* Connecting lines between nodes */}
+      {[[60,90,45,140],[45,140,80,180],[80,180,55,240],[55,240,90,275]].map(([x1,y1,x2,y2],i) => (
+        <line key={i} x1={x1} y1={y1} x2={x2} y2={y2}
+          stroke="#4a8040" strokeOpacity="0.1" strokeWidth="1"/>
+      ))}
+      {[[320,80,340,130],[340,130,310,185],[310,185,335,235],[335,235,315,280]].map(([x1,y1,x2,y2],i) => (
+        <line key={i} x1={x1} y1={y1} x2={x2} y2={y2}
+          stroke="#4060a0" strokeOpacity="0.1" strokeWidth="1"/>
+      ))}
+      {/* Fine star field — minds in the dark */}
+      {Array.from({length:25},(_,i)=>({x:(i*67+23)%390,y:(i*53+11)%320})).map((s,i)=>(
+        <circle key={i} cx={s.x} cy={s.y} r="0.7" fill="#f5efe5" opacity="0.12"/>
+      ))}
+    </svg>
+  ),
+};
+
+// ── BOOK SCENE BACKGROUND — renders behind the wheel, crossfades on change ────
+function BookSceneBackground({ bookId }) {
+  const [currentId, setCurrentId] = useState(bookId);
+  const [prevId,    setPrevId]    = useState(null);
+  const [fading,    setFading]    = useState(false);
+
+  useEffect(() => {
+    if (bookId === currentId) return;
+    // Start crossfade: show new scene underneath, fade out old
+    setPrevId(currentId);
+    setCurrentId(bookId);
+    setFading(true);
+    const t = setTimeout(() => { setPrevId(null); setFading(false); }, 900);
+    return () => clearTimeout(t);
+  }, [bookId]);
+
+  const SceneCurrent = BOOK_SCENES[currentId];
+  const ScenePrev    = BOOK_SCENES[prevId];
+
+  return (
+    <div style={{
+      position:"absolute", inset:0,
+      borderRadius:"var(--r-xl)",
+      overflow:"hidden",
+      zIndex:0,
+      pointerEvents:"none",
+    }}>
+      {/* Current scene — fades in */}
+      {SceneCurrent && (
+        <div style={{
+          position:"absolute", inset:0,
+          transition:"opacity 900ms ease",
+          opacity: fading ? 1 : 1,
+        }}>
+          <SceneCurrent opacity={1}/>
+        </div>
+      )}
+      {/* Previous scene — fades out */}
+      {ScenePrev && fading && (
+        <div style={{
+          position:"absolute", inset:0,
+          transition:"opacity 900ms ease",
+          opacity: 0,
+        }}>
+          <ScenePrev opacity={1}/>
+        </div>
+      )}
+      {/* Vignette — keeps wheel legible over scene */}
+      <div style={{
+        position:"absolute", inset:0,
+        background:"radial-gradient(ellipse 80% 60% at 50% 50%, transparent 20%, rgba(10,8,6,.85) 100%)",
+      }}/>
+    </div>
+  );
+}
+
+function RecommendationWheel({ books, savedBooks, onSave, onDismiss, onAsk, onTap, onReact, userState, onActiveBook }) {
   const STEP    = 110; // px between book centers
   const COVER_W = 200; // cover width px
   const COVER_H = 296; // cover height px
@@ -2565,6 +2991,11 @@ function RecommendationWheel({ books, savedBooks, onSave, onDismiss, onAsk, onTa
   const cl = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
   const activeIdx  = Math.round(cl(pos, 0, books.length - 1));
   const activeBook = books[activeIdx] || null;
+
+  // Notify parent when active book changes (drives BookSceneBackground)
+  useEffect(() => {
+    if (activeBook) onActiveBook?.(activeBook);
+  }, [activeIdx]);
 
   // Entry animation — fires once on mount
   useEffect(() => {
@@ -3193,7 +3624,7 @@ function ForYouItem({ book, userState, savedBooks, onSave, onDismiss, onAsk, onR
             color:"rgba(255,255,255,.35)", fontSize:11.5,
             cursor:"pointer", textAlign:"center",
           }}
-        >Ask AI about this book →</button>
+        >Ask about this book →</button>
 
         {/* Reaction pills */}
         {onReact && (
@@ -4049,7 +4480,7 @@ function ReferralCard({ userEmail, referralCount }) {
   const shareLink = async () => {
     if (navigator.share) {
       await navigator.share({
-        title: "LitSense — AI Book Advisor",
+        title: "LitSense — Your Reading Companion",
         text: "I've been using LitSense to find my next book. It learns your taste and tells you exactly why each book is right for you. Try it free:",
         url: link,
       });
@@ -4273,6 +4704,9 @@ export default function LitSense() {
     .filter(b => !dismissedBooks.includes(b.id))
     .sort((a, b) => b.score - a.score)
     .slice(0, 7);
+
+  // Tracks which book is centered in the wheel — drives scene illustration
+  const [activeWheelBook, setActiveWheelBook] = useState(wheelBooks[0] || null);
 
   const userInitial = userEmail ? userEmail[0].toUpperCase() : "";
 
@@ -4634,7 +5068,7 @@ export default function LitSense() {
               </div>
             )}
           </div>
-          <div className="ls-logo-sub" style={{display:"none"}}>AI Book Advisor</div>
+          <div className="ls-logo-sub" style={{display:"none"}}>Reading Companion</div>
         </div>
         <div className="ls-hdr-right">
           {!isSignedIn ? (
@@ -4678,18 +5112,23 @@ export default function LitSense() {
               }}
             />
 
-            {/* ── Recommendation Wheel hero ── */}
+            {/* ── Recommendation Wheel + Scene Background ── */}
             {wheelBooks.length > 0 && (
-              <RecommendationWheel
-                books={wheelBooks}
-                savedBooks={savedBooks}
-                onSave={handleSaveBook}
-                onDismiss={handleDismissBook}
-                onAsk={goAsk}
-                onTap={setTappedBook}
-                onReact={handleReaction}
-                userState={adaptedUserState}
-              />
+              <div style={{ position:"relative", margin:"8px 0" }}>
+                {/* Scene illustration — crossfades with active book */}
+                <BookSceneBackground bookId={activeWheelBook?.id || wheelBooks[0]?.id} />
+                <RecommendationWheel
+                  books={wheelBooks}
+                  savedBooks={savedBooks}
+                  onSave={handleSaveBook}
+                  onDismiss={handleDismissBook}
+                  onAsk={goAsk}
+                  onTap={setTappedBook}
+                  onReact={handleReaction}
+                  userState={adaptedUserState}
+                  onActiveBook={setActiveWheelBook}
+                />
+              </div>
             )}
 
             {/* Cinematic Hero */}
@@ -4752,7 +5191,7 @@ export default function LitSense() {
             {/* Mood */}
             <div className="ls-sec-hdr" style={{padding:"0 16px",marginBottom:12}}>
               <span className="ls-sec-title">Set your mood</span>
-              <span className="ls-sec-sub">Shapes your AI picks</span>
+              <span className="ls-sec-sub">Shapes your picks</span>
             </div>
             <div className="ls-mood-row">
               {MOODS.map(({id,name,Icon})=>(
@@ -4779,7 +5218,7 @@ export default function LitSense() {
             </div>
             {(mood||genre) && (
               <button className="ls-filter-cta" onClick={()=>goAsk(`Based on my reading history${mood?`, I'm in the mood to ${mood}`:""}${genre?`, I prefer ${genre}`:""}. Give me three specific recommendations with honest reasons why each is right for me.`)}>
-                Get my AI picks <ChevronRight size={16} strokeWidth={2.5}/>
+                Get my picks <ChevronRight size={16} strokeWidth={2.5}/>
               </button>
             )}
 
@@ -4788,7 +5227,7 @@ export default function LitSense() {
               <div className="ls-empty" style={{padding:"32px 16px"}}>
                 <div className="ls-empty-icon"><BookOpen size={36} strokeWidth={1}/></div>
                 <div className="ls-empty-title">All caught up</div>
-                <div className="ls-empty-body">You've dismissed all current picks. Ask the AI for fresh recommendations.</div>
+                <div className="ls-empty-body">You've dismissed all current picks. Reset your filters to see more.</div>
               </div>
             ) : (
               discoverRows.map(row => (
@@ -4824,7 +5263,7 @@ export default function LitSense() {
           <div className="ls-quick-chat">
             <input
               className="ls-quick-input"
-              placeholder={currentBook ? `How far into ${currentBook.split(" ").slice(0,3).join(" ")} are you?` : "Too slow? Loved it? Looking for something faster?"}
+              placeholder={currentBook ? `How far into ${currentBook.split(" ").slice(0,3).join(" ")} are you?` : "What are you in the mood for?"}
               onKeyDown={e=>{
                 if(e.key==="Enter"&&e.target.value.trim()){
                   const val=e.target.value.trim();
@@ -4893,7 +5332,7 @@ export default function LitSense() {
                     {!isPro && readBooks.length>=MEM_BOOKS && (
                       <div className="ls-callout info" style={{marginBottom:12}}>
                         <Lightbulb size={14} strokeWidth={2} className="ls-callout-icon"/>
-                        <span>Free accounts send your <strong>last {MEM_BOOKS} books</strong> to the AI.{" "}
+                        <span>Free accounts share your last {MEM_BOOKS} books for better picks.{" "}
                           <button style={{background:"none",border:"none",color:"var(--gold)",fontWeight:600,cursor:"pointer",padding:0,fontSize:12}} onClick={()=>setPro(true)}>Upgrade to Pro</button> for full history.</span>
                       </div>
                     )}
@@ -4974,7 +5413,7 @@ export default function LitSense() {
                       <div className="ls-empty">
                         <div className="ls-empty-icon"><Bookmark size={40} strokeWidth={1}/></div>
                         <div className="ls-empty-title">Your list is clear</div>
-                        <div className="ls-empty-body">Add books you want to read. Ask the AI which one to start with.</div>
+                        <div className="ls-empty-body">Add books you want to read. Ask which one to start with.</div>
                       </div>
                     ) : (
                       <>
