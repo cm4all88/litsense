@@ -5002,53 +5002,45 @@ export default function LitSense() {
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-      // Add an empty assistant message that we'll fill in as chunks arrive
-      const streamingMsg = {role:"assistant", content:"", streaming:true};
-      setMsgs(prev => [...prev, streamingMsg]);
+      // Add empty assistant message — we'll fill it as chunks arrive
+      setMsgs(prev => [...prev, {role:"assistant", content:"", streaming:true}]);
 
-      const reader = res.body.getReader();
+      const reader  = res.body.getReader();
       const decoder = new TextDecoder();
-      let accumulated = "";
+      let text = "";
+      let done  = false;
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+      while (!done) {
+        const { done: streamDone, value } = await reader.read();
+        if (streamDone) break;
 
-        // SSE chunks — split on newlines, parse each event
         const chunk = decoder.decode(value, {stream:true});
-        const lines = chunk.split("\n");
-
-        for (const line of lines) {
+        for (const line of chunk.split("\n")) {
           if (!line.startsWith("data: ")) continue;
           const data = line.slice(6).trim();
-          if (data === "[DONE]") break;
+          if (data === "[DONE]") { done = true; break; }
           try {
             const parsed = JSON.parse(data);
-            // content_block_delta carries the text
             if (parsed.type === "content_block_delta" && parsed.delta?.type === "text_delta") {
-              accumulated += parsed.delta.text;
-              // Update the streaming message in place
+              text += parsed.delta.text;
+              const snapshot = text; // capture for closure
               setMsgs(prev => {
-                const updated = [...prev];
-                const last = updated[updated.length - 1];
-                if (last?.streaming) {
-                  updated[updated.length - 1] = {...last, content: accumulated};
-                }
-                return updated;
+                const msgs = [...prev];
+                const last = msgs[msgs.length - 1];
+                if (last?.streaming) msgs[msgs.length - 1] = {...last, content: snapshot};
+                return msgs;
               });
             }
-          } catch { /* skip malformed chunks */ }
+          } catch { /* skip malformed */ }
         }
       }
 
-      // Mark streaming done
+      // Finalise — remove streaming flag
       setMsgs(prev => {
-        const updated = [...prev];
-        const last = updated[updated.length - 1];
-        if (last?.streaming) {
-          updated[updated.length - 1] = {role:"assistant", content: accumulated};
-        }
-        return updated;
+        const msgs = [...prev];
+        const last = msgs[msgs.length - 1];
+        if (last?.streaming) msgs[msgs.length - 1] = {role:"assistant", content: text};
+        return msgs;
       });
 
     } catch {
