@@ -4995,51 +4995,38 @@ export default function LitSense() {
         body:JSON.stringify({
           model:"claude-sonnet-4-20250514",
           max_tokens:700,
-          stream:true,
           system:sys,
           messages:newMsgs,
         }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-      // Add empty assistant message — we'll fill it as chunks arrive
+      const d = await res.json();
+      const fullText = d.content?.[0]?.text;
+      if (!fullText) throw new Error("Empty");
+
+      // Typewriter effect — types the full response word by word
+      // More reliable than true streaming on Safari iOS
+      const words = fullText.split(" ");
       setMsgs(prev => [...prev, {role:"assistant", content:"", streaming:true}]);
 
-      const reader  = res.body.getReader();
-      const decoder = new TextDecoder();
-      let text = "";
-      let done  = false;
-
-      while (!done) {
-        const { done: streamDone, value } = await reader.read();
-        if (streamDone) break;
-
-        const chunk = decoder.decode(value, {stream:true});
-        for (const line of chunk.split("\n")) {
-          if (!line.startsWith("data: ")) continue;
-          const data = line.slice(6).trim();
-          if (data === "[DONE]") { done = true; break; }
-          try {
-            const parsed = JSON.parse(data);
-            if (parsed.type === "content_block_delta" && parsed.delta?.type === "text_delta") {
-              text += parsed.delta.text;
-              const snapshot = text; // capture for closure
-              setMsgs(prev => {
-                const msgs = [...prev];
-                const last = msgs[msgs.length - 1];
-                if (last?.streaming) msgs[msgs.length - 1] = {...last, content: snapshot};
-                return msgs;
-              });
-            }
-          } catch { /* skip malformed */ }
-        }
+      for (let i = 0; i < words.length; i++) {
+        const partial = words.slice(0, i + 1).join(" ");
+        setMsgs(prev => {
+          const msgs = [...prev];
+          const last = msgs[msgs.length - 1];
+          if (last?.streaming) msgs[msgs.length - 1] = {...last, content: partial};
+          return msgs;
+        });
+        // Small delay between words — feels natural, not robotic
+        await new Promise(r => setTimeout(r, 18));
       }
 
-      // Finalise — remove streaming flag
+      // Finalise
       setMsgs(prev => {
         const msgs = [...prev];
         const last = msgs[msgs.length - 1];
-        if (last?.streaming) msgs[msgs.length - 1] = {role:"assistant", content: text};
+        if (last?.streaming) msgs[msgs.length - 1] = {role:"assistant", content: fullText};
         return msgs;
       });
 

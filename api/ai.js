@@ -1,64 +1,60 @@
-// api/ai.js — Vercel Edge Function
-// Proxies streaming requests to Anthropic.
+// api/ai.js — Vercel serverless function
+// Returns full JSON response. Typewriter effect is handled client-side.
+// This is more reliable on Safari iOS than true streaming.
 
-export const config = {
-  runtime: "edge",
-  maxDuration: 60, // seconds — allow long responses
-};
+const RATE_LIMIT = 15;
+const WINDOW_MS  = 60 * 1000;
+const ipMap      = new Map();
 
-export default async function handler(req) {
+function checkRateLimit(ip) {
+  const now  = Date.now();
+  const data = ipMap.get(ip) || { count: 0, start: now };
+  if (now - data.start > WINDOW_MS) { data.count = 0; data.start = now; }
+  data.count++;
+  ipMap.set(ip, data);
+  return data.count <= RATE_LIMIT;
+}
+
+export default async function handler(req, res) {
   if (req.method === "OPTIONS") {
-    return new Response(null, {
-      headers: {
-        "Access-Control-Allow-Origin":  "*",
-        "Access-Control-Allow-Methods": "POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type",
-      },
-    });
+    res.setHeader("Access-Control-Allow-Origin",  "*");
+    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    return res.status(200).end();
   }
 
   if (req.method !== "POST") {
-    return new Response("Method not allowed", { status: 405 });
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  const ip = req.headers["x-forwarded-for"]?.split(",")[0] || "unknown";
+  if (!checkRateLimit(ip)) {
+    return res.status(429).json({ error: "Too many requests. Please wait a moment." });
   }
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    return new Response("API key not configured.", { status: 500 });
+    return res.status(500).json({ error: "API key not configured." });
   }
 
-  let body;
   try {
-    body = await req.json();
-  } catch {
-    return new Response("Invalid JSON", { status: 400 });
+    // Remove stream:true — we want the full response as JSON
+    const { stream: _stream, ...body } = req.body;
+
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method:  "POST",
+      headers: {
+        "Content-Type":      "application/json",
+        "x-api-key":         apiKey,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({ ...body, stream: false }),
+    });
+
+    const data = await response.json();
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    return res.status(response.status).json(data);
+  } catch (err) {
+    return res.status(500).json({ error: "Failed to reach service." });
   }
-
-  // Remove stream from body if present — we always force it here
-  const { stream: _stream, ...rest } = body;
-
-  const upstream = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type":      "application/json",
-      "x-api-key":         apiKey,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({ ...rest, stream: true }),
-  });
-
-  if (!upstream.ok) {
-    const err = await upstream.text();
-    return new Response(err, { status: upstream.status });
-  }
-
-  // Pipe the SSE stream straight through to the browser
-  return new Response(upstream.body, {
-    status: 200,
-    headers: {
-      "Content-Type":                "text/event-stream; charset=utf-8",
-      "Cache-Control":               "no-cache, no-transform",
-      "X-Accel-Buffering":           "no",
-      "Access-Control-Allow-Origin": "*",
-    },
-  });
 }
