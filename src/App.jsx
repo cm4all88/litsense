@@ -48,8 +48,11 @@ import {
   Library, Bookmark, Sparkles, Lock,
 } from "lucide-react";
 
-const LIMIT_ANON = 3;
-const LIMIT_FREE = 5;
+// ── QUESTION LIMITS ─────────────────────────────────────────────────────────
+// Set to Infinity during free launch period.
+// When ready to charge: LIMIT_ANON = 3, LIMIT_FREE = 5
+const LIMIT_ANON = Infinity;
+const LIMIT_FREE = Infinity;
 const MEM_BOOKS  = 5;
 
 // ── AMAZON AFFILIATE ──────────────────────────────────────────────────────────
@@ -646,6 +649,15 @@ textarea.ls-chat-input::placeholder{color:var(--muted);}
 
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
 .ls-cursor{display:inline-block;width:2px;height:14px;background:var(--gold);margin-left:2px;vertical-align:middle;animation:blink .7s ease infinite;}
+@keyframes toastIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.ls-shelf-toast{
+  position:fixed;bottom:90px;left:50%;transform:translateX(-50%);
+  background:rgba(212,148,26,.95);color:#060402;
+  padding:9px 16px;border-radius:var(--r-pill);
+  font-size:13px;font-weight:700;white-space:nowrap;
+  animation:toastIn .25s ease;z-index:999;
+  box-shadow:0 4px 20px rgba(0,0,0,.4);
+}
 .ls-friend-prompt{
   margin:12px 16px 6px;
   padding:12px 16px;
@@ -841,11 +853,47 @@ textarea.ls-chat-input::placeholder{color:var(--muted);}
 
 /* ── Cover fallback ── */
 .ls-cover-fallback{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px 10px;text-align:center;}
-.ls-cover-fallback-lines{display:flex;flex-direction:column;gap:3px;align-items:center;margin-bottom:10px;}
-.ls-cover-fallback-line{width:28px;height:1.5px;background:rgba(212,148,26,.25);border-radius:1px;}
-.ls-cover-fallback-line.short{width:18px;}
-.ls-cover-fallback-title{font-family:'Lora',serif;font-size:10px;font-weight:700;color:rgba(245,239,229,.85);line-height:1.3;margin-bottom:3px;}
-.ls-cover-fallback-author{font-size:8px;color:rgba(196,189,180,.6);font-style:italic;}
+.ls-book-cover-fallback{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;
+  justify-content:space-between;
+  padding:14px 12px 12px;
+  overflow:hidden;
+}
+/* Top rule */
+.ls-book-cover-fallback::before{
+  content:"";
+  position:absolute;top:20px;left:12px;right:12px;
+  height:1px;background:rgba(212,148,26,.35);
+}
+/* Bottom rule */
+.ls-book-cover-fallback::after{
+  content:"";
+  position:absolute;bottom:20px;left:12px;right:12px;
+  height:1px;background:rgba(212,148,26,.35);
+}
+.ls-book-cover-title{
+  font-family:'Lora',serif;
+  font-size:11px;font-weight:700;
+  color:rgba(245,239,229,.92);
+  line-height:1.35;
+  margin-top:18px;
+  text-align:center;
+  word-break:break-word;
+  hyphens:auto;
+  flex:1;
+  display:flex;align-items:center;justify-content:center;
+}
+.ls-book-cover-author{
+  font-size:8.5px;
+  color:rgba(212,148,26,.7);
+  font-style:italic;
+  text-align:center;
+  margin-bottom:18px;
+  letter-spacing:.3px;
+}
+.ls-book-cover-lines{display:none;}
+.ls-book-cover-line{display:none;}
 `;
 
 
@@ -2515,6 +2563,35 @@ Format:
 
 const today = () => new Date().toISOString().slice(0,10);
 
+// ── BOOK MENTION DETECTION ────────────────────────────────────────────────────
+// Scans user messages for phrases like "I've read X", "I finished X", "I read X"
+// Returns { title, author } if a book is detected, null otherwise.
+// Author is extracted if "by Author" follows the title.
+function detectBookMention(text) {
+  if (!text) return null;
+
+  // Patterns that indicate the user has read a book
+  const patterns = [
+    /i(?:'ve| have) (?:read|finished|completed)\s+[""]?([^""",\.!?]+?)[""]?(?:\s+by\s+([^,\.!?\n]+))?(?:[,\.!?\n]|$)/i,
+    /i (?:just |recently )?finished\s+[""]?([^""",\.!?]+?)[""]?(?:\s+by\s+([^,\.!?\n]+))?(?:[,\.!?\n]|$)/i,
+    /i (?:just )?read\s+[""]?([^""",,\.!?]+?)[""]?(?:\s+by\s+([^,\.!?\n]+))?(?:[,\.!?\n]|$)/i,
+    /(?:read|finished)\s+[""]([^"""]+)[""](?:\s+by\s+([^,\.!?\n]+))?/i,
+  ];
+
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (match) {
+      const title = match[1]?.trim();
+      const author = match[2]?.trim() || "";
+      // Filter out false positives — too short or common words
+      if (title && title.length > 2 && !["it","that","this","the book","a book"].includes(title.toLowerCase())) {
+        return { title, author };
+      }
+    }
+  }
+  return null;
+}
+
 function renderAI(text) {
   return text.split("\n").map((line, i) => {
     if (/^#{1,3} /.test(line))               return <h4 key={i}>{line.replace(/^#{1,3} /,"")}</h4>;
@@ -4042,9 +4119,6 @@ function BookCover({ isbn, title, author = "", color = ["#1a1408","#0e0c06"], cl
       )}
       {(!loaded || error) && (
         <div className="ls-book-cover-fallback">
-          <div className="ls-book-cover-lines">
-            <div className="ls-book-cover-line"/><div className="ls-book-cover-line short"/>
-          </div>
           <div className="ls-book-cover-title">{title}</div>
           {author && <div className="ls-book-cover-author">{author}</div>}
         </div>
@@ -4878,6 +4952,7 @@ export default function LitSense() {
 
   // ── UI STATE ──────────────────────────────────────────────────────────────
   const [showPro, setPro]       = useState(false);
+  const [shelfToast, setShelfToast] = useState(null); // { title } shown briefly when book auto-added
   const [shelfTab, setShelfTab]   = useState("read");
   const [bookInput, setBookInput] = useState("");
   const [wantInput, setWantInput] = useState("");
@@ -4910,25 +4985,32 @@ export default function LitSense() {
   //      how to behave, not just what the user has read.
   const buildProfile = useCallback(() => {
     const books = isPro ? readBooks : readBooks.slice(-MEM_BOOKS);
+    const hasHistory = books.length > 0;
     const {
-      voice_label, pacing_preference, completion_rate,
-      response_length, tone_warmth, current_intervention_level,
+      current_intervention_level,
       cluster_rec_adjustments,
     } = intelligence;
 
     const lines = [];
 
-    // Reading history
+    // New user — no assumptions, just ask
+    if (!hasHistory && !currentBook) {
+      lines.push("This is a new user with no reading history yet. Do NOT assume anything about their taste, reading habits, or past books. Ask what they enjoy or what they're looking for.");
+      if (mood)  lines.push(`Current mood: ${mood}.`);
+      if (genre) lines.push(`They selected genre: ${genre}.`);
+      return lines.join(" ");
+    }
+
+    // Has history — only state what we actually know
     if (books.length) {
       lines.push(`Books read and rated: ${books.map(b=>`"${b.title}"${b.author?` by ${b.author}`:""} (${b.rating}/5)`).join(", ")}.`);
     }
 
-    // Current book — most important context for companion behavior
     if (currentBook) {
-      lines.push(`CURRENTLY READING: "${currentBook}". This is the most important context. Ask about this book first before recommending anything else.`);
+      lines.push(`CURRENTLY READING: "${currentBook}". Ask about this book first before recommending anything else.`);
     }
 
-    // Recent reactions — tells the AI what happened with books
+    // Only include reactions that actually exist
     const reactionEntries = Object.entries(reactions).sort((a,b)=>b[1].ts-a[1].ts).slice(0,3);
     if (reactionEntries.length) {
       const reactionMap = { loved:"loved it", finished:"finished it", abandoned:"stopped reading", "too slow":"said it was too slow", fast:"said it was hard to put down" };
@@ -4944,42 +5026,42 @@ export default function LitSense() {
     if (mood)             lines.push(`Current mood: ${mood}.`);
     if (genre)            lines.push(`Preferred genre: ${genre}.`);
 
-    // STEP 2: Intelligence context — shapes how the AI responds
-    if (voice_label) {
-      lines.push(`Reader voice: ${voice_label}.`);
+    // Only add behavioral context if we have enough data to be confident
+    if (books.length >= 3 && current_intervention_level >= 2) {
+      lines.push("Recent pattern: they've been abandoning books. Lean toward faster, shorter reads.");
+    } else if (books.length >= 3 && current_intervention_level === 1) {
+      lines.push("Some recent abandonment. Prioritize books with strong momentum.");
     }
-    if (pacing_preference < 0.35) {
-      lines.push("This reader finishes fast-paced books and abandons slow ones. Prioritize momentum.");
-    } else if (pacing_preference > 0.70) {
-      lines.push("This reader favors patient, literary pacing. Don't push speed as a selling point.");
-    }
-    if (completion_rate < 0.4 && books.length >= 3) {
-      lines.push("Completion rate is low — they abandon frequently. Focus on books they'll actually finish.");
-    }
-    if (response_length < 0.3) {
-      lines.push("Keep replies short and direct. This reader doesn't want explanation, they want the answer.");
-    } else if (response_length > 0.7) {
-      lines.push("This reader engages with detailed explanations. You can go deeper.");
-    }
-    if (tone_warmth < 0.35) {
-      lines.push("Be direct and specific. Skip the warmth — they prefer honest over friendly.");
-    }
-    if (current_intervention_level >= 2) {
-      lines.push("Recent pattern: repeated abandonment. Recommend shorter, faster books. Prioritize high-confidence fits.");
-    } else if (current_intervention_level === 1) {
-      lines.push("Recent pattern: some abandonment. Lean toward books with strong momentum.");
-    }
-    if (cluster_rec_adjustments?.boost_pacing === "fast") {
-      lines.push("This reader performs best with fast-paced recommendations.");
+
+    if (books.length >= 5 && cluster_rec_adjustments?.boost_pacing === "fast") {
+      lines.push("This reader finishes fast-paced books more consistently.");
     }
 
     return lines.filter(Boolean).join(" ") || "";
-  }, [readBooks, currentBook, wantList, mood, genre, isPro, intelligence]);
+  }, [readBooks, currentBook, wantList, mood, genre, isPro, intelligence, reactions, savedBooks]);
 
   // ── CHAT ──────────────────────────────────────────────────────────────────
   const sendChat = async (msg, isRetry=false) => {
     if (chatLoad||!msg.trim()) return;
     if (atLimit) { setPro(true); return; }
+
+    // Detect if user mentions having read a book — add it silently
+    const detected = detectBookMention(msg);
+    if (detected) {
+      const alreadyOnShelf = readBooks.some(b =>
+        b.title.toLowerCase() === detected.title.toLowerCase()
+      );
+      if (!alreadyOnShelf) {
+        setReadBooks(prev => [...prev, {
+          id: Date.now(),
+          title: detected.title,
+          author: detected.author,
+          rating: 3, // default — they can rate it properly on shelf
+        }]);
+        setShelfToast(detected.title);
+        setTimeout(() => setShelfToast(null), 3000);
+      }
+    }
     setLoad(true);
     const base = isRetry ? msgs.slice(0,-1) : msgs;
     const newMsgs = [...base,{role:"user",content:msg}];
@@ -5170,6 +5252,13 @@ export default function LitSense() {
           )}
         </div>
       </header>
+
+      {/* ── Shelf toast — appears when a book is auto-added from chat ── */}
+      {shelfToast && (
+        <div className="ls-shelf-toast">
+          ✓ Added "{shelfToast.length > 30 ? shelfToast.slice(0,28)+"…" : shelfToast}" to your shelf
+        </div>
+      )}
 
       <div className="ls-main">
 
