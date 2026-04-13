@@ -41,11 +41,13 @@
  */
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { supabase, signUp, signIn, signOut, loadShelfFromDB, upsertBookState, saveReaction, getOrCreateDiscussion, getDiscussionPosts, createDiscussionPost } from "./supabase.js";
 import {
   BookOpen, BookMarked, MessageCircle, Search, Star,
   Sun, Brain, Heart, Lightbulb, Smile, Moon,
   Plus, X, Send, Crown, ChevronRight, RotateCcw,
   Library, Bookmark, Sparkles, Lock,
+  ShoppingBag, ArrowLeftRight, Package, Tag, Users, MessageSquare, CheckCircle,
 } from "lucide-react";
 
 // ── QUESTION LIMITS ─────────────────────────────────────────────────────────
@@ -373,6 +375,71 @@ const CSS = `
 .ls-shelf-scroll{flex:1;overflow-y:auto;padding-bottom:16px;}
 .ls-shelf-hdr{padding:28px 20px 20px;}
 .ls-shelf-hdr-title{font-family:'Lora',serif;font-size:24px;font-weight:700;color:var(--text);margin-bottom:4px;}
+
+/* ── MARKETPLACE ── */
+.ls-market{flex:1;overflow-y:auto;padding-bottom:80px;}
+.ls-market-hdr{padding:24px 20px 16px;}
+.ls-market-title{font-family:'Lora',serif;font-size:24px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.ls-market-sub{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:16px;}
+.ls-market-tabs{display:flex;gap:8px;padding:0 20px 16px;}
+.ls-market-tab{flex:1;padding:8px;border-radius:var(--r-md);border:1px solid rgba(255,255,255,.10);background:transparent;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;transition:all .18s;}
+.ls-market-tab.on{background:rgba(212,148,26,.15);border-color:rgba(212,148,26,.4);color:var(--gold);}
+.ls-listing-card{margin:0 16px 12px;padding:16px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08);border-radius:var(--r-lg);display:flex;gap:14px;cursor:pointer;transition:all .2s;}
+.ls-listing-card:hover{background:rgba(255,255,255,.07);border-color:rgba(212,148,26,.2);}
+.ls-listing-cover{width:56px;min-width:56px;height:80px;border-radius:8px;overflow:hidden;flex-shrink:0;}
+.ls-listing-body{flex:1;min-width:0;}
+.ls-listing-title{font-family:'Lora',serif;font-size:14px;font-weight:700;color:var(--text);line-height:1.3;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ls-listing-author{font-size:11px;color:var(--muted);margin-bottom:8px;}
+.ls-listing-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.ls-listing-price{font-size:15px;font-weight:700;color:var(--gold);}
+.ls-listing-condition{font-size:10px;font-weight:600;padding:2px 8px;border-radius:var(--r-pill);background:rgba(255,255,255,.07);color:var(--text2);text-transform:capitalize;}
+.ls-listing-seller{font-size:10px;color:var(--muted);}
+.ls-list-btn{width:calc(100% - 32px);margin:0 16px 20px;padding:13px;border-radius:var(--r-lg);border:1px solid rgba(212,148,26,.4);background:rgba(212,148,26,.10);color:var(--gold);font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.ls-list-btn:hover{background:rgba(212,148,26,.2);}
+.ls-market-empty{text-align:center;padding:60px 32px;color:var(--muted);}
+.ls-market-empty-icon{font-size:40px;margin-bottom:16px;opacity:.4;}
+.ls-market-empty-title{font-family:'Lora',serif;font-size:18px;font-weight:700;color:var(--text2);margin-bottom:8px;}
+.ls-market-empty-body{font-size:13px;line-height:1.7;color:var(--muted);}
+.ls-market-new-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:var(--r-pill);background:rgba(212,148,26,.12);border:1px solid rgba(212,148,26,.3);color:var(--gold);font-size:10px;font-weight:700;letter-spacing:.5px;margin-bottom:12px;}
+
+/* ── LIST A BOOK MODAL ── */
+.ls-list-modal{position:fixed;inset:0;z-index:300;display:flex;align-items:flex-end;justify-content:center;}
+.ls-list-modal-bg{position:absolute;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(12px);}
+.ls-list-modal-sheet{position:relative;width:100%;max-width:480px;background:rgba(20,16,10,.96);border-radius:28px 28px 0 0;padding:0 22px 52px;max-height:90dvh;overflow-y:auto;animation:slideUp .32s cubic-bezier(.32,.72,0,1);border:1px solid rgba(255,255,255,.1);border-bottom:none;}
+.ls-list-modal-handle{width:40px;height:4px;background:rgba(255,255,255,.14);border-radius:2px;margin:16px auto 22px;}
+.ls-list-modal-title{font-family:'Lora',serif;font-size:20px;font-weight:700;color:var(--text);margin-bottom:20px;}
+.ls-list-field{margin-bottom:16px;}
+.ls-list-label{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.ls-list-input{width:100%;padding:12px 14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:var(--r-md);color:var(--text);font-size:14px;font-family:'Inter',sans-serif;box-sizing:border-box;outline:none;}
+.ls-list-input:focus{border-color:var(--gold);}
+.ls-list-input::placeholder{color:var(--muted);}
+.ls-condition-btns{display:flex;gap:6px;flex-wrap:wrap;}
+.ls-condition-btn{padding:6px 12px;border-radius:var(--r-pill);border:1px solid rgba(255,255,255,.12);background:transparent;color:var(--text2);font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;}
+.ls-condition-btn.on{background:rgba(212,148,26,.15);border-color:rgba(212,148,26,.4);color:var(--gold);}
+.ls-list-submit{width:100%;padding:14px;border-radius:var(--r-lg);border:none;background:var(--gold);color:#060402;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px;transition:all .2s;}
+.ls-list-submit:hover{background:var(--gold-r);}
+.ls-list-submit:disabled{opacity:.4;cursor:not-allowed;}
+
+/* ── DISCUSSION ── */
+.ls-disc{flex:1;overflow-y:auto;padding-bottom:80px;}
+.ls-disc-hdr{padding:20px 20px 12px;border-bottom:1px solid rgba(255,255,255,.06);}
+.ls-disc-book{font-family:'Lora',serif;font-size:16px;font-weight:700;color:var(--text);}
+.ls-disc-count{font-size:11px;color:var(--muted);margin-top:2px;}
+.ls-disc-post{padding:14px 20px;border-bottom:1px solid rgba(255,255,255,.05);}
+.ls-disc-post-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.ls-disc-avatar{width:28px;height:28px;border-radius:50%;background:rgba(212,148,26,.2);border:1px solid rgba(212,148,26,.3);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--gold);flex-shrink:0;}
+.ls-disc-username{font-size:12px;font-weight:600;color:var(--text2);}
+.ls-disc-time{font-size:10px;color:var(--muted);}
+.ls-disc-content{font-size:14px;color:var(--text);line-height:1.65;}
+.ls-disc-actions{display:flex;gap:16px;margin-top:10px;}
+.ls-disc-action{background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;display:flex;align-items:center;gap:4px;padding:0;transition:color .15s;}
+.ls-disc-action:hover{color:var(--gold);}
+.ls-disc-input-row{position:sticky;bottom:0;padding:12px 16px;background:rgba(14,11,8,.92);backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,.07);display:flex;gap:10px;align-items:flex-end;}
+.ls-disc-textarea{flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.10);border-radius:var(--r-lg);color:var(--text);font-size:14px;padding:10px 14px;resize:none;outline:none;font-family:'Inter',sans-serif;line-height:1.5;max-height:120px;}
+.ls-disc-textarea:focus{border-color:var(--gold);}
+.ls-disc-send{width:38px;height:38px;border-radius:50%;background:var(--gold);border:none;color:#060402;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ls-disc-empty{text-align:center;padding:48px 24px;color:var(--muted);font-size:14px;line-height:1.7;}
+
 .ls-shelf-hdr-sub{font-size:13px;color:var(--text2);}
 .ls-shelf-gate{display:flex;flex-direction:column;align-items:center;text-align:center;padding:52px 32px;}
 .ls-shelf-gate-icon{color:var(--muted);margin-bottom:18px;opacity:.4;}
@@ -4486,7 +4553,7 @@ function QuickRateCard({ onRate, onSkip }) {
 }
 
 // ── TILE MODAL (mobile tap replacement for hover overlay) ─────────────────────
-function TileModal({ book: b, onClose, onAsk, isSaved, onSave, onDismiss, userState }) {
+function TileModal({ book: b, onClose, onAsk, isSaved, onSave, onDismiss, userState, onDiscuss }) {
   if (!b) return null;
 
   const handleDismiss = () => {
@@ -4539,7 +4606,10 @@ function TileModal({ book: b, onClose, onAsk, isSaved, onSave, onDismiss, userSt
         </div>
 
         <button className="ls-tile-modal-cta" onClick={() => { onAsk(`Tell me about "${b.title}" by ${b.author}. Should I read it?`); onClose(); }}>
-          Ask LitSense about this book
+          Ask about this book
+        </button>
+        <button className="ls-tile-modal-cta" onClick={() => { onDiscuss?.(b); onClose(); }} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:7}}>
+          <MessageSquare size={14}/> Join the discussion
         </button>
         <a
           href={amazonLink(b.title, b.author, b.isbn)}
@@ -4696,6 +4766,314 @@ function ReferralCard({ userEmail, referralCount }) {
   );
 }
 
+// ── MARKETPLACE ──────────────────────────────────────────────────────────────
+// Local state only for now — wires to Supabase listings table when ready.
+// Sellers list books, buyers pay through Stripe escrow.
+
+const MOCK_LISTINGS = [
+  { id:"l1", title:"The Covenant of Water", author:"Abraham Verghese", isbn:"9780802162175", price:14, condition:"Like New", seller:"sarah_reads", color:["#1a2430","#0e1820"] },
+  { id:"l2", title:"Demon Copperhead", author:"Barbara Kingsolver", isbn:"9780063250550", price:11, condition:"Good", seller:"bookworm_jo", color:["#2a1808","#1a1004"] },
+  { id:"l3", title:"Piranesi", author:"Susanna Clarke", isbn:"9781635575644", price:9, condition:"Like New", seller:"nightreader", color:["#181428","#100c1c"] },
+];
+
+function ListingCard({ listing, onTap }) {
+  return (
+    <div className="ls-listing-card" onClick={() => onTap(listing)}>
+      <div className="ls-listing-cover">
+        <BookCover isbn={listing.isbn} title={listing.title} author={listing.author} color={listing.color} className="fill"/>
+      </div>
+      <div className="ls-listing-body">
+        <div className="ls-listing-title">{listing.title}</div>
+        <div className="ls-listing-author">{listing.author}</div>
+        <div className="ls-listing-meta">
+          <span className="ls-listing-price">${listing.price}</span>
+          <span className="ls-listing-condition">{listing.condition}</span>
+          <span className="ls-listing-seller">by {listing.seller}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ListBookModal({ onClose, onSubmit }) {
+  const [title,     setTitle]     = useState("");
+  const [author,    setAuthor]    = useState("");
+  const [price,     setPrice]     = useState("");
+  const [condition, setCondition] = useState("Good");
+  const conditions = ["New","Like New","Good","Fair","Poor"];
+  const ready = title.trim() && price && Number(price) > 0;
+
+  return (
+    <div className="ls-list-modal">
+      <div className="ls-list-modal-bg" onClick={onClose}/>
+      <div className="ls-list-modal-sheet">
+        <div className="ls-list-modal-handle"/>
+        <div className="ls-list-modal-title">List a book</div>
+
+        <div className="ls-list-field">
+          <div className="ls-list-label">Title</div>
+          <input className="ls-list-input" placeholder="Book title" value={title} onChange={e=>setTitle(e.target.value)}/>
+        </div>
+        <div className="ls-list-field">
+          <div className="ls-list-label">Author</div>
+          <input className="ls-list-input" placeholder="Author name" value={author} onChange={e=>setAuthor(e.target.value)}/>
+        </div>
+        <div className="ls-list-field">
+          <div className="ls-list-label">Your asking price (USD)</div>
+          <input className="ls-list-input" placeholder="$0.00" type="number" min="1" value={price} onChange={e=>setPrice(e.target.value)}/>
+        </div>
+        <div className="ls-list-field">
+          <div className="ls-list-label">Condition</div>
+          <div className="ls-condition-btns">
+            {conditions.map(c => (
+              <button key={c} className={`ls-condition-btn${condition===c?" on":""}`} onClick={()=>setCondition(c)}>{c}</button>
+            ))}
+          </div>
+        </div>
+        <div style={{fontSize:11,color:"var(--muted)",lineHeight:1.6,marginBottom:16}}>
+          LitSense holds payment in escrow until the buyer confirms delivery. We take a 10% platform fee. You keep the rest.
+        </div>
+        <button className="ls-list-submit" disabled={!ready} onClick={()=>{ onSubmit({title,author,price:Number(price),condition}); onClose(); }}>
+          List for ${price||"0"} →
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function MarketplaceTab({ isPro, savedBooks, wantList, onRequirePro }) {
+  const [marketTab, setMarketTab]   = useState("browse");
+  const [listings,  setListings]    = useState(MOCK_LISTINGS);
+  const [showList,  setShowList]    = useState(false);
+  const [selected,  setSelected]    = useState(null);
+
+  if (!isPro) {
+    return (
+      <div className="ls-market" style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",flex:1,padding:"40px 32px",textAlign:"center"}}>
+        <Lock size={36} strokeWidth={1.5} style={{color:"var(--gold)",opacity:.6,marginBottom:16}}/>
+        <div style={{fontFamily:"'Lora',serif",fontSize:20,fontWeight:700,color:"var(--text)",marginBottom:8}}>Marketplace is Pro</div>
+        <div style={{fontSize:13,color:"var(--muted)",lineHeight:1.7,marginBottom:24}}>Buy and sell books directly with other readers. Trade your shelf for something new.</div>
+        <button className="ls-list-submit" style={{maxWidth:240}} onClick={onRequirePro}>Go Pro to access →</button>
+      </div>
+    );
+  }
+
+  const myListings = listings.filter(l => l.seller === "me");
+  const browse     = listings.filter(l => l.seller !== "me");
+
+  // Highlight listings matching user's want list
+  const wantTitles = (wantList||[]).map(t=>t.toLowerCase());
+  const matches = browse.filter(l => wantTitles.includes(l.title.toLowerCase()));
+
+  return (
+    <div className="ls-market">
+      <div className="ls-market-hdr">
+        <div className="ls-market-new-badge"><Sparkles size={10}/> NEW — just getting started</div>
+        <div className="ls-market-title">Book Marketplace</div>
+        <div className="ls-market-sub">Buy books from other readers. We handle payment, escrow, and postage labels. 10% platform fee.</div>
+      </div>
+
+      <div className="ls-market-tabs">
+        {[["browse","Browse"],["mine","My Listings"]].map(([v,label])=>(
+          <button key={v} className={`ls-market-tab${marketTab===v?" on":""}`} onClick={()=>setMarketTab(v)}>{label}</button>
+        ))}
+      </div>
+
+      {marketTab==="browse" && (
+        <>
+          {matches.length > 0 && (
+            <div style={{margin:"0 16px 12px",padding:"12px 14px",background:"rgba(212,148,26,.08)",border:"1px solid rgba(212,148,26,.25)",borderRadius:"var(--r-md)"}}>
+              <div style={{fontSize:11,fontWeight:700,color:"var(--gold)",letterSpacing:".5px",textTransform:"uppercase",marginBottom:6}}>On your want list</div>
+              {matches.map(l=><ListingCard key={l.id} listing={l} onTap={setSelected}/>)}
+            </div>
+          )}
+          {browse.length === 0 ? (
+            <div className="ls-market-empty">
+              <div className="ls-market-empty-icon">📚</div>
+              <div className="ls-market-empty-title">Be one of the first</div>
+              <div className="ls-market-empty-body">We're just getting started. List a book and be among the first sellers on LitSense.</div>
+            </div>
+          ) : browse.filter(l=>!wantTitles.includes(l.title.toLowerCase())).map(l=>(
+            <ListingCard key={l.id} listing={l} onTap={setSelected}/>
+          ))}
+        </>
+      )}
+
+      {marketTab==="mine" && (
+        <>
+          {myListings.length === 0 ? (
+            <div className="ls-market-empty">
+              <div className="ls-market-empty-title">Nothing listed yet</div>
+              <div className="ls-market-empty-body">List a book from your shelf and reach readers who'll actually love it.</div>
+            </div>
+          ) : myListings.map(l=><ListingCard key={l.id} listing={l} onTap={setSelected}/>)}
+        </>
+      )}
+
+      <button className="ls-list-btn" onClick={()=>setShowList(true)}>
+        <Tag size={15}/> List a book
+      </button>
+
+      {showList && (
+        <ListBookModal
+          onClose={()=>setShowList(false)}
+          onSubmit={(data)=>{
+            setListings(prev=>[{id:`l${Date.now()}`,seller:"me",...data,color:["#1a1408","#0e0c06"]},  ...prev]);
+            setMarketTab("mine");
+          }}
+        />
+      )}
+
+      {/* Listing detail sheet */}
+      {selected && (
+        <div className="ls-list-modal">
+          <div className="ls-list-modal-bg" onClick={()=>setSelected(null)}/>
+          <div className="ls-list-modal-sheet">
+            <div className="ls-list-modal-handle"/>
+            <div style={{display:"flex",gap:14,marginBottom:20}}>
+              <div style={{width:72,height:104,borderRadius:10,overflow:"hidden",flexShrink:0}}>
+                <BookCover isbn={selected.isbn} title={selected.title} author={selected.author} color={selected.color} className="fill"/>
+              </div>
+              <div>
+                <div style={{fontFamily:"'Lora',serif",fontSize:17,fontWeight:700,color:"var(--text)",lineHeight:1.3,marginBottom:4}}>{selected.title}</div>
+                <div style={{fontSize:12,color:"var(--muted)",marginBottom:10}}>{selected.author}</div>
+                <div style={{fontSize:20,fontWeight:700,color:"var(--gold)",marginBottom:4}}>${selected.price}</div>
+                <div style={{fontSize:11,color:"var(--text2)"}}>{selected.condition} · Listed by {selected.seller}</div>
+              </div>
+            </div>
+            <div style={{fontSize:12,color:"var(--muted)",lineHeight:1.7,marginBottom:20}}>
+              Payment is held in escrow until you confirm delivery. We generate the postage label — seller ships to you directly.
+            </div>
+            <button className="ls-list-submit" onClick={()=>setSelected(null)}>
+              Buy for ${selected.price} → (Stripe coming soon)
+            </button>
+            <button onClick={()=>setSelected(null)} style={{width:"100%",marginTop:10,padding:12,background:"none",border:"none",color:"var(--muted)",fontSize:13,cursor:"pointer"}}>Cancel</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+// ── DISCUSSION ───────────────────────────────────────────────────────────────
+// Conversational thread per book. Scrolls chronologically, not like a forum.
+
+function DiscussionThread({ book, userEmail, userId, onClose }) {
+  const [posts,   setPosts]   = useState([]);
+  const [draft,   setDraft]   = useState("");
+  const [loading, setLoading] = useState(true);
+  const [discId,  setDiscId]  = useState(null);
+  const bottomRef = useRef(null);
+
+  // Load discussion from Supabase
+  useEffect(() => {
+    if (!book) return;
+    (async () => {
+      try {
+        const disc = await getOrCreateDiscussion(book);
+        setDiscId(disc.id);
+        const p = await getDiscussionPosts(disc.id);
+        setPosts(p);
+      } catch {
+        // Fallback to localStorage if Supabase fails
+        const key = `ls_disc_${book?.isbn || book?.id || "general"}`;
+        try { const r = localStorage.getItem(key); if (r) setPosts(JSON.parse(r)); } catch {}
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [book]);
+
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [posts]);
+
+  const userName = userEmail ? userEmail.split("@")[0].split(/[._]/)[0] : "Reader";
+  const initial  = userName[0].toUpperCase();
+
+  const send = async () => {
+    if (!draft.trim()) return;
+    const content = draft.trim();
+    setDraft("");
+
+    if (discId && userId) {
+      try {
+        const post = await createDiscussionPost(discId, userId, content);
+        setPosts(prev => [...prev, { ...post, author: { email: userEmail } }]);
+        return;
+      } catch {}
+    }
+    // Fallback to localStorage
+    setPosts(prev => {
+      const updated = [...prev, { id: Date.now(), user: userName, initial, content, ts: Date.now(), likes: 0 }];
+      try { localStorage.setItem(`ls_disc_${book?.isbn || book?.id}`, JSON.stringify(updated)); } catch {}
+      return updated;
+    });
+  };
+
+  const formatTime = (ts) => {
+    const d = new Date(ts);
+    const diff = (Date.now() - d) / 1000;
+    if (diff < 60)    return "just now";
+    if (diff < 3600)  return `${Math.floor(diff/60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
+    return d.toLocaleDateString();
+  };
+
+  return (
+    <div className="ls-list-modal">
+      <div className="ls-list-modal-bg" onClick={onClose}/>
+      <div className="ls-list-modal-sheet" style={{paddingBottom:0}}>
+        <div className="ls-list-modal-handle"/>
+        <div className="ls-disc-hdr">
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
+            <button onClick={onClose} style={{background:"none",border:"none",color:"var(--muted)",cursor:"pointer",padding:0}}><X size={18}/></button>
+            <div>
+              <div className="ls-disc-book">{book?.title?.split(":")[0]}</div>
+              <div className="ls-disc-count">{posts.length} {posts.length===1?"comment":"comments"}</div>
+            </div>
+          </div>
+        </div>
+
+        <div style={{maxHeight:"55dvh",overflowY:"auto"}}>
+          {posts.length === 0 ? (
+            <div className="ls-disc-empty">
+              <Users size={28} style={{opacity:.3,marginBottom:12}}/>
+              <div>Be the first to say something about this one.</div>
+            </div>
+          ) : posts.map(p => (
+            <div key={p.id} className="ls-disc-post">
+              <div className="ls-disc-post-header">
+                <div className="ls-disc-avatar">{p.initial}</div>
+                <div className="ls-disc-username">{p.user}</div>
+                <div className="ls-disc-time">{formatTime(p.ts)}</div>
+              </div>
+              <div className="ls-disc-content">{p.content}</div>
+              <div className="ls-disc-actions">
+                <button className="ls-disc-action" onClick={()=>setPosts(prev=>prev.map(x=>x.id===p.id?{...x,likes:x.likes+1}:x))}>
+                  <Heart size={12}/> {p.likes > 0 ? p.likes : "Like"}
+                </button>
+              </div>
+            </div>
+          ))}
+          <div ref={bottomRef}/>
+        </div>
+
+        <div className="ls-disc-input-row">
+          <textarea
+            className="ls-disc-textarea"
+            rows={1}
+            placeholder="What do you think of this one?"
+            value={draft}
+            onChange={e=>setDraft(e.target.value)}
+            onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}}}
+          />
+          <button className="ls-disc-send" onClick={send}><Send size={14}/></button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function LitSense() {
   useEffect(() => {
     // Check for referral param — store so signup flow can credit referrer
@@ -4708,9 +5086,34 @@ export default function LitSense() {
   }, []);
 
   // ── AUTH ──────────────────────────────────────────────────────────────────
-  const [isSignedIn, setIsSignedIn] = useState(() => { try { return !!localStorage.getItem("ls_user"); } catch { return false; } });
+  const [isSignedIn, setIsSignedIn] = useState(false);
   const [isPro, setIsPro]           = useState(() => { try { return localStorage.getItem("ls_pro") === "1"; } catch { return false; } });
-  const [userEmail, setUserEmail]   = useState(() => { try { return localStorage.getItem("ls_user") || ""; } catch { return ""; } });
+  const [userEmail, setUserEmail]   = useState("");
+  const [userId,    setUserId]      = useState(null);
+
+  // On mount — restore Supabase session if one exists
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setIsSignedIn(true);
+        setUserEmail(session.user.email);
+        setUserId(session.user.id);
+      }
+    });
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        setIsSignedIn(true);
+        setUserEmail(session.user.email);
+        setUserId(session.user.id);
+      } else {
+        setIsSignedIn(false);
+        setUserEmail("");
+        setUserId(null);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
   const [showAuth, setShowAuth]     = useState(false);
   const [authMode, setAuthMode]     = useState("signup");
   const [authEmail, setAuthEmail]   = useState("");
@@ -4832,10 +5235,15 @@ export default function LitSense() {
 
   // ── FRIEND NUDGE — contextual opening message ─────────────────────────────
   const friendNudge = useMemo(() => {
+    // Extract first name from email (e.g. john.smith@... → John)
+    const firstName = isSignedIn && userEmail
+      ? userEmail.split("@")[0].split(/[._]/)[0].replace(/\b\w/g, c => c.toUpperCase())
+      : null;
+
     // Intervention override — surfaces naturally, never technically
     if (interventionLevel === 2) {
       return {
-        msg: "You've started a few things lately that didn't quite stick. Want to try something shorter and faster — just to get back in the rhythm?",
+        msg: `${firstName ? `${firstName}, you've` : "You've"} started a few things lately that didn't quite stick. Want to try something shorter and faster?`,
         cta: "Find something that sticks",
         prompt: "I've been abandoning books lately. Recommend something shorter and fast-paced that I'm very likely to actually finish.",
       };
@@ -4861,7 +5269,6 @@ export default function LitSense() {
       return {
         msg: `Still reading ${shortTitle}?`,
         cta: "Tell me how it's going",
-        // Opens companion conversation ABOUT the current book, not about next book
         prompt: `I'm currently reading "${currentBook}". I want to talk about it — ask me how it's going.`,
       };
     }
@@ -4869,8 +5276,29 @@ export default function LitSense() {
       const unread = savedBooks.find(sb => !reactions[sb.id]);
       if (unread) return { msg:`You saved ${unread.title.split(":")[0]} — did you ever start it?`, cta:"Tell me more about it", prompt:`Tell me more about ${unread.title} by ${unread.author}. Is it right for me?` };
     }
+    // Marketplace signal — book on their want list is listed for sale
+    if (isPro && wantList.length > 0) {
+      const wantTitles = wantList.map(t => t.toLowerCase());
+      const match = MOCK_LISTINGS.find(l => wantTitles.includes(l.title.toLowerCase()));
+      if (match) {
+        return {
+          msg: `Someone just listed a copy of ${match.title.split(":")[0]} — it's on your list.`,
+          cta: "See it in the marketplace",
+          prompt: `Tell me about ${match.title} by ${match.author}. I might buy it.`,
+          onTap: () => setTab("market"),
+        };
+      }
+    }
+    // New signed-in user with no history — greet by name
+    if (firstName) {
+      return {
+        msg: `Hey ${firstName} — what are you reading right now, or are you looking for something new?`,
+        cta: "Tell me",
+        prompt: `Ask me what I'm reading or looking for next. I'm a new user so you know nothing about me yet — just ask naturally.`,
+      };
+    }
     return null;
-  }, [reactions, currentBook, savedBooks, readBooks, interventionLevel]);
+  }, [reactions, currentBook, savedBooks, readBooks, interventionLevel, isSignedIn, userEmail, isPro, wantList]);
 
   // Build memory object for getFriendPrompt
   const friendMemory = useMemo(() => {
@@ -4953,6 +5381,7 @@ export default function LitSense() {
   // ── UI STATE ──────────────────────────────────────────────────────────────
   const [showPro, setPro]       = useState(false);
   const [shelfToast, setShelfToast] = useState(null); // { title } shown briefly when book auto-added
+  const [discBook,   setDiscBook]   = useState(null); // book being discussed
   const [shelfTab, setShelfTab]   = useState("read");
   const [bookInput, setBookInput] = useState("");
   const [wantInput, setWantInput] = useState("");
@@ -5126,31 +5555,37 @@ export default function LitSense() {
   const goAsk = (prompt) => { setTab("ask"); setTimeout(()=>sendChat(prompt),80); };
 
   // ── AUTH HANDLERS ─────────────────────────────────────────────────────────
-  const handleAuth = () => {
+  const handleAuth = async () => {
     setAuthError("");
-    if (!authEmail.trim()||!authPass.trim()) { setAuthError("Please fill in both fields."); return; }
-    if (authMode==="signup") {
-      if (localStorage.getItem(`ls_user_${authEmail.toLowerCase()}`)) { setAuthError("An account with this email already exists. Sign in instead."); return; }
-      localStorage.setItem(`ls_user_${authEmail.toLowerCase()}`,authPass);
-    // Credit referrer if signup came via a referral link
-    // ⚠️ PRODUCTION: do this server-side in Supabase via /api/referral endpoint
+    if (!authEmail.trim() || !authPass.trim()) { setAuthError("Please fill in both fields."); return; }
     try {
-      const refFrom = localStorage.getItem("ls_ref_from");
-      if (refFrom && authMode === "signup") {
-        // In production: POST /api/referral { refCode: refFrom, newUserId: userId }
-        // For now: just clear the ref param so it doesn't re-trigger
-        localStorage.removeItem("ls_ref_from");
+      if (authMode === "signup") {
+        await signUp(authEmail.trim(), authPass.trim());
+        // Supabase sends a confirmation email by default
+        // For now we auto-sign-in after signup
+        await signIn(authEmail.trim(), authPass.trim());
+      } else {
+        await signIn(authEmail.trim(), authPass.trim());
       }
-    } catch {}
-    } else {
-      if (localStorage.getItem(`ls_user_${authEmail.toLowerCase()}`)!==authPass) { setAuthError("Incorrect email or password."); return; }
+      setShowAuth(false); setAuthEmail(""); setAuthPass(""); setAuthError("");
+    } catch (err) {
+      setAuthError(err.message || "Something went wrong. Please try again.");
     }
-    localStorage.setItem("ls_user",authEmail.toLowerCase());
-    setIsSignedIn(true); setUserEmail(authEmail.toLowerCase());
-    setShowAuth(false); setAuthEmail(""); setAuthPass(""); setAuthError("");
   };
-  const handleSignOut = () => { localStorage.removeItem("ls_user"); setIsSignedIn(false); setIsPro(false); setUserEmail(""); setReadBooks([]); setCurrentBook(""); setWantList([]); };
-  const handleUpgrade = () => { if (!isSignedIn) { setShowAuth(true); setAuthMode("signup"); setPro(false); return; } localStorage.setItem("ls_pro","1"); setIsPro(true); setPro(false); };
+
+  const handleSignOut = async () => {
+    await signOut();
+    setIsPro(false);
+    setReadBooks([]); setCurrentBook(""); setWantList([]);
+    localStorage.removeItem("ls_pro");
+  };
+
+  const handleUpgrade = () => {
+    if (!isSignedIn) { setShowAuth(true); setAuthMode("signup"); setPro(false); return; }
+    localStorage.setItem("ls_pro", "1");
+    setIsPro(true);
+    setPro(false);
+  };
 
 
   // ── BACKGROUND — inline gradients, no CSS class dependency ─────────────────
@@ -5332,7 +5767,7 @@ export default function LitSense() {
 
               {/* Proof card — shows the intelligence, not just the claim */}
               <div className="ls-proof">
-                <div className="ls-proof-label">What a LitSense recommendation actually looks like</div>
+                
                 <div className="ls-proof-card">
                   <div className="ls-proof-cover">
                     <BookCover isbn="9780802162175" title="The Covenant of Water" author="Abraham Verghese" color={["#1a2430","#0e1820"]}/>
@@ -5376,7 +5811,7 @@ export default function LitSense() {
             {/* Mood */}
             <div className="ls-sec-hdr" style={{padding:"0 16px",marginBottom:12}}>
               <span className="ls-sec-title">Set your mood</span>
-              <span className="ls-sec-sub">Shapes your picks</span>
+              
             </div>
             <div className="ls-mood-row">
               {MOODS.map(({id,name,Icon})=>(
@@ -5460,6 +5895,16 @@ export default function LitSense() {
             <MicButton onTranscript={(t)=>goAsk(t)}/>
           </div>
           </>
+        )}
+
+        {/* ── MARKETPLACE ── */}
+        {tab==="market" && (
+          <MarketplaceTab
+            isPro={isPro}
+            savedBooks={savedBooks}
+            wantList={wantList}
+            onRequirePro={()=>setPro(true)}
+          />
         )}
 
         {/* ── MY SHELF ── */}
@@ -5806,6 +6251,7 @@ export default function LitSense() {
         {[
           ["discover",<Search size={21} strokeWidth={1.75}/>,"Discover"],
           ["shelf",<Library size={21} strokeWidth={1.75}/>,"My Shelf"],
+          ["market",<ShoppingBag size={21} strokeWidth={1.75}/>,"Market"],
           ["ask",<MessageCircle size={21} strokeWidth={1.75}/>,"Ask"],
         ].map(([v,icon,label])=>(
           <button key={v} className={`ls-nav-btn${tab===v?" on":""}`} onClick={()=>setTab(v)}>
@@ -5824,6 +6270,17 @@ export default function LitSense() {
           onSave={handleSaveBook}
           onDismiss={(id) => { handleDismissBook(id); setTappedBook(null); }}
           userState={adaptedUserState}
+          onDiscuss={(b) => { setTappedBook(null); setDiscBook(b); }}
+        />
+      )}
+
+      {/* DISCUSSION THREAD */}
+      {discBook && (
+        <DiscussionThread
+          book={discBook}
+          userEmail={userEmail}
+          userId={userId}
+          onClose={() => setDiscBook(null)}
         />
       )}
 
