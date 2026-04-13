@@ -6449,9 +6449,17 @@ export default function LitSense() {
                     }
                     setProBusy(true); setProError("");
                     try {
-                      // Load Stripe JS dynamically
-                      const { loadStripe } = await import("@stripe/stripe-js");
-                      const stripe = await loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+                      // Load Stripe from CDN if not already loaded
+                      if (!window.Stripe) {
+                        await new Promise((resolve, reject) => {
+                          const script = document.createElement("script");
+                          script.src = "https://js.stripe.com/v3/";
+                          script.onload = resolve;
+                          script.onerror = reject;
+                          document.head.appendChild(script);
+                        });
+                      }
+                      const stripe = window.Stripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
                       // Create subscription payment intent via API
                       const res = await fetch("/api/subscribe", {
