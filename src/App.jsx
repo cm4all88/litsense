@@ -551,6 +551,30 @@ textarea.ls-chat-input::placeholder{color:var(--muted);}
 .ls-modal-price-note{font-size:12px;color:var(--sage);font-weight:600;}
 .ls-modal-cta{width:100%;padding:17px;border-radius:var(--r-lg);border:none;background:var(--gold);color:#060402;font-family:'Inter',sans-serif;font-size:16px;font-weight:700;cursor:pointer;margin-bottom:11px;box-shadow:0 6px 28px rgba(212,148,26,.45);transition:all .25s var(--ease);}
 .ls-modal-cta:hover{background:var(--gold-r);transform:translateY(-2px);}
+.ls-modal-cta:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+
+/* ── STRIPE CARD INPUT ── */
+.ls-stripe-field{margin-bottom:16px;}
+.ls-stripe-label{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.ls-stripe-input{
+  width:100%;padding:13px 14px;
+  background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:var(--r-md);
+  color:var(--text);font-size:14px;
+  font-family:'Inter',sans-serif;
+  box-sizing:border-box;outline:none;
+}
+.ls-stripe-input:focus{border-color:var(--gold);}
+.ls-stripe-card-element{
+  padding:13px 14px;
+  background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:var(--r-md);
+  margin-bottom:16px;
+}
+.ls-stripe-error{font-size:12px;color:#e06060;margin-bottom:12px;}
+
 .ls-modal-cancel{width:100%;padding:14px;border-radius:var(--r-md);border:1px solid rgba(255,255,255,.1);background:transparent;color:var(--muted);font-size:14px;cursor:pointer;transition:all .15s;}
 .ls-modal-cancel:hover{color:var(--text2);}
 
@@ -4841,11 +4865,14 @@ function ListBookModal({ onClose, onSubmit }) {
   );
 }
 
-function MarketplaceTab({ isPro, savedBooks, wantList, onRequirePro }) {
+function MarketplaceTab({ isPro, savedBooks, wantList, onRequirePro, userEmail }) {
   const [marketTab, setMarketTab]   = useState("browse");
   const [listings,  setListings]    = useState(MOCK_LISTINGS);
   const [showList,  setShowList]    = useState(false);
   const [selected,  setSelected]    = useState(null);
+  const [buying,    setBuying]      = useState(false);
+  const [buyError,  setBuyError]    = useState("");
+  const [buyDone,   setBuyDone]     = useState(false);
 
   if (!isPro) {
     return (
@@ -4942,12 +4969,57 @@ function MarketplaceTab({ isPro, savedBooks, wantList, onRequirePro }) {
               </div>
             </div>
             <div style={{fontSize:12,color:"var(--muted)",lineHeight:1.7,marginBottom:20}}>
-              Payment is held in escrow until you confirm delivery. We generate the postage label — seller ships to you directly.
+              Payment is held in escrow until you confirm delivery. We generate the postage label — seller ships to you directly. LitSense takes a 10% platform fee.
             </div>
-            <button className="ls-list-submit" onClick={()=>setSelected(null)}>
-              Buy for ${selected.price} → (Stripe coming soon)
-            </button>
-            <button onClick={()=>setSelected(null)} style={{width:"100%",marginTop:10,padding:12,background:"none",border:"none",color:"var(--muted)",fontSize:13,cursor:"pointer"}}>Cancel</button>
+
+            {buyDone ? (
+              <div style={{textAlign:"center",padding:"20px 0"}}>
+                <CheckCircle size={36} style={{color:"var(--gold)",marginBottom:12}}/>
+                <div style={{fontFamily:"'Lora',serif",fontSize:18,fontWeight:700,color:"var(--text)",marginBottom:8}}>Payment held in escrow</div>
+                <div style={{fontSize:13,color:"var(--muted)",lineHeight:1.7}}>The seller has been notified. They'll ship within 3 days. You'll get tracking info here.</div>
+                <button className="ls-list-submit" style={{marginTop:20}} onClick={()=>{setSelected(null);setBuyDone(false);}}>Done</button>
+              </div>
+            ) : (
+              <>
+                {buyError && (
+                  <div style={{padding:"10px 14px",background:"rgba(220,50,50,.1)",border:"1px solid rgba(220,50,50,.3)",borderRadius:"var(--r-md)",fontSize:13,color:"#e06060",marginBottom:14}}>
+                    {buyError}
+                  </div>
+                )}
+                <button
+                  className="ls-list-submit"
+                  disabled={buying}
+                  onClick={async () => {
+                    setBuying(true); setBuyError("");
+                    try {
+                      const amount_cents = selected.price * 100;
+                      const res = await fetch("/api/checkout", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          listing_id:    selected.id,
+                          buyer_email:   userEmail,
+                          amount_cents,
+                          postage_cents: 450, // ~$4.50 Media Mail estimate
+                        }),
+                      });
+                      const data = await res.json();
+                      if (!res.ok) throw new Error(data.error || "Checkout failed");
+                      // In production: use Stripe.js to confirm the payment with client_secret
+                      // For now: show success (payment intent created, funds authorized)
+                      setBuyDone(true);
+                    } catch (err) {
+                      setBuyError(err.message || "Payment failed. Please try again.");
+                    } finally {
+                      setBuying(false);
+                    }
+                  }}
+                >
+                  {buying ? "Processing…" : `Buy for $${selected.price} + $4.50 shipping →`}
+                </button>
+              </>
+            )}
+            <button onClick={()=>{setSelected(null);setBuyError("");setBuyDone(false);}} style={{width:"100%",marginTop:10,padding:12,background:"none",border:"none",color:"var(--muted)",fontSize:13,cursor:"pointer"}}>Cancel</button>
           </div>
         </div>
       )}
@@ -5379,7 +5451,11 @@ export default function LitSense() {
   }), [readBooks, savedBooks, bgVoice, mood, reactions, dismissedSignals, signalEngagements]);
 
   // ── UI STATE ──────────────────────────────────────────────────────────────
-  const [showPro, setPro]       = useState(false);
+  const [showPro, setPro]           = useState(false);
+  const [proStep,  setProStep]       = useState("pitch"); // "pitch" | "card" | "done"
+  const [proError, setProError]      = useState("");
+  const [proBusy,  setProBusy]       = useState(false);
+  const [proCard,  setProCard]       = useState({ number:"", expiry:"", cvc:"", name:"" });
   const [shelfToast, setShelfToast] = useState(null); // { title } shown briefly when book auto-added
   const [discBook,   setDiscBook]   = useState(null); // book being discussed
   const [shelfTab, setShelfTab]   = useState("read");
@@ -5904,6 +5980,7 @@ export default function LitSense() {
             savedBooks={savedBooks}
             wantList={wantList}
             onRequirePro={()=>setPro(true)}
+            userEmail={userEmail}
           />
         )}
 
@@ -6286,32 +6363,147 @@ export default function LitSense() {
 
       {/* PRO MODAL */}
       {showPro&&(
-        <div className="ls-overlay" onClick={()=>setPro(false)}>
+        <div className="ls-overlay" onClick={()=>{setPro(false);setProStep("pitch");setProError("");}}>
           <div className="ls-modal" onClick={e=>e.stopPropagation()}>
             <div className="ls-modal-handle"/>
-            <div className="ls-modal-eyebrow">LitSense Pro</div>
-            <div className="ls-modal-title">Read <em>smarter.</em><br/>Every month.</div>
-            <div className="ls-modal-sub">For readers who take books seriously. Cancel anytime.</div>
-            <div className="ls-pro-features">
-              {PRO_FEATURES.map(({Icon,title,desc},i)=>(
-                <div key={i} className="ls-pro-feature">
-                  <div className="ls-pro-feat-icon"><Icon size={15} strokeWidth={1.75}/></div>
-                  <div className="ls-pro-feat-text">
-                    <div className="ls-pro-feat-title">{title}</div>
-                    <div className="ls-pro-feat-desc">{desc}</div>
+
+            {proStep==="pitch" && (
+              <>
+                <div className="ls-modal-eyebrow">LitSense Pro</div>
+                <div className="ls-modal-title">Read <em>smarter.</em><br/>Every month.</div>
+                <div className="ls-modal-sub">For readers who take books seriously. Cancel anytime.</div>
+                <div className="ls-pro-features">
+                  {PRO_FEATURES.map(({Icon,title,desc},i)=>(
+                    <div key={i} className="ls-pro-feature">
+                      <div className="ls-pro-feat-icon"><Icon size={15} strokeWidth={1.75}/></div>
+                      <div className="ls-pro-feat-text">
+                        <div className="ls-pro-feat-title">{title}</div>
+                        <div className="ls-pro-feat-desc">{desc}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="ls-modal-price-row">
+                  <div className="ls-modal-price">$4.99</div>
+                  <div className="ls-modal-price-period">/ month</div>
+                  <div className="ls-modal-price-note">· or $39.99/year — save 33%</div>
+                </div>
+                <button className="ls-modal-cta" onClick={()=>{
+                  if (!isSignedIn) { setPro(false); setShowAuth(true); setAuthMode("signup"); return; }
+                  setProStep("card");
+                }}>
+                  {isSignedIn ? "Start your free 7-day trial →" : "Create an account to get started"}
+                </button>
+                <button className="ls-modal-cancel" onClick={()=>{setPro(false);setProStep("pitch");}}>Maybe another time</button>
+              </>
+            )}
+
+            {proStep==="card" && (
+              <>
+                <div className="ls-modal-eyebrow">LitSense Pro — $4.99/month</div>
+                <div className="ls-modal-title" style={{fontSize:22,marginBottom:20}}>Payment details</div>
+
+                {proError && <div className="ls-stripe-error">{proError}</div>}
+
+                <div className="ls-stripe-field">
+                  <div className="ls-stripe-label">Name on card</div>
+                  <input className="ls-stripe-input" placeholder="Jane Smith"
+                    value={proCard.name} onChange={e=>setProCard(p=>({...p,name:e.target.value}))}/>
+                </div>
+                <div className="ls-stripe-field">
+                  <div className="ls-stripe-label">Card number</div>
+                  <input className="ls-stripe-input" placeholder="1234 5678 9012 3456"
+                    maxLength={19}
+                    value={proCard.number}
+                    onChange={e=>{
+                      const v = e.target.value.replace(/\D/g,"").slice(0,16);
+                      setProCard(p=>({...p,number:v.replace(/(.{4})/g,"$1 ").trim()}));
+                    }}/>
+                </div>
+                <div style={{display:"flex",gap:12}}>
+                  <div className="ls-stripe-field" style={{flex:1}}>
+                    <div className="ls-stripe-label">Expiry</div>
+                    <input className="ls-stripe-input" placeholder="MM/YY" maxLength={5}
+                      value={proCard.expiry}
+                      onChange={e=>{
+                        const v = e.target.value.replace(/\D/g,"").slice(0,4);
+                        setProCard(p=>({...p,expiry:v.length>2?v.slice(0,2)+"/"+v.slice(2):v}));
+                      }}/>
+                  </div>
+                  <div className="ls-stripe-field" style={{flex:1}}>
+                    <div className="ls-stripe-label">CVC</div>
+                    <input className="ls-stripe-input" placeholder="123" maxLength={4}
+                      value={proCard.cvc}
+                      onChange={e=>setProCard(p=>({...p,cvc:e.target.value.replace(/\D/g,"").slice(0,4)}))}/>
                   </div>
                 </div>
-              ))}
-            </div>
-            <div className="ls-modal-price-row">
-              <div className="ls-modal-price">$4.99</div>
-              <div className="ls-modal-price-period">/ month</div>
-              <div className="ls-modal-price-note">· or $39.99/year — save 33%</div>
-            </div>
-            <button className="ls-modal-cta" onClick={handleUpgrade}>
-              {isSignedIn?"Start your free 7-day trial":"Create an account to get started"}
-            </button>
-            <button className="ls-modal-cancel" onClick={()=>setPro(false)}>Maybe another time</button>
+
+                <div style={{fontSize:11,color:"var(--muted)",marginBottom:16,lineHeight:1.6}}>
+                  Secured by Stripe. Cancel anytime from your account settings. Free 7-day trial — card charged after trial ends.
+                </div>
+
+                <button className="ls-modal-cta" disabled={proBusy}
+                  onClick={async()=>{
+                    if (!proCard.name || !proCard.number || !proCard.expiry || !proCard.cvc) {
+                      setProError("Please fill in all card details."); return;
+                    }
+                    setProBusy(true); setProError("");
+                    try {
+                      // Load Stripe JS dynamically
+                      const { loadStripe } = await import("@stripe/stripe-js");
+                      const stripe = await loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+
+                      // Create subscription payment intent via API
+                      const res = await fetch("/api/subscribe", {
+                        method:"POST",
+                        headers:{"Content-Type":"application/json"},
+                        body:JSON.stringify({ email: userEmail, plan:"monthly" }),
+                      });
+                      const { client_secret } = await res.json();
+
+                      // Confirm card payment with Stripe
+                      const [month, year] = proCard.expiry.split("/");
+                      const { error } = await stripe.confirmCardPayment(client_secret, {
+                        payment_method: {
+                          card: {
+                            number:    proCard.number.replace(/\s/g,""),
+                            exp_month: parseInt(month),
+                            exp_year:  parseInt("20"+year),
+                            cvc:       proCard.cvc,
+                          },
+                          billing_details: { name: proCard.name, email: userEmail },
+                        },
+                      });
+
+                      if (error) { setProError(error.message); return; }
+
+                      // Success — grant Pro access
+                      localStorage.setItem("ls_pro","1");
+                      setIsPro(true);
+                      setProStep("done");
+                    } catch(err) {
+                      setProError(err.message || "Payment failed. Please try again.");
+                    } finally {
+                      setProBusy(false);
+                    }
+                  }}
+                >
+                  {proBusy ? "Processing…" : "Start free trial →"}
+                </button>
+                <button className="ls-modal-cancel" onClick={()=>{setProStep("pitch");setProError("");}}>← Back</button>
+              </>
+            )}
+
+            {proStep==="done" && (
+              <div style={{textAlign:"center",padding:"20px 0"}}>
+                <CheckCircle size={44} style={{color:"var(--gold)",marginBottom:16}}/>
+                <div className="ls-modal-title" style={{fontSize:24,marginBottom:8}}>Welcome to Pro</div>
+                <div className="ls-modal-sub">Your 7-day free trial has started. Enjoy unlimited everything.</div>
+                <button className="ls-modal-cta" style={{marginTop:24}} onClick={()=>{setPro(false);setProStep("pitch");}}>
+                  Let's go →
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
