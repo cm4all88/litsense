@@ -6687,6 +6687,7 @@ export default function LitSense() {
           userState={adaptedUserState}
         />
       )}
+      {tappedBook && (
         <TileModal
           book={tappedBook}
           onClose={() => setTappedBook(null)}
