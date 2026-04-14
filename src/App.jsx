@@ -5244,6 +5244,16 @@ function DiscussionThread({ book, userEmail, userId, onClose }) {
 }
 
 export default function LitSense() {
+  useEffect(() => {
+    // Check for referral param — store so signup flow can credit referrer
+    // In production: send to Supabase to credit the referrer's account
+    const params = new URLSearchParams(window.location.search);
+    const refCode = params.get("ref");
+    if (refCode) {
+      try { localStorage.setItem("ls_ref_from", refCode); } catch {}
+    }
+  }, []);
+
   // ── AUTH ──────────────────────────────────────────────────────────────────
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [isPro, setIsPro]           = useState(() => { try { return localStorage.getItem("ls_pro") === "1"; } catch { return false; } });
@@ -5725,15 +5735,6 @@ export default function LitSense() {
     }
     setLoad(false);
   };
-
-  // ── REFERRAL PARAM — check after all state is declared ───────────────────
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const refCode = params.get("ref");
-    if (refCode) {
-      try { localStorage.setItem("ls_ref_from", refCode); } catch {}
-    }
-  }, []);
 
   const dismissWelcome = () => {
     try { localStorage.setItem("ls_welcome_shown", new Date().toISOString()); } catch {}
