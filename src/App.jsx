@@ -2767,369 +2767,375 @@ function ReasonBlock({ reason, style = {} }) {
 // Crossfades when the active wheel book changes.
 
 const BOOK_SCENES = {
-  // The Covenant of Water — Kerala backwaters, a boat at dusk
+  // The Covenant of Water — Kerala backwaters, blazing sunset, palm silhouettes
   1: ({ opacity }) => (
     <svg viewBox="0 0 390 320" xmlns="http://www.w3.org/2000/svg" style={{width:"100%",height:"100%",opacity}}>
       <defs>
-        <radialGradient id="s1sky" cx="50%" cy="30%" r="70%">
-          <stop offset="0%" stopColor="#3d2a12" stopOpacity="0.9"/>
-          <stop offset="100%" stopColor="#0d0a06" stopOpacity="1"/>
+        <linearGradient id="s1sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#1a0800"/>
+          <stop offset="40%" stopColor="#8B3000" stopOpacity="0.9"/>
+          <stop offset="75%" stopColor="#d4601a" stopOpacity="0.7"/>
+          <stop offset="100%" stopColor="#0d0805"/>
+        </linearGradient>
+        <radialGradient id="s1sun" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#ffcc44" stopOpacity="0.95"/>
+          <stop offset="40%" stopColor="#e87020" stopOpacity="0.6"/>
+          <stop offset="100%" stopColor="#c84010" stopOpacity="0"/>
         </radialGradient>
-        <radialGradient id="s1moon" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#d4941a" stopOpacity="0.6"/>
-          <stop offset="100%" stopColor="#d4941a" stopOpacity="0"/>
+        <radialGradient id="s1glow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#ff8822" stopOpacity="0.5"/>
+          <stop offset="100%" stopColor="#ff4400" stopOpacity="0"/>
         </radialGradient>
       </defs>
       <rect width="390" height="320" fill="url(#s1sky)"/>
-      {/* Moon glow */}
-      <ellipse cx="290" cy="60" rx="60" ry="60" fill="url(#s1moon)"/>
-      <circle cx="290" cy="60" r="14" fill="#c4841a" opacity="0.7"/>
-      {/* Water reflections — horizontal strokes */}
-      {[180,190,200,210,220,230,240,250,260,270,280,290,300,310].map((y,i) => (
-        <line key={i} x1={10+i*2} y1={y} x2={380-i} y2={y}
-          stroke="#d4941a" strokeOpacity={0.04+i*0.01} strokeWidth="1.5"/>
+      {/* Horizon glow */}
+      <ellipse cx="195" cy="180" rx="300" ry="80" fill="#c04010" opacity="0.35"/>
+      {/* Sun */}
+      <ellipse cx="195" cy="168" rx="80" ry="80" fill="url(#s1glow)"/>
+      <ellipse cx="195" cy="168" rx="30" ry="30" fill="url(#s1sun)"/>
+      <circle cx="195" cy="168" r="16" fill="#ffe070" opacity="0.9"/>
+      {/* Sun reflection on water */}
+      <ellipse cx="195" cy="252" rx="12" ry="40" fill="#ffaa30" opacity="0.55"/>
+      <ellipse cx="195" cy="270" rx="30" ry="20" fill="#ff8820" opacity="0.22"/>
+      {/* Water surface — flat, dark, reflective */}
+      <rect x="0" y="196" width="390" height="124" fill="#080502" opacity="0.88"/>
+      {/* Water shimmer lines */}
+      {[204,212,220,228,236,244,252,260,268,278].map((y,i)=>(
+        <line key={i} x1={20+i*5} y1={y} x2={370-i*5} y2={y}
+          stroke="#d4601a" strokeOpacity={0.07+i*0.012} strokeWidth="1.5"/>
       ))}
-      {/* Moon reflection in water */}
-      <ellipse cx="290" cy="240" rx="8" ry="40" fill="#d4941a" opacity="0.08"/>
-      {/* Far treeline — palm silhouettes */}
-      {[20,50,80,110,140,170,200,230,260,290,320,350].map((x,i) => (
-        <g key={i} transform={`translate(${x},${155+Math.sin(i)*6})`}>
-          <line x1="0" y1="0" x2="0" y2={-35-Math.abs(Math.sin(i*1.7))*15}
-            stroke="#1a1208" strokeWidth="2.5"/>
-          {/* Palm fronds */}
-          {[-30,-20,-10,0,10,20,30].map((angle,j) => (
-            <line key={j}
-              x1="0" y1={-35-Math.abs(Math.sin(i*1.7))*15}
-              x2={Math.sin(angle*Math.PI/180)*20}
-              y2={-35-Math.abs(Math.sin(i*1.7))*15 - Math.cos(angle*Math.PI/180)*12}
-              stroke="#251a0a" strokeWidth="1.5" opacity="0.9"/>
-          ))}
-        </g>
-      ))}
-      {/* Water surface */}
-      <rect x="0" y="175" width="390" height="145" fill="#0d0a06" opacity="0.6"/>
-      {/* Boat hull */}
-      <path d="M130 210 Q195 195 260 210 L275 228 Q195 238 115 228 Z"
-        fill="#1a1208" stroke="#2a1e0e" strokeWidth="1"/>
-      {/* Boat cabin */}
-      <rect x="170" y="196" width="48" height="18" rx="3"
-        fill="#221608" stroke="#3a2810" strokeWidth="1"/>
-      {/* Warm cabin light */}
-      <ellipse cx="194" cy="205" rx="6" ry="4" fill="#d4941a" opacity="0.25"/>
-      {/* Mast */}
-      <line x1="194" y1="178" x2="194" y2="210" stroke="#1a1208" strokeWidth="2"/>
-      {/* Ripples around boat */}
-      <ellipse cx="194" cy="232" rx="65" ry="6" fill="none"
-        stroke="#d4941a" strokeOpacity="0.06" strokeWidth="1"/>
-      <ellipse cx="194" cy="238" rx="80" ry="8" fill="none"
-        stroke="#d4941a" strokeOpacity="0.04" strokeWidth="1"/>
-      {/* Stars */}
-      {[[40,30],[70,18],[120,25],[180,12],[240,22],[310,15],[350,35],[320,50]].map(([x,y],i) => (
-        <circle key={i} cx={x} cy={y} r="1" fill="#f5efe5" opacity={0.3+Math.sin(i)*0.2}/>
-      ))}
+      {/* Palm tree silhouettes — stark black against fire sky */}
+      {[18,52,90,140,250,300,340,375].map((x,i)=>{
+        const h=55+Math.sin(i*0.9)*22; const lean=(i%2===0?-1:1)*0.12;
+        return (
+          <g key={i} transform={`translate(${x},${192+Math.sin(i)*6})`}>
+            <line x1="0" y1="0" x2={lean*h} y2={-h} stroke="#0a0604" strokeWidth={3-i*0.15} strokeLinecap="round"/>
+            {[-40,-25,-10,5,20,35,50].map((a,j)=>(
+              <line key={j} x1={lean*h} y1={-h}
+                x2={lean*h+Math.sin((a+j*2)*Math.PI/180)*26}
+                y2={-h-Math.cos((a+j*2)*Math.PI/180)*16}
+                stroke="#0a0604" strokeWidth="2" strokeLinecap="round" opacity="0.95"/>
+            ))}
+          </g>
+        );
+      })}
+      {/* Boat silhouette */}
+      <path d="M148 218 Q195 206 242 218 L250 230 Q195 240 140 230 Z" fill="#0a0604"/>
+      <line x1="195" y1="192" x2="195" y2="218" stroke="#0a0604" strokeWidth="2.5"/>
+      <path d="M195 192 L218 208 L195 210 Z" fill="#0a0604"/>
+      {/* Cabin warm light */}
+      <ellipse cx="195" cy="218" rx="5" ry="3" fill="#ffaa30" opacity="0.5"/>
     </svg>
   ),
 
-  // Demon Copperhead — Appalachian hills at dusk, a lone figure on a ridge
+  // Demon Copperhead — Appalachian night, coal fire, dark ridgeline
   2: ({ opacity }) => (
     <svg viewBox="0 0 390 320" xmlns="http://www.w3.org/2000/svg" style={{width:"100%",height:"100%",opacity}}>
       <defs>
         <linearGradient id="s2sky" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#1a0a04"/>
-          <stop offset="60%" stopColor="#3d1a08"/>
-          <stop offset="100%" stopColor="#0d0805"/>
+          <stop offset="0%" stopColor="#050208"/>
+          <stop offset="55%" stopColor="#1a0a0e"/>
+          <stop offset="100%" stopColor="#0a0204"/>
         </linearGradient>
+        <radialGradient id="s2fire" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#ff6600" stopOpacity="0.9"/>
+          <stop offset="50%" stopColor="#cc2200" stopOpacity="0.5"/>
+          <stop offset="100%" stopColor="#880000" stopOpacity="0"/>
+        </radialGradient>
+        <radialGradient id="s2ember" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#ff9900" stopOpacity="1"/>
+          <stop offset="100%" stopColor="#ff3300" stopOpacity="0"/>
+        </radialGradient>
       </defs>
       <rect width="390" height="320" fill="url(#s2sky)"/>
-      {/* Sunset band */}
-      <rect x="0" y="90" width="390" height="50" fill="#8B2500" opacity="0.12"/>
-      {/* Distant ridge — far */}
-      <path d="M0 155 Q60 130 120 145 Q180 128 240 140 Q300 125 390 138 L390 320 L0 320 Z"
-        fill="#1a0e06"/>
-      {/* Mid ridge */}
-      <path d="M0 175 Q40 155 90 168 Q150 148 210 162 Q270 145 330 160 Q360 152 390 158 L390 320 L0 320 Z"
-        fill="#14080403"/>
-      {/* Near ridge — main */}
-      <path d="M0 210 Q50 185 100 200 Q160 178 220 195 Q280 175 350 190 Q370 185 390 188 L390 320 L0 320 Z"
-        fill="#0d0604"/>
-      {/* Trees on ridge */}
-      {[15,35,55,72,88,105,125,145,165,185,205,225,248,268,288,308,328,348,368].map((x,i) => {
-        const h = 20 + Math.abs(Math.sin(i*0.8+1))*18;
-        const y = 188 + Math.sin(i*0.5)*8;
+      {/* Stars — sparse and cold */}
+      {[[30,18],[75,8],[130,22],[195,6],[250,14],[310,20],[355,10],[15,40],[370,38]].map(([x,y],i)=>(
+        <circle key={i} cx={x} cy={y} r={i%3===0?1.5:0.8} fill="#e0d8f0" opacity={0.35+i*0.04}/>
+      ))}
+      {/* Distant ridge layers */}
+      <path d="M0 155 Q55 132 110 148 Q170 125 230 142 Q290 122 390 136 L390 320 L0 320Z" fill="#110608"/>
+      <path d="M0 178 Q45 158 95 172 Q155 150 215 166 Q275 148 335 164 Q365 156 390 160 L390 320 L0 320Z" fill="#0d0406"/>
+      {/* Near ridge — main silhouette */}
+      <path d="M0 208 Q40 186 80 200 Q140 178 200 196 Q260 176 320 192 Q355 184 390 188 L390 320 L0 320Z" fill="#080204"/>
+      {/* Tree line — dead and skeletal */}
+      {[8,28,48,65,82,100,120,142,162,182,205,228,250,272,295,318,342,365].map((x,i)=>{
+        const h=24+Math.abs(Math.sin(i*1.1))*20; const y=186+Math.sin(i*0.6)*9;
         return (
           <g key={i}>
-            <line x1={x} y1={y} x2={x} y2={y-h} stroke="#0d0604" strokeWidth="2"/>
-            <polygon
-              points={`${x},${y-h} ${x-6},${y-h+12} ${x+6},${y-h+12}`}
-              fill="#0d0604"/>
-            <polygon
-              points={`${x},${y-h+6} ${x-8},${y-h+18} ${x+8},${y-h+18}`}
-              fill="#110804"/>
+            <line x1={x} y1={y} x2={x} y2={y-h} stroke="#080204" strokeWidth="2.2" strokeLinecap="round"/>
+            <line x1={x} y1={y-h*0.6} x2={x-8} y2={y-h*0.8} stroke="#080204" strokeWidth="1.4" strokeLinecap="round"/>
+            <line x1={x} y1={y-h*0.6} x2={x+7} y2={y-h*0.75} stroke="#080204" strokeWidth="1.4" strokeLinecap="round"/>
+            <line x1={x} y1={y-h*0.82} x2={x-5} y2={y-h} stroke="#080204" strokeWidth="1" strokeLinecap="round"/>
           </g>
         );
       })}
-      {/* Lone figure on ridge */}
-      <line x1="195" y1="182" x2="195" y2="198" stroke="#0a0604" strokeWidth="3"/>
-      <circle cx="195" cy="179" r="4" fill="#0a0604"/>
-      {/* Faint ember glow — fire pit far off */}
-      <ellipse cx="80" cy="200" rx="6" ry="3" fill="#d4941a" opacity="0.15"/>
-      <ellipse cx="80" cy="198" rx="3" ry="6" fill="#d4941a" opacity="0.08"/>
-      {/* Stars */}
-      {[[30,20],[80,35],[130,15],[200,28],[260,18],[320,30],[355,22],[15,45]].map(([x,y],i) => (
-        <circle key={i} cx={x} cy={y} r="1" fill="#f5efe5" opacity={0.25+Math.cos(i)*0.15}/>
-      ))}
+      {/* Coal fire glow — low on ridge, menacing */}
+      <ellipse cx="110" cy="196" rx="55" ry="28" fill="url(#s2fire)"/>
+      <ellipse cx="110" cy="196" rx="12" ry="8" fill="url(#s2ember)"/>
+      <ellipse cx="110" cy="193" rx="5" ry="4" fill="#ffcc00" opacity="0.8"/>
+      {/* Second distant fire */}
+      <ellipse cx="305" cy="188" rx="28" ry="14" fill="#cc2200" opacity="0.28"/>
+      <ellipse cx="305" cy="188" rx="6" ry="4" fill="#ff6600" opacity="0.6"/>
+      {/* Lone figure silhouette on ridge */}
+      <rect x="193" y="178" width="4" height="16" rx="1" fill="#060102"/>
+      <ellipse cx="195" cy="176" rx="4" ry="4" fill="#060102"/>
     </svg>
   ),
 
-  // Project Hail Mary — deep space, a lone spacecraft, alien star system
+  // Project Hail Mary — deep space, brilliant nebula, spacecraft beacon
   3: ({ opacity }) => (
     <svg viewBox="0 0 390 320" xmlns="http://www.w3.org/2000/svg" style={{width:"100%",height:"100%",opacity}}>
       <defs>
-        <radialGradient id="s3nebula" cx="60%" cy="40%" r="60%">
-          <stop offset="0%" stopColor="#1a3060" stopOpacity="0.5"/>
-          <stop offset="50%" stopColor="#0a1830" stopOpacity="0.3"/>
+        <radialGradient id="s3neb1" cx="65%" cy="38%" r="55%">
+          <stop offset="0%" stopColor="#2244cc" stopOpacity="0.7"/>
+          <stop offset="45%" stopColor="#441188" stopOpacity="0.4"/>
+          <stop offset="100%" stopColor="#020408" stopOpacity="0"/>
+        </radialGradient>
+        <radialGradient id="s3neb2" cx="25%" cy="70%" r="45%">
+          <stop offset="0%" stopColor="#cc4422" stopOpacity="0.5"/>
+          <stop offset="55%" stopColor="#882211" stopOpacity="0.2"/>
           <stop offset="100%" stopColor="#020408" stopOpacity="0"/>
         </radialGradient>
         <radialGradient id="s3star1" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#e8d4a0" stopOpacity="0.9"/>
-          <stop offset="100%" stopColor="#e8d4a0" stopOpacity="0"/>
+          <stop offset="0%" stopColor="#ffeeaa" stopOpacity="1"/>
+          <stop offset="30%" stopColor="#ffcc44" stopOpacity="0.7"/>
+          <stop offset="100%" stopColor="#ffaa00" stopOpacity="0"/>
         </radialGradient>
         <radialGradient id="s3star2" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#a0c8e8" stopOpacity="0.7"/>
-          <stop offset="100%" stopColor="#a0c8e8" stopOpacity="0"/>
+          <stop offset="0%" stopColor="#aaccff" stopOpacity="1"/>
+          <stop offset="40%" stopColor="#6688ff" stopOpacity="0.6"/>
+          <stop offset="100%" stopColor="#224488" stopOpacity="0"/>
         </radialGradient>
       </defs>
-      <rect width="390" height="320" fill="#020408"/>
-      {/* Nebula cloud */}
-      <ellipse cx="240" cy="130" rx="180" ry="120" fill="url(#s3nebula)"/>
-      {/* Tau Ceti — warm star */}
-      <ellipse cx="280" cy="80" rx="40" ry="40" fill="url(#s3star1)"/>
-      <circle cx="280" cy="80" r="8" fill="#e8d4a0" opacity="0.9"/>
-      {/* Eridani — cool blue companion */}
-      <ellipse cx="110" cy="200" rx="25" ry="25" fill="url(#s3star2)"/>
-      <circle cx="110" cy="200" r="5" fill="#a0c8e8" opacity="0.8"/>
-      {/* Star field */}
-      {Array.from({length: 60}, (_,i) => ({
-        x: (i*47+13) % 390,
-        y: (i*83+7)  % 320,
-        r: i%5===0 ? 1.5 : 0.8,
-        o: 0.2 + (i%7)*0.08
-      })).map((s,i) => (
-        <circle key={i} cx={s.x} cy={s.y} r={s.r} fill="#f5efe5" opacity={s.o}/>
+      <rect width="390" height="320" fill="#010206"/>
+      {/* Nebula clouds */}
+      <ellipse cx="255" cy="122" rx="200" ry="140" fill="url(#s3neb1)"/>
+      <ellipse cx="98" cy="220" rx="160" ry="120" fill="url(#s3neb2)"/>
+      {/* Dense star field */}
+      {Array.from({length:80},(_,i)=>({
+        x:(i*47+13)%390, y:(i*83+7)%320,
+        r:i%8===0?2:i%4===0?1.2:0.6,
+        o:0.2+(i%7)*0.1
+      })).map((s,i)=>(
+        <circle key={i} cx={s.x} cy={s.y} r={s.r} fill="#f0ecff" opacity={s.o}/>
       ))}
-      {/* Spacecraft — Hail Mary, rough cylinder */}
-      <g transform="translate(175 145) rotate(-15)">
-        {/* Main hull */}
-        <rect x="-8" y="-28" width="16" height="56" rx="4"
-          fill="#1a2030" stroke="#2a3848" strokeWidth="1"/>
-        {/* Engine bell */}
-        <path d="M-6 28 Q-10 38 -12 48 L12 48 Q10 38 6 28 Z"
-          fill="#141820" stroke="#202830" strokeWidth="1"/>
-        {/* Engine glow */}
-        <ellipse cx="0" cy="48" rx="10" ry="5" fill="#4060d0" opacity="0.4"/>
-        <ellipse cx="0" cy="52" rx="6" ry="8" fill="#4060d0" opacity="0.2"/>
-        {/* Solar panels */}
-        <rect x="-28" y="-8" width="20" height="8" rx="1"
-          fill="#1a3050" stroke="#203848" strokeWidth="0.5"/>
-        <rect x="8" y="-8" width="20" height="8" rx="1"
-          fill="#1a3050" stroke="#203848" strokeWidth="0.5"/>
-        {/* Panel lines */}
-        {[0,5,10,15].map(dx => (
-          <line key={dx} x1={-28+dx} y1="-8" x2={-28+dx} y2="0"
-            stroke="#203848" strokeWidth="0.5"/>
-        ))}
-        {/* Cockpit window */}
-        <ellipse cx="0" cy="-16" rx="4" ry="3" fill="#304060" opacity="0.8"/>
-        <ellipse cx="0" cy="-16" rx="2" ry="1.5" fill="#6080a0" opacity="0.5"/>
+      {/* Tau Ceti — warm yellow star */}
+      <ellipse cx="292" cy="68" rx="60" ry="60" fill="url(#s3star1)"/>
+      <circle cx="292" cy="68" r="10" fill="#ffe080" opacity="0.95"/>
+      <circle cx="292" cy="68" r="5" fill="#ffffff" opacity="0.9"/>
+      {/* Eridani — blue-white companion */}
+      <ellipse cx="98" cy="218" rx="40" ry="40" fill="url(#s3star2)"/>
+      <circle cx="98" cy="218" r="7" fill="#c0d8ff" opacity="0.95"/>
+      <circle cx="98" cy="218" r="3" fill="#ffffff" opacity="0.9"/>
+      {/* Spacecraft */}
+      <g transform="translate(185 155) rotate(-18)">
+        <rect x="-9" y="-32" width="18" height="62" rx="5" fill="#1a2238" stroke="#2a3858" strokeWidth="1.2"/>
+        <path d="M-7 30 Q-12 42 -14 54 L14 54 Q12 42 7 30Z" fill="#141828"/>
+        <ellipse cx="0" cy="54" rx="12" ry="6" fill="#4466ee" opacity="0.7"/>
+        <ellipse cx="0" cy="60" rx="7" ry="10" fill="#6688ff" opacity="0.4"/>
+        <ellipse cx="0" cy="66" rx="4" ry="8" fill="#99aaff" opacity="0.25"/>
+        <rect x="-30" y="-6" width="21" height="10" rx="2" fill="#162040" stroke="#1e3060" strokeWidth="0.8"/>
+        <rect x="9" y="-6" width="21" height="10" rx="2" fill="#162040" stroke="#1e3060" strokeWidth="0.8"/>
+        {[2,6,10,14].map(dx=>(<line key={dx} x1={-30+dx} y1="-6" x2={-30+dx} y2="4" stroke="#1e3060" strokeWidth="0.7"/>))}
+        <ellipse cx="0" cy="-20" rx="5" ry="4" fill="#203050" opacity="0.9"/>
+        <ellipse cx="0" cy="-20" rx="2.5" ry="2" fill="#7090c0" opacity="0.7"/>
       </g>
-      {/* Astrophage trail — the orange cloud */}
-      <ellipse cx="195" cy="240" rx="120" ry="20" fill="#d4941a" opacity="0.04"/>
-      <ellipse cx="195" cy="248" rx="80" ry="12" fill="#d4941a" opacity="0.03"/>
     </svg>
   ),
 
-  // All the Light We Cannot See — Saint-Malo, radio tower, sea
+  // All the Light We Cannot See — Saint-Malo, dramatic searchlights over sea
   4: ({ opacity }) => (
     <svg viewBox="0 0 390 320" xmlns="http://www.w3.org/2000/svg" style={{width:"100%",height:"100%",opacity}}>
       <defs>
         <linearGradient id="s4sky" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#08080e"/>
-          <stop offset="100%" stopColor="#181424"/>
+          <stop offset="0%" stopColor="#04040c"/>
+          <stop offset="60%" stopColor="#0c0c1e"/>
+          <stop offset="100%" stopColor="#060816"/>
         </linearGradient>
-        <radialGradient id="s4light" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#f5efe5" stopOpacity="0.15"/>
-          <stop offset="100%" stopColor="#f5efe5" stopOpacity="0"/>
+        <radialGradient id="s4beam1" cx="50%" cy="0%" r="100%">
+          <stop offset="0%" stopColor="#ffffff" stopOpacity="0.35"/>
+          <stop offset="100%" stopColor="#ffffff" stopOpacity="0"/>
+        </radialGradient>
+        <radialGradient id="s4beacon" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95"/>
+          <stop offset="30%" stopColor="#e8e0d0" stopOpacity="0.6"/>
+          <stop offset="100%" stopColor="#c8b870" stopOpacity="0"/>
         </radialGradient>
       </defs>
       <rect width="390" height="320" fill="url(#s4sky)"/>
-      {/* Sea */}
-      <rect x="0" y="230" width="390" height="90" fill="#080c14" opacity="0.9"/>
-      {/* Waves */}
-      {[240,252,264,276,288].map((y,i) => (
-        <path key={i}
-          d={`M0 ${y} Q${40+i*5} ${y-5} ${80+i*3} ${y} Q${130+i*4} ${y+5} ${170+i*2} ${y} Q${220+i*3} ${y-5} ${260+i*2} ${y} Q${310+i*4} ${y+5} 390 ${y}`}
-          fill="none" stroke="#1a2030" strokeOpacity={0.3-i*0.04} strokeWidth="1"/>
+      {/* Stars */}
+      {[[28,18],[72,12],[148,8],[205,20],[268,10],[332,16],[358,28],[14,42],[378,36]].map(([x,y],i)=>(
+        <circle key={i} cx={x} cy={y} r={i%3===0?1.4:0.8} fill="#e8e4f8" opacity={0.3+i*0.04}/>
+      ))}
+      {/* Searchlight beams — crisscrossing the sky */}
+      <polygon points="188,214 180,0 196,0 196,214" fill="url(#s4beam1)" opacity="0.5"/>
+      <polygon points="230,210 310,0 330,0 248,210" fill="url(#s4beam1)" opacity="0.3"/>
+      <polygon points="155,212 60,0 80,0 168,212" fill="url(#s4beam1)" opacity="0.25"/>
+      {/* Sea — dark and menacing */}
+      <rect x="0" y="236" width="390" height="84" fill="#040810" opacity="0.95"/>
+      {/* Wave crests */}
+      {[242,254,266,278,290].map((y,i)=>(
+        <path key={i} d={`M0 ${y} Q${50+i*8} ${y-6} ${100+i*4} ${y} Q${160+i*6} ${y+5} ${210+i*3} ${y} Q${268+i*5} ${y-6} ${320+i*2} ${y} Q${360+i*3} ${y+4} 390 ${y}`}
+          fill="none" stroke="#1a2844" strokeOpacity={0.45-i*0.06} strokeWidth="1.2"/>
       ))}
       {/* City wall / ramparts */}
-      <path d="M0 220 L30 220 L30 210 L45 210 L45 220 L70 220 L70 208 L85 208 L85 220 L120 220 L120 212 L135 212 L135 220 L390 220 L390 320 L0 320 Z"
-        fill="#141018"/>
-      {/* Buildings — Saint-Malo townhouses */}
-      {[[40,170,22,50],[90,155,18,65],[130,168,20,52],[175,150,24,70],[210,162,18,58],[255,148,22,72],[295,160,20,60],[330,155,24,65],[360,165,18,55]].map(([x,y,w,h],i) => (
+      <path d="M0 228 L28 228 L28 216 L44 216 L44 228 L68 228 L68 212 L84 212 L84 228 L118 228 L118 218 L132 218 L132 228 L390 228 L390 320 L0 320Z" fill="#0a0814"/>
+      {/* Saint-Malo buildings */}
+      {[[38,168,20,60],[85,152,18,76],[128,166,22,62],[174,146,25,82],[215,160,20,68],[260,144,24,84],[302,158,22,70],[342,150,26,78],[372,162,18,66]].map(([x,y,w,h],i)=>(
         <g key={i}>
-          <rect x={x-w/2} y={y} width={w} height={h} fill="#100c18" stroke="#1a1528" strokeWidth="0.5"/>
-          {/* Roof */}
-          <polygon points={`${x-w/2} ${y} ${x} ${y-15} ${x+w/2} ${y}`} fill="#0c0a14"/>
-          {/* Dim window */}
-          {i%3===0 && <rect x={x-4} y={y+h/2-6} width="8" height="10" rx="1" fill="#d4941a" opacity="0.12"/>}
+          <rect x={x-w/2} y={y} width={w} height={h} fill="#08060e" stroke="#120a1c" strokeWidth="0.5"/>
+          <polygon points={`${x-w/2} ${y} ${x} ${y-18} ${x+w/2} ${y}`} fill="#060408"/>
+          {i%3===0 && <rect x={x-5} y={y+h*0.4} width="9" height="12" rx="1" fill="#d4941a" opacity="0.28"/>}
+          {i%4===1 && <rect x={x-4} y={y+h*0.6} width="8" height="10" rx="1" fill="#d4941a" opacity="0.18"/>}
         </g>
       ))}
-      {/* Radio tower — tall, center */}
-      <line x1="194" y1="60" x2="194" y2="220" stroke="#1a1528" strokeWidth="3"/>
-      <line x1="194" y1="80" x2="194" y2="220" stroke="#201c30" strokeWidth="1.5"/>
-      {/* Tower cross beams */}
-      {[100,130,160,190].map((y,i) => {
-        const w = 8+i*6;
-        return <line key={i} x1={194-w} y1={y} x2={194+w} y2={y} stroke="#1a1528" strokeWidth="1.5"/>;
-      })}
-      {/* Guy wires */}
-      <line x1="194" y1="80" x2="130" y2="215" stroke="#1a1528" strokeWidth="0.8" opacity="0.6"/>
-      <line x1="194" y1="80" x2="258" y2="215" stroke="#1a1528" strokeWidth="0.8" opacity="0.6"/>
-      {/* Tower light beacon */}
-      <circle cx="194" cy="62" r="4" fill="#f5efe5" opacity="0.6"/>
-      <ellipse cx="194" cy="62" rx="40" ry="40" fill="url(#s4light)"/>
-      {/* Radio waves emanating */}
-      {[20,35,50].map((r,i) => (
-        <circle key={i} cx="194" cy="62" r={r} fill="none"
-          stroke="#f5efe5" strokeOpacity={0.06-i*0.015} strokeWidth="1"/>
-      ))}
-      {/* Stars / searchlight streaks */}
-      {[[30,25],[80,18],[280,22],[340,30],[360,15]].map(([x,y],i) => (
-        <circle key={i} cx={x} cy={y} r="1" fill="#f5efe5" opacity="0.3"/>
-      ))}
+      {/* Radio tower */}
+      <line x1="192" y1="52" x2="192" y2="228" stroke="#140a20" strokeWidth="3.5"/>
+      {[90,120,152,186].map((y,i)=>{const w=10+i*7;return <line key={i} x1={192-w} y1={y} x2={192+w} y2={y} stroke="#140a20" strokeWidth="1.8"/>;} )}
+      <line x1="192" y1="90" x2="132" y2="224" stroke="#140a20" strokeOpacity="0.5" strokeWidth="0.9"/>
+      <line x1="192" y1="90" x2="252" y2="224" stroke="#140a20" strokeOpacity="0.5" strokeWidth="0.9"/>
+      {/* Tower beacon */}
+      <ellipse cx="192" cy="52" rx="50" ry="50" fill="url(#s4beacon)"/>
+      <circle cx="192" cy="52" r="5" fill="#ffffff" opacity="0.9"/>
     </svg>
   ),
 
-  // The Lincoln Highway — open American road, 1950s, vast sky
+  // The Lincoln Highway — vast starry plains, lone headlights, Milky Way
   5: ({ opacity }) => (
     <svg viewBox="0 0 390 320" xmlns="http://www.w3.org/2000/svg" style={{width:"100%",height:"100%",opacity}}>
       <defs>
         <linearGradient id="s5sky" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#050810"/>
-          <stop offset="70%" stopColor="#0e1828"/>
-          <stop offset="100%" stopColor="#1a1408"/>
+          <stop offset="0%" stopColor="#020408"/>
+          <stop offset="60%" stopColor="#080c18"/>
+          <stop offset="85%" stopColor="#141008"/>
+          <stop offset="100%" stopColor="#080604"/>
         </linearGradient>
         <radialGradient id="s5moon" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#f5efe5" stopOpacity="0.5"/>
-          <stop offset="100%" stopColor="#f5efe5" stopOpacity="0"/>
+          <stop offset="0%" stopColor="#f0e8d8" stopOpacity="0.9"/>
+          <stop offset="50%" stopColor="#d8c8a0" stopOpacity="0.5"/>
+          <stop offset="100%" stopColor="#c0a860" stopOpacity="0"/>
+        </radialGradient>
+        <radialGradient id="s5head" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#ffe8a0" stopOpacity="0.9"/>
+          <stop offset="100%" stopColor="#ffe8a0" stopOpacity="0"/>
         </radialGradient>
       </defs>
       <rect width="390" height="320" fill="url(#s5sky)"/>
-      {/* Milky Way band */}
-      <ellipse cx="195" cy="140" rx="300" ry="60" fill="#1a2040" opacity="0.15" transform="rotate(-20 195 140)"/>
+      {/* Milky Way — bright diagonal band */}
+      <ellipse cx="195" cy="130" rx="360" ry="65" fill="#1a2050" opacity="0.55" transform="rotate(-22 195 130)"/>
+      <ellipse cx="195" cy="125" rx="280" ry="38" fill="#2030a0" opacity="0.22" transform="rotate(-22 195 125)"/>
+      {/* Dense stars */}
+      {Array.from({length:70},(_,i)=>({
+        x:(i*61+17)%390, y:(i*43+9)%210,
+        r:i%10===0?2.2:i%5===0?1.4:0.7,
+        o:0.25+(i%8)*0.08
+      })).map((s,i)=>(
+        <circle key={i} cx={s.x} cy={s.y} r={s.r} fill="#f0eeff" opacity={s.o}/>
+      ))}
       {/* Moon */}
-      <ellipse cx="320" cy="55" rx="35" ry="35" fill="url(#s5moon)"/>
-      <circle cx="320" cy="55" r="11" fill="#e8e0d0" opacity="0.5"/>
-      {/* Stars */}
-      {Array.from({length:50},(_,i) => ({
-        x:(i*73+17)%390, y:(i*41+9)%200, o:0.15+(i%6)*0.08
-      })).map((s,i) => (
-        <circle key={i} cx={s.x} cy={s.y} r={i%8===0?1.5:0.8} fill="#f5efe5" opacity={s.o}/>
+      <ellipse cx="318" cy="48" rx="44" ry="44" fill="url(#s5moon)"/>
+      <circle cx="318" cy="48" r="14" fill="#f0e8d0" opacity="0.7"/>
+      <circle cx="318" cy="48" r="8" fill="#f8f2e4" opacity="0.6"/>
+      {/* Flat horizon */}
+      <rect x="0" y="222" width="390" height="98" fill="#050402"/>
+      {/* Road — vanishing point */}
+      <path d="M152 320 L172 222 L218 222 L238 320Z" fill="#0f0e0a"/>
+      <path d="M152 320 L172 222 L174 222 L154 320Z" fill="#e8e0c0" opacity="0.08"/>
+      <path d="M236 320 L218 222 L220 222 L238 320Z" fill="#e8e0c0" opacity="0.08"/>
+      {/* Center line dashes */}
+      {[232,252,272,292,310].map((y,i)=>(
+        <rect key={i} x="191" y={y} width="7" height="15" rx="1" fill="#d4941a" opacity="0.35"/>
       ))}
-      {/* Flat horizon — Great Plains */}
-      <rect x="0" y="218" width="390" height="102" fill="#0a0c08"/>
-      {/* Road — vanishing point center */}
-      <path d="M155 320 L172 218 L218 218 L235 320 Z" fill="#141410"/>
-      {/* Road center dashes */}
-      {[230,252,270,288,306].map((y,i) => (
-        <rect key={i} x="192" y={y} width="6" height="14" rx="1" fill="#d4941a" opacity="0.15"/>
-      ))}
-      {/* Road shoulders — white lines */}
-      <line x1="155" y1="320" x2="172" y2="218" stroke="#f5efe5" strokeOpacity="0.08" strokeWidth="1"/>
-      <line x1="235" y1="320" x2="218" y2="218" stroke="#f5efe5" strokeOpacity="0.08" strokeWidth="1"/>
-      {/* Car headlights — far off */}
-      <circle cx="191" cy="224" r="2" fill="#f5efe5" opacity="0.5"/>
-      <circle cx="199" cy="224" r="2" fill="#f5efe5" opacity="0.5"/>
-      <ellipse cx="195" cy="226" rx="15" ry="4" fill="#f5efe5" opacity="0.04"/>
+      {/* Car headlights — far away */}
+      <ellipse cx="192" cy="228" rx="22" ry="5" fill="url(#s5head)"/>
+      <circle cx="188" cy="226" r="3" fill="#ffe880" opacity="0.85"/>
+      <circle cx="196" cy="226" r="3" fill="#ffe880" opacity="0.85"/>
       {/* Telephone poles */}
-      {[60,130,260,330].map((x,i) => (
+      {[55,125,265,335].map((x,i)=>(
         <g key={i}>
-          <line x1={x} y1="180" x2={x} y2="270" stroke="#0e0c08" strokeWidth="2.5"/>
-          <line x1={x-14} y1="188" x2={x+14} y2="188" stroke="#0e0c08" strokeWidth="1.5"/>
-          <line x1={x-10} y1="196" x2={x+10} y2="196" stroke="#0e0c08" strokeWidth="1.5"/>
-          {/* Wire to road */}
-          <line x1={x} y1="188" x2={195} y2="220"
-            stroke="#0e0c08" strokeOpacity="0.5" strokeWidth="0.5"/>
+          <line x1={x} y1="175" x2={x} y2="270" stroke="#0a0806" strokeWidth="3"/>
+          <line x1={x-16} y1="184" x2={x+16} y2="184" stroke="#0a0806" strokeWidth="1.8"/>
+          <line x1={x-11} y1="196" x2={x+11} y2="196" stroke="#0a0806" strokeWidth="1.8"/>
+          <line x1={x} y1="184" x2="195" y2="224" stroke="#0a0806" strokeOpacity="0.4" strokeWidth="0.6"/>
         </g>
       ))}
-      {/* Gas station far right — warm glow */}
-      <rect x="340" y="205" width="30" height="18" fill="#100e08"/>
-      <rect x="336" y="198" width="38" height="8" fill="#0e0c06"/>
-      <ellipse cx="355" cy="206" rx="20" ry="12" fill="#d4941a" opacity="0.08"/>
     </svg>
   ),
 
-  // Thinking Fast and Slow — dual minds, two paths diverging, abstract
+  // Thinking Fast and Slow — two minds, neural sparks, abstract intelligence
   6: ({ opacity }) => (
     <svg viewBox="0 0 390 320" xmlns="http://www.w3.org/2000/svg" style={{width:"100%",height:"100%",opacity}}>
       <defs>
-        <radialGradient id="s6left" cx="30%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#1a3018" stopOpacity="0.5"/>
-          <stop offset="100%" stopColor="#1a3018" stopOpacity="0"/>
+        <radialGradient id="s6warm" cx="28%" cy="55%" r="55%">
+          <stop offset="0%" stopColor="#cc6600" stopOpacity="0.55"/>
+          <stop offset="60%" stopColor="#882200" stopOpacity="0.2"/>
+          <stop offset="100%" stopColor="#060402" stopOpacity="0"/>
         </radialGradient>
-        <radialGradient id="s6right" cx="70%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#182030" stopOpacity="0.5"/>
-          <stop offset="100%" stopColor="#182030" stopOpacity="0"/>
+        <radialGradient id="s6cool" cx="72%" cy="45%" r="55%">
+          <stop offset="0%" stopColor="#2244cc" stopOpacity="0.55"/>
+          <stop offset="60%" stopColor="#112288" stopOpacity="0.2"/>
+          <stop offset="100%" stopColor="#020408" stopOpacity="0"/>
+        </radialGradient>
+        <radialGradient id="s6spark" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#ffcc44" stopOpacity="0.9"/>
+          <stop offset="100%" stopColor="#ffcc44" stopOpacity="0"/>
         </radialGradient>
       </defs>
-      <rect width="390" height="320" fill="#06080a"/>
-      {/* Two ambient hemispheres — intuition (warm) vs reason (cool) */}
-      <ellipse cx="110" cy="160" rx="200" ry="180" fill="url(#s6left)"/>
-      <ellipse cx="280" cy="160" rx="200" ry="180" fill="url(#s6right)"/>
-      {/* Central dividing line — the brain split */}
-      <line x1="195" y1="0" x2="195" y2="320" stroke="#f5efe5" strokeOpacity="0.04" strokeWidth="1"/>
-      {/* System 1 — intuitive, organic curves */}
-      {[0,1,2,3,4].map(i => (
-        <path key={i}
-          d={`M${40+i*8} ${60+i*10} Q${80+i*15} ${120+i*8} ${50+i*12} ${180+i*6} Q${30+i*8} ${240+i*5} ${70+i*10} ${290}`}
-          fill="none" stroke="#4a8040" strokeOpacity={0.12-i*0.02} strokeWidth={2-i*0.3}/>
+      <rect width="390" height="320" fill="#04040a"/>
+      {/* Two ambient brain hemispheres */}
+      <ellipse cx="108" cy="168" rx="210" ry="190" fill="url(#s6warm)"/>
+      <ellipse cx="282" cy="152" rx="210" ry="190" fill="url(#s6cool)"/>
+      {/* Dividing line — faint */}
+      <line x1="195" y1="0" x2="195" y2="320" stroke="#e0d0c0" strokeOpacity="0.06" strokeWidth="1.5"/>
+      {/* System 1 — intuitive curves, warm */}
+      {[0,1,2,3,4].map(i=>(
+        <path key={i} d={`M${35+i*9} ${55+i*12} Q${78+i*14} ${118+i*9} ${48+i*11} ${190+i*7} Q${28+i*7} ${252+i*5} ${72+i*9} ${300}`}
+          fill="none" stroke="#cc6622" strokeOpacity={0.22-i*0.03} strokeWidth={2.2-i*0.3}/>
       ))}
-      {/* System 2 — logical, geometric lines */}
-      {[0,1,2,3,4].map(i => (
+      {/* System 1 nodes */}
+      {[[52,85],[38,138],[72,186],[45,244],[88,285]].map(([x,y],i)=>(
         <g key={i}>
-          <line x1={220+i*18} y1={50+i*5} x2={240+i*14} y2={160+i*8}
-            stroke="#4060a0" strokeOpacity={0.12-i*0.02} strokeWidth={1.5-i*0.25}/>
-          <line x1={240+i*14} y1={160+i*8} x2={225+i*16} y2={280+i*5}
-            stroke="#4060a0" strokeOpacity={0.10-i*0.02} strokeWidth={1.5-i*0.25}/>
+          <circle cx={x} cy={y} r="4" fill="#cc6622" opacity={0.45+i*0.05}/>
+          <circle cx={x} cy={y} r="8" fill="#cc6622" opacity={0.12}/>
         </g>
       ))}
-      {/* Convergence point — where they meet */}
-      <circle cx="195" cy="160" r="3" fill="#d4941a" opacity="0.4"/>
-      <circle cx="195" cy="160" r="18" fill="none" stroke="#d4941a" strokeOpacity="0.08" strokeWidth="1"/>
-      <circle cx="195" cy="160" r="35" fill="none" stroke="#d4941a" strokeOpacity="0.05" strokeWidth="1"/>
-      {/* Data points — scattered nodes System 1 */}
-      {[[60,90],[45,140],[80,180],[55,240],[90,275]].map(([x,y],i) => (
-        <circle key={i} cx={x} cy={y} r="2.5" fill="#4a8040" opacity={0.2+i*0.04}/>
+      {/* System 1 connections */}
+      {[[52,85,38,138],[38,138,72,186],[72,186,45,244],[45,244,88,285]].map(([x1,y1,x2,y2],i)=>(
+        <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#cc5511" strokeOpacity="0.2" strokeWidth="1.2"/>
       ))}
-      {/* Data points — structured nodes System 2 */}
-      {[[320,80],[340,130],[310,185],[335,235],[315,280]].map(([x,y],i) => (
-        <circle key={i} cx={x} cy={y} r="2" fill="#4060a0" opacity={0.2+i*0.04}/>
+      {/* System 2 — geometric, cool */}
+      {[0,1,2,3,4].map(i=>(
+        <g key={i}>
+          <line x1={228+i*20} y1={48+i*6} x2={248+i*16} y2={162+i*9} stroke="#2244cc" strokeOpacity={0.22-i*0.03} strokeWidth={2-i*0.25}/>
+          <line x1={248+i*16} y1={162+i*9} x2={232+i*18} y2={282+i*5} stroke="#2244cc" strokeOpacity={0.18-i*0.02} strokeWidth={2-i*0.25}/>
+        </g>
       ))}
-      {/* Connecting lines between nodes */}
-      {[[60,90,45,140],[45,140,80,180],[80,180,55,240],[55,240,90,275]].map(([x1,y1,x2,y2],i) => (
-        <line key={i} x1={x1} y1={y1} x2={x2} y2={y2}
-          stroke="#4a8040" strokeOpacity="0.1" strokeWidth="1"/>
+      {/* System 2 nodes */}
+      {[[325,72],[348,132],[315,188],[340,242],[320,285]].map(([x,y],i)=>(
+        <g key={i}>
+          <circle cx={x} cy={y} r="4" fill="#4466ee" opacity={0.45+i*0.05}/>
+          <circle cx={x} cy={y} r="8" fill="#4466ee" opacity="0.12"/>
+        </g>
       ))}
-      {[[320,80,340,130],[340,130,310,185],[310,185,335,235],[335,235,315,280]].map(([x1,y1,x2,y2],i) => (
-        <line key={i} x1={x1} y1={y1} x2={x2} y2={y2}
-          stroke="#4060a0" strokeOpacity="0.1" strokeWidth="1"/>
+      {/* System 2 connections */}
+      {[[325,72,348,132],[348,132,315,188],[315,188,340,242],[340,242,320,285]].map(([x1,y1,x2,y2],i)=>(
+        <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#2244cc" strokeOpacity="0.2" strokeWidth="1.2"/>
       ))}
-      {/* Fine star field — minds in the dark */}
-      {Array.from({length:25},(_,i)=>({x:(i*67+23)%390,y:(i*53+11)%320})).map((s,i)=>(
-        <circle key={i} cx={s.x} cy={s.y} r="0.7" fill="#f5efe5" opacity="0.12"/>
+      {/* Convergence spark */}
+      <ellipse cx="195" cy="162" rx="45" ry="45" fill="url(#s6spark)"/>
+      <circle cx="195" cy="162" r="6" fill="#ffe860" opacity="0.9"/>
+      <circle cx="195" cy="162" r="3" fill="#ffffff" opacity="0.95"/>
+      {/* Spark connections to both systems */}
+      <line x1="72" y1="186" x2="195" y2="162" stroke="#cc6622" strokeOpacity="0.3" strokeWidth="1.2" strokeDasharray="4 4"/>
+      <line x1="315" y1="188" x2="195" y2="162" stroke="#4466ee" strokeOpacity="0.3" strokeWidth="1.2" strokeDasharray="4 4"/>
+      {/* Fine star field */}
+      {Array.from({length:30},(_,i)=>({x:(i*71+23)%390,y:(i*53+11)%320})).map((s,i)=>(
+        <circle key={i} cx={s.x} cy={s.y} r="0.7" fill="#f0eeff" opacity="0.15"/>
       ))}
     </svg>
   ),
 };
+
 
 // ── BOOK SCENE BACKGROUND — renders behind the wheel, crossfades on change ────
 function BookSceneBackground({ bookId }) {
@@ -4302,7 +4308,7 @@ function BookDetailSheet({ book: b, onClose, onAsk, isSaved, onSave, onDismiss, 
           padding:"0 0 40px",
           transform: exiting ? "translateY(100%)" : "translateY(0)",
           transition:"transform .28s cubic-bezier(.32,.72,0,1)",
-          maxHeight:"88dvh",
+          maxHeight:"78dvh",
           overflowY:"auto",
         }}
       >
@@ -4310,7 +4316,7 @@ function BookDetailSheet({ book: b, onClose, onAsk, isSaved, onSave, onDismiss, 
 
         {/* Cover + meta row */}
         <div style={{display:"flex",gap:16,padding:"0 20px 16px"}}>
-          <div style={{width:100,height:148,borderRadius:12,overflow:"hidden",flexShrink:0,boxShadow:"0 12px 36px rgba(0,0,0,.7)"}}>
+          <div style={{width:80,height:118,borderRadius:10,overflow:"hidden",flexShrink:0,boxShadow:"0 8px 28px rgba(0,0,0,.65)"}}>
             <BookCover isbn={b.isbn} title={b.title} author={b.author} color={b.color} className="fill"/>
           </div>
           <div style={{flex:1,minWidth:0,paddingTop:4}}>
@@ -4482,7 +4488,7 @@ function BookRow({ books, title, subtitle, onAsk, onTap, savedBooks, onSave, onD
       // Smooth ease: cubic
       const eased = t * t * (3 - 2 * t);
       // Range: 0.88 (edges) → 1.18 (center)
-      return 0.88 + 0.30 * eased;
+      return 0.90 + 0.17 * eased;
     });
     setScales(next);
   }, []);
