@@ -998,40 +998,36 @@ textarea.ls-chat-input::placeholder{color:var(--muted);}
 .ls-book-cover-fallback{
   position:absolute;inset:0;
   display:flex;flex-direction:column;
-  justify-content:space-between;
-  padding:14px 12px 12px;
+  justify-content:center;align-items:center;
+  padding:10px 8px;
   overflow:hidden;
 }
-/* Top rule */
 .ls-book-cover-fallback::before{
   content:"";
-  position:absolute;top:20px;left:12px;right:12px;
-  height:1px;background:rgba(212,148,26,.35);
+  position:absolute;top:12px;left:8px;right:8px;
+  height:1px;background:rgba(212,148,26,.4);
 }
-/* Bottom rule */
 .ls-book-cover-fallback::after{
   content:"";
-  position:absolute;bottom:20px;left:12px;right:12px;
-  height:1px;background:rgba(212,148,26,.35);
+  position:absolute;bottom:12px;left:8px;right:8px;
+  height:1px;background:rgba(212,148,26,.4);
 }
 .ls-book-cover-title{
   font-family:'Lora',serif;
-  font-size:11px;font-weight:700;
-  color:rgba(245,239,229,.92);
-  line-height:1.35;
-  margin-top:18px;
+  font-size:13px;font-weight:700;
+  color:#f0e8d8;
+  line-height:1.3;
   text-align:center;
   word-break:break-word;
   hyphens:auto;
-  flex:1;
-  display:flex;align-items:center;justify-content:center;
+  padding:0 4px;
 }
 .ls-book-cover-author{
-  font-size:8.5px;
-  color:rgba(212,148,26,.7);
+  font-size:9px;
+  color:rgba(212,148,26,.9);
   font-style:italic;
   text-align:center;
-  margin-bottom:18px;
+  margin-top:6px;
   letter-spacing:.3px;
 }
 .ls-book-cover-lines{display:none;}
@@ -3374,7 +3370,7 @@ function RecommendationWheel({ books, savedBooks, onSave, onDismiss, onAsk, onTa
   return (
     <div style={{
       position:"relative",
-      background:"linear-gradient(180deg,#131007 0%,rgba(10,8,6,.98) 100%)",
+      background:"transparent",
       borderBottom:"1px solid rgba(255,255,255,.05)",
       overflow:"hidden",
       paddingBottom:24,
@@ -4520,13 +4516,12 @@ function BookRow({ books, title, subtitle, onAsk, onTap, savedBooks, onSave, onD
           }}>{subtitle}</div>
         )}
       </div>
-      <div style={{overflow:"hidden"}}>
-        <div
+      <div
           ref={trackRef}
           style={{
             display:"flex", gap:12,
-            overflowX:"auto", overflowY:"hidden",
-            padding:"12px 16px 20px",
+            overflowX:"auto", overflowY:"visible",
+            padding:"16px 16px 24px",
             scrollbarWidth:"none", msOverflowStyle:"none",
             WebkitOverflowScrolling:"touch",
             touchAction:"pan-x",
@@ -4547,7 +4542,6 @@ function BookRow({ books, title, subtitle, onAsk, onTap, savedBooks, onSave, onD
             />
           ))}
         </div>
-      </div>
     </div>
   );
 }
@@ -6054,6 +6048,7 @@ export default function LitSense() {
                   onSave={handleSaveBook}
                   onDismiss={handleDismissBook}
                   userState={adaptedUserState}
+                  onShowDetail={setDetailBook}
                 />
               ))
             )}
@@ -6680,7 +6675,7 @@ export default function LitSense() {
           book={detailBook}
           onClose={() => setDetailBook(null)}
           onAsk={(p) => { setDetailBook(null); goAsk(p); }}
-          isSaved={isBookSaved(detailBook?.id)}
+          isSaved={isBookSaved(detailBook.id)}
           onSave={handleSaveBook}
           onDismiss={(id) => { handleDismissBook(id); setDetailBook(null); }}
           onMore={(b) => setTappedBook(b)}
@@ -6691,7 +6686,7 @@ export default function LitSense() {
           book={tappedBook}
           onClose={() => setTappedBook(null)}
           onAsk={(p) => { setTappedBook(null); goAsk(p); }}
-          isSaved={isBookSaved(tappedBook?.id)}
+          isSaved={isBookSaved(tappedBook.id)}
           onSave={handleSaveBook}
           onDismiss={(id) => { handleDismissBook(id); setTappedBook(null); }}
           userState={adaptedUserState}
