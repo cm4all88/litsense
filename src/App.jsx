@@ -998,40 +998,41 @@ textarea.ls-chat-input::placeholder{color:var(--muted);}
 .ls-book-cover-fallback{
   position:absolute;inset:0;
   display:flex;flex-direction:column;
-  justify-content:center;align-items:center;
-  padding:12px 10px;
+  justify-content:space-between;
+  padding:14px 12px 12px;
   overflow:hidden;
-  background:inherit;
 }
+/* Top rule */
 .ls-book-cover-fallback::before{
   content:"";
-  position:absolute;top:14px;left:10px;right:10px;
-  height:1px;background:rgba(212,148,26,.45);
+  position:absolute;top:20px;left:12px;right:12px;
+  height:1px;background:rgba(212,148,26,.35);
 }
+/* Bottom rule */
 .ls-book-cover-fallback::after{
   content:"";
-  position:absolute;bottom:14px;left:10px;right:10px;
-  height:1px;background:rgba(212,148,26,.45);
+  position:absolute;bottom:20px;left:12px;right:12px;
+  height:1px;background:rgba(212,148,26,.35);
 }
 .ls-book-cover-title{
   font-family:'Lora',serif;
-  font-size:12px;font-weight:700;
-  color:rgba(245,239,229,.95);
-  line-height:1.3;
+  font-size:11px;font-weight:700;
+  color:rgba(245,239,229,.92);
+  line-height:1.35;
+  margin-top:18px;
   text-align:center;
   word-break:break-word;
   hyphens:auto;
-  padding:0 4px;
-  text-shadow:0 1px 4px rgba(0,0,0,.6);
+  flex:1;
+  display:flex;align-items:center;justify-content:center;
 }
 .ls-book-cover-author{
-  font-size:8px;
-  color:rgba(212,148,26,.85);
+  font-size:8.5px;
+  color:rgba(212,148,26,.7);
   font-style:italic;
   text-align:center;
-  margin-top:8px;
-  letter-spacing:.4px;
-  text-shadow:0 1px 3px rgba(0,0,0,.5);
+  margin-bottom:18px;
+  letter-spacing:.3px;
 }
 .ls-book-cover-lines{display:none;}
 .ls-book-cover-line{display:none;}
@@ -4519,7 +4520,6 @@ function BookRow({ books, title, subtitle, onAsk, onTap, savedBooks, onSave, onD
           }}>{subtitle}</div>
         )}
       </div>
-      {/* Outer: clips horizontal scroll bar, inner scrolls freely */}
       <div style={{overflow:"hidden"}}>
         <div
           ref={trackRef}
@@ -6687,7 +6687,6 @@ export default function LitSense() {
           userState={adaptedUserState}
         />
       )}
-      {tappedBook && (
         <TileModal
           book={tappedBook}
           onClose={() => setTappedBook(null)}
@@ -6907,6 +6906,74 @@ export default function LitSense() {
 
       {/* ── WELCOME SCREEN — shown once per day ── */}
       {showWelcome && (
+        <div style={{
+          position:"fixed", inset:0, zIndex:500,
+          display:"flex", flexDirection:"column",
+          alignItems:"center", justifyContent:"space-between",
+          background:"#0a0806",
+          paddingBottom:"env(safe-area-inset-bottom,0)",
+        }}>
+          {/* Eyebrow */}
+          <div style={{
+            paddingTop:32, fontSize:9, fontWeight:700,
+            letterSpacing:"4px", textTransform:"uppercase",
+            color:"rgba(212,148,26,.55)", textAlign:"center",
+          }}>A doorworth opening</div>
+
+          {/* Keyhole image — takes up center */}
+          <div style={{flex:1, display:"flex", alignItems:"center", justifyContent:"center", width:"100%"}}>
+            <img
+              src="/keyhole.svg"
+              alt=""
+              style={{
+                width:"100%", maxWidth:420,
+                height:"auto",
+                objectFit:"contain",
+              }}
+            />
+          </div>
+
+          {/* Bottom content */}
+          <div style={{width:"100%", padding:"0 32px 48px", textAlign:"center"}}>
+            <div style={{
+              fontFamily:"'Lora',serif", fontSize:28, fontWeight:700,
+              color:"#f0e8d8", lineHeight:1.25, marginBottom:12,
+              fontStyle:"italic",
+            }}>On the other side is your<br/>next great read.</div>
+
+            <div style={{
+              height:1, width:40, background:"rgba(212,148,26,.4)",
+              margin:"0 auto 18px",
+            }}/>
+
+            <div style={{
+              fontSize:14, color:"rgba(240,232,216,.65)",
+              lineHeight:1.75, marginBottom:32, maxWidth:300, margin:"0 auto 32px",
+            }}>
+              There are books that stay with you for life — that shift how you see, feel, think. We find yours. Curated to your taste, your mood, this moment in your reading life.
+            </div>
+
+            <button
+              onClick={dismissWelcome}
+              style={{
+                width:"100%", maxWidth:320, padding:"16px",
+                borderRadius:"var(--r-lg)", border:"1px solid rgba(212,148,26,.5)",
+                background:"transparent", color:"var(--text)",
+                fontSize:12, fontWeight:700, letterSpacing:"3px",
+                textTransform:"uppercase", cursor:"pointer",
+                transition:"all .2s",
+              }}
+            >Open the door</button>
+
+            <div style={{
+              marginTop:16, fontSize:12, color:"rgba(240,232,216,.3)",
+              fontStyle:"italic",
+            }}>No account needed to begin</div>
+          </div>
+        </div>
+      )}
+
+      {false && showWelcome && (
         <div className="ls-welcome">
           {/* Logo */}
           <div className="ls-welcome-logo">
