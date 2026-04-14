@@ -4554,8 +4554,13 @@ function BookTile({ book: b, onAsk, onTap, scrollScale = 1, isFirst, isLast, isS
   const [dismissing,setDismissing]= useState(false);
   const isTouchRef = useRef(false);
 
-  const handleMouseEnter = () => { if (!isTouchRef.current) onShowDetail?.(b); };
-  const handleTouchStart = () => { isTouchRef.current = true; };
+  const hoverTimerRef = useRef(null);
+  const handleMouseEnter = () => {
+    if (isTouchRef.current) return;
+    hoverTimerRef.current = setTimeout(() => onShowDetail?.(b), 900);
+  };
+  const handleMouseLeave = () => { clearTimeout(hoverTimerRef.current); };
+  const handleTouchStart = () => { isTouchRef.current = true; clearTimeout(hoverTimerRef.current); };
 
   const handleClick = () => {
     if (isTouchRef.current) {
@@ -4581,6 +4586,7 @@ function BookTile({ book: b, onAsk, onTap, scrollScale = 1, isFirst, isLast, isS
   return (
     <div
       onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       onTouchStart={handleTouchStart}
       onClick={handleClick}
       style={{
