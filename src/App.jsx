@@ -6680,19 +6680,18 @@ export default function LitSense() {
           book={detailBook}
           onClose={() => setDetailBook(null)}
           onAsk={(p) => { setDetailBook(null); goAsk(p); }}
-          isSaved={isBookSaved(detailBook.id)}
+          isSaved={isBookSaved(detailBook?.id)}
           onSave={handleSaveBook}
           onDismiss={(id) => { handleDismissBook(id); setDetailBook(null); }}
           onMore={(b) => setTappedBook(b)}
           userState={adaptedUserState}
         />
       )}
-      {tappedBook && (
         <TileModal
           book={tappedBook}
           onClose={() => setTappedBook(null)}
           onAsk={(p) => { setTappedBook(null); goAsk(p); }}
-          isSaved={isBookSaved(tappedBook.id)}
+          isSaved={isBookSaved(tappedBook?.id)}
           onSave={handleSaveBook}
           onDismiss={(id) => { handleDismissBook(id); setTappedBook(null); }}
           userState={adaptedUserState}
