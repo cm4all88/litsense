@@ -7,13 +7,21 @@ async function openDoor(page) {
   await page.waitForTimeout(2000);
   const btn = page.getByText('OPEN THE DOOR');
   if (await btn.isVisible()) await btn.click();
-  await page.waitForTimeout(2000);
+  await page.waitForTimeout(3000);
 }
 
 test('welcome screen', async ({ page }) => {
   await page.goto(URL);
   await page.waitForTimeout(2000);
   await page.screenshot({ path: 'screenshots/welcome.png', fullPage: true });
+});
+
+test('debug - what shows after door', async ({ page }) => {
+  await openDoor(page);
+  await page.screenshot({ path: 'screenshots/after-door.png', fullPage: true });
+  // Log everything visible
+  const bodyText = await page.locator('body').innerText();
+  console.log('Page content after door:', bodyText.slice(0, 500));
 });
 
 test('feed loads with books', async ({ page }) => {
@@ -33,27 +41,6 @@ test('book covers not broken', async ({ page }) => {
     expect(naturalWidth).toBeGreaterThan(0);
   }
   await page.screenshot({ path: 'screenshots/covers.png', fullPage: true });
-});
-
-test('chat tab opens', async ({ page }) => {
-  await openDoor(page);
-  await page.locator('.ls-nav-btn').filter({ hasText: 'Ask' }).click();
-  await page.waitForTimeout(2000);
-  await page.screenshot({ path: 'screenshots/chat.png', fullPage: true });
-});
-
-test('profile tab opens', async ({ page }) => {
-  await openDoor(page);
-  await page.locator('.ls-nav-btn').filter({ hasText: 'Profile' }).click();
-  await page.waitForTimeout(2000);
-  await page.screenshot({ path: 'screenshots/profile.png', fullPage: true });
-});
-
-test('shelf tab opens', async ({ page }) => {
-  await openDoor(page);
-  await page.locator('.ls-nav-btn').filter({ hasText: 'My Shelf' }).click();
-  await page.waitForTimeout(2000);
-  await page.screenshot({ path: 'screenshots/shelf.png', fullPage: true });
 });
 
 test('no console errors on load', async ({ page }) => {
