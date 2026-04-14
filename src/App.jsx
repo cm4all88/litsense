@@ -998,41 +998,40 @@ textarea.ls-chat-input::placeholder{color:var(--muted);}
 .ls-book-cover-fallback{
   position:absolute;inset:0;
   display:flex;flex-direction:column;
-  justify-content:space-between;
-  padding:14px 12px 12px;
+  justify-content:center;align-items:center;
+  padding:12px 10px;
   overflow:hidden;
+  background:inherit;
 }
-/* Top rule */
 .ls-book-cover-fallback::before{
   content:"";
-  position:absolute;top:20px;left:12px;right:12px;
-  height:1px;background:rgba(212,148,26,.35);
+  position:absolute;top:14px;left:10px;right:10px;
+  height:1px;background:rgba(212,148,26,.45);
 }
-/* Bottom rule */
 .ls-book-cover-fallback::after{
   content:"";
-  position:absolute;bottom:20px;left:12px;right:12px;
-  height:1px;background:rgba(212,148,26,.35);
+  position:absolute;bottom:14px;left:10px;right:10px;
+  height:1px;background:rgba(212,148,26,.45);
 }
 .ls-book-cover-title{
   font-family:'Lora',serif;
-  font-size:11px;font-weight:700;
-  color:rgba(245,239,229,.92);
-  line-height:1.35;
-  margin-top:18px;
+  font-size:12px;font-weight:700;
+  color:rgba(245,239,229,.95);
+  line-height:1.3;
   text-align:center;
   word-break:break-word;
   hyphens:auto;
-  flex:1;
-  display:flex;align-items:center;justify-content:center;
+  padding:0 4px;
+  text-shadow:0 1px 4px rgba(0,0,0,.6);
 }
 .ls-book-cover-author{
-  font-size:8.5px;
-  color:rgba(212,148,26,.7);
+  font-size:8px;
+  color:rgba(212,148,26,.85);
   font-style:italic;
   text-align:center;
-  margin-bottom:18px;
-  letter-spacing:.3px;
+  margin-top:8px;
+  letter-spacing:.4px;
+  text-shadow:0 1px 3px rgba(0,0,0,.5);
 }
 .ls-book-cover-lines{display:none;}
 .ls-book-cover-line{display:none;}
@@ -4520,16 +4519,17 @@ function BookRow({ books, title, subtitle, onAsk, onTap, savedBooks, onSave, onD
           }}>{subtitle}</div>
         )}
       </div>
-      {/* Outer: clips horizontal, allows vertical scale overflow */}
-      <div style={{overflowX:"hidden", overflowY:"visible"}}>
+      {/* Outer: clips horizontal scroll bar, inner scrolls freely */}
+      <div style={{overflow:"hidden"}}>
         <div
           ref={trackRef}
           style={{
             display:"flex", gap:12,
-            overflowX:"auto", overflowY:"visible",
+            overflowX:"auto", overflowY:"hidden",
             padding:"12px 16px 20px",
             scrollbarWidth:"none", msOverflowStyle:"none",
             WebkitOverflowScrolling:"touch",
+            touchAction:"pan-x",
           }}
         >
           {books.map((b, i) => (
