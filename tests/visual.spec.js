@@ -37,16 +37,23 @@ test('book covers not broken', async ({ page }) => {
 
 test('chat tab opens', async ({ page }) => {
   await openDoor(page);
-  await page.getByText('Ask').click();
+  await page.locator('.ls-nav-btn').filter({ hasText: 'Ask' }).click();
   await page.waitForTimeout(2000);
   await page.screenshot({ path: 'screenshots/chat.png', fullPage: true });
 });
 
 test('profile tab opens', async ({ page }) => {
   await openDoor(page);
-  await page.getByText('Profile').click();
+  await page.locator('.ls-nav-btn').filter({ hasText: 'Profile' }).click();
   await page.waitForTimeout(2000);
   await page.screenshot({ path: 'screenshots/profile.png', fullPage: true });
+});
+
+test('shelf tab opens', async ({ page }) => {
+  await openDoor(page);
+  await page.locator('.ls-nav-btn').filter({ hasText: 'My Shelf' }).click();
+  await page.waitForTimeout(2000);
+  await page.screenshot({ path: 'screenshots/shelf.png', fullPage: true });
 });
 
 test('no console errors on load', async ({ page }) => {
