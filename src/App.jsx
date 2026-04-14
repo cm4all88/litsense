@@ -2708,67 +2708,34 @@ const today = () => new Date().toISOString().slice(0,10);
 function detectBookMention(text) {
   if (!text) return null;
 
-  // Only match when user clearly states they COMPLETED a book.
-  // Patterns require "I" at sentence start (or after . ? ! ) — prevents
-  // false matches like "What should I read if I loved X?" or "Can I read X?"
-  //
-  // Anchors: ^ or after sentence-ending punctuation + optional whitespace
-  const SENTENCE_START = '(?:^|(?<=[.!?]\s))';
+  // Bail immediately if the message looks like a question or request
+  const SKIP = [
+    /should i/i, /can i/i, /if i loved/i, /if i like/i,
+    /recommend/i, /suggest/i, /find me/i, /what should/i, /what would/i,
+  ];
+  if (SKIP.some(p => p.test(text))) return null;
+
+  // Use RegExp constructor to keep patterns on one line without escaping issues
+  const T = "([\\w][^,\\.!?]{2,58}?)"; // title capture: 3-60 chars
+  const B = "([^,\\.!?]{2,38})";       // by-author capture
+  const BY = `(?:\\s+by\\s+${B})?`;
+  const END = "(?:[,\\.!?]|$)";
 
   const patterns = [
-    // "I've read / I have read / I've finished / I have finished X"
-    /(?:^|[.!?]\s)i(?:'ve| have) (?:read|finished|completed)\s+["""]?([^""",\.!?
-]{3,60}?)["""]?(?:\s+by\s+([^,\.!?
-]{2,40}))?(?:[,\.!?
-]|$)/i,
-    // "I just finished / I recently finished X"
-    /(?:^|[.!?]\s)i (?:just |recently )?finished\s+["""]?([^""",\.!?
-]{3,60}?)["""]?(?:\s+by\s+([^,\.!?
-]{2,40}))?(?:[,\.!?
-]|$)/i,
-    // "I just read X" — only when "I" starts the clause
-    /(?:^|[.!?]\s)i (?:just |recently )?read\s+["""]?([^""",\.!?
-]{3,60}?)["""]?(?:\s+by\s+([^,\.!?
-]{2,40}))?(?:[,\.!?
-]|$)/i,
-    // Quoted title: finished "Book Title" / read "Book Title"
-    /(?:finished|completed|just read)\s+["""]([^"""]{3,60})["""](?:\s+by\s+([^,\.!?
-]{2,40}))?/i,
+    new RegExp(`(?:^|[.!?] )i(?:'ve| have) (?:read|finished|completed) ["\u201c]?${T}["\u201d]?${BY}${END}`, "i"),
+    new RegExp(`(?:^|[.!?] )i (?:just |recently )?finished ["\u201c]?${T}["\u201d]?${BY}${END}`, "i"),
+    new RegExp(`(?:^|[.!?] )i (?:just |recently )?read ["\u201c]?${T}["\u201d]?${BY}${END}`, "i"),
+    new RegExp(`\\b(?:finished|completed|just read) ["\u201c]([\\w][^"\u201d]{2,58})["\u201d]${BY}`, "i"),
   ];
 
-  // Words that should never be treated as book titles
-  const STOPLIST = new Set([
-    "it","that","this","the book","a book","one","something","another",
-    "it again","that one","this one","a lot","so much","everything",
-  ]);
-
-  // Phrases that indicate the sentence is a QUESTION or HYPOTHETICAL
-  // — skip detection entirely if the full text contains these
-  const SKIP_PATTERNS = [
-    /should i/i,
-    /can i/i, 
-    /what (should|if|would|to)/i,
-    /if i loved/i,
-    /if i like/i,
-    /recommend/i,
-    /suggest/i,
-    /find me/i,
-  ];
-
-  // Bail early if the text looks like a request/question, not a statement
-  if (SKIP_PATTERNS.some(p => p.test(text))) return null;
+  const STOPLIST = new Set(["it","that","this","the book","a book","one","something","another","it again","that one"]);
 
   for (const pattern of patterns) {
     const match = text.match(pattern);
     if (match) {
       const title = match[1]?.trim();
       const author = match[2]?.trim() || "";
-      if (
-        title &&
-        title.length >= 3 &&
-        title.length <= 60 &&
-        !STOPLIST.has(title.toLowerCase())
-      ) {
+      if (title && title.length >= 3 && !STOPLIST.has(title.toLowerCase())) {
         return { title, author };
       }
     }
