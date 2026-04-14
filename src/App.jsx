@@ -4123,25 +4123,108 @@ function getFriendPrompt(memory) {
 // ── TOP MOMENT — the one thing worth saying ──────────────────────────────────
 // Uses rankAndSurface + logOutcome (public API, matches external ranking-engine.js)
 // Runs once on mount (or when rerunKey changes). Never re-ranks on every render.
-function TopMoment({ intelligence, signalCandidates, recCandidates, behavioral, context, lastSurfaced, recentlyFailedGenres, handlers, onOpenChat, rerunKey }) {
+// ── Chat intent detection ─────────────────────────────────────────────────────
+// Reads the last few user messages to understand what they want next.
+// Returns { intent, prompt, cta } if a clear signal exists, null otherwise.
+function detectChatIntent(recentMsgs = []) {
+  const userMsgs = recentMsgs.filter(m => m.role === "user").map(m => m.content?.toLowerCase() || "");
+  const last = userMsgs[userMsgs.length - 1] || "";
+  const prev = userMsgs[userMsgs.length - 2] || "";
+  const combined = last + " " + prev;
+
+  // "I loved it / it was great / amazing" → find more like it
+  if (/(loved?|amazing|great|brilliant|fantastic|incredible|obsessed|devoured|couldn.t put)/.test(combined)) {
+    // Extract what they loved — look for quoted title or book mentioned by AI
+    const titleMatch = combined.match(/[""]([^""]+)[""]/);
+    const title = titleMatch?.[1] || null;
+    if (title) return {
+      msg: `Want something that hits the same way as ${title.split(":")[0]}?`,
+      prompt: `I loved "${title}". Find me more books with exactly that same feeling — same emotional tone, similar pacing, same kind of payoff.`,
+      cta: null,
+    };
+    return {
+      msg: "Want me to find more like it?",
+      prompt: "Based on what I just said I loved, find me 2-3 books with the same feeling. Be specific about why they match.",
+      cta: null,
+    };
+  }
+
+  // "I abandoned it / stopped / couldn't get into it"
+  if (/(abandoned|stopped|gave up|couldn.t get into|too slow|boring|quit|dnf)/.test(combined)) {
+    return {
+      msg: "Want something with more momentum?",
+      prompt: "I just abandoned a book. Find me something faster-paced that I'm very likely to actually finish — something I won't want to put down.",
+      cta: null,
+    };
+  }
+
+  // "I finished it"
+  if (/(finished|just finished|done|completed|read it|got through)/.test(combined)) {
+    return {
+      msg: "What should be next?",
+      prompt: "I just finished a book. Based on what I've told you about it and how I felt, what should I read next? Be specific.",
+      cta: null,
+    };
+  }
+
+  // "something dark / funny / fast / emotional" — mood request
+  const moodMap = [
+    { pattern: /(dark|dark(?:er)?|grim|bleak)/, msg: "Something dark coming up.", prompt: "Find me something genuinely dark — not just tense, but dark in tone and subject matter. Something that doesn't soften it." },
+    { pattern: /(funny|laugh|humor|light(?:er)?|fun)/, msg: "Something to make you actually laugh.", prompt: "Find me something genuinely funny — not just charming, actually funny. Good writing that also makes you laugh." },
+    { pattern: /(fast|quick|pag?e.turner|couldn.t stop|one.sitting)/, msg: "Something you won't be able to put down.", prompt: "Find me the most propulsive, can't-stop-reading book that fits my taste. Prioritize momentum above everything else." },
+    { pattern: /(emotional|cry|moving|feel|heart|sad)/, msg: "Something that'll actually move you.", prompt: "Find me something emotionally powerful — the kind of book that earns its emotion rather than manufacturing it." },
+    { pattern: /(smart|intelligent|ideas|think|mind.expanding)/, msg: "Something to genuinely challenge you.", prompt: "Find me something intellectually ambitious — a book that changes how I think about something, fiction or non-fiction." },
+  ];
+  for (const { pattern, msg, prompt } of moodMap) {
+    if (pattern.test(combined)) return { msg, prompt, cta: null };
+  }
+
+  return null;
+}
+
+function TopMoment({ intelligence, signalCandidates, recCandidates, behavioral, context, lastSurfaced, recentlyFailedGenres, handlers, onOpenChat, rerunKey, recentMsgs = [] }) {
   const [moment, setMoment] = useState(null);
   const [exiting, setExiting] = useState(false);
+  const [displayed, setDisplayed] = useState("");
+  const [done, setDone] = useState(false);
+  const typingRef = useRef(null);
 
   useEffect(() => {
+    // Chat intent takes priority — if user said something specific, respond to that
+    const chatIntent = detectChatIntent(recentMsgs);
+    if (chatIntent) {
+      const m = { id:"chat-intent", kind:"nudge", type:"chat_response", finalScore:1.0, ...chatIntent };
+      setMoment(m);
+      setDisplayed(""); setDone(false);
+      return;
+    }
     const result = rankAndSurface({
-      intelligence,
-      signalCandidates,
-      recCandidates,
-      behavioral,
-      context,
-      lastSurfaced,
-      recentlyFailedGenres,
+      intelligence, signalCandidates, recCandidates, behavioral,
+      context, lastSurfaced, recentlyFailedGenres,
     });
     if (result) {
       setMoment(result);
+      setDisplayed(""); setDone(false);
       logOutcome(result, "shown", handlers);
     }
-  }, [rerunKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [rerunKey, recentMsgs.length]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Typing animation
+  useEffect(() => {
+    if (!moment?.msg) return;
+    const msg = moment.msg;
+    let i = 0;
+    clearInterval(typingRef.current);
+    setDisplayed(""); setDone(false);
+    const start = setTimeout(() => {
+      typingRef.current = setInterval(() => {
+        i++;
+        setDisplayed(msg.slice(0, i));
+        if (i >= msg.length) { clearInterval(typingRef.current); setDone(true); }
+      }, 26);
+    }, 280);
+    return () => { clearTimeout(start); clearInterval(typingRef.current); };
+  }, [moment]);
 
   if (!moment) return null;
 
@@ -4152,15 +4235,47 @@ function TopMoment({ intelligence, signalCandidates, recCandidates, behavioral, 
 
   const handleDismiss = () => {
     setExiting(true);
+    clearInterval(typingRef.current);
     logOutcome(moment, "dismissed", handlers);
     setTimeout(() => setMoment(null), 220);
   };
 
   return (
-    <div className={`ls-moment-card ${exiting ? "exiting" : ""}`}>
-      <div className="ls-moment-msg">{moment.msg}</div>
-      <button className="ls-moment-cta" onClick={handleClick}>{moment.cta || "Tell me more"} →</button>
-      <button className="ls-moment-dismiss" onClick={handleDismiss}>×</button>
+    <div
+      className={`ls-moment-card ${exiting ? "exiting" : ""}`}
+      onClick={done ? handleClick : undefined}
+      style={{ minHeight:72, cursor: done ? "pointer" : "default" }}
+    >
+      {/* Sage label */}
+      <div style={{
+        fontSize:8, fontWeight:700, letterSpacing:"2.5px", textTransform:"uppercase",
+        color:"rgba(212,148,26,.5)", marginBottom:9,
+        display:"flex", alignItems:"center", gap:7,
+      }}>
+        <div style={{
+          width:16, height:16, borderRadius:"50%",
+          background:"rgba(212,148,26,.1)", border:"1px solid rgba(212,148,26,.2)",
+          display:"flex", alignItems:"center", justifyContent:"center",
+          fontSize:8, color:"var(--gold)",
+        }}>✦</div>
+        Sage
+      </div>
+      {/* Typing text */}
+      <div className="ls-moment-msg" style={{paddingRight:28}}>
+        {displayed}
+        {!done && (
+          <span style={{display:"inline-block",width:2,height:13,background:"var(--gold)",marginLeft:2,verticalAlign:"middle",animation:"blink .6s ease infinite"}}/>
+        )}
+        {/* After typing, show a subtle tap-to-continue arrow instead of a button */}
+        {done && (
+          <span style={{
+            display:"inline-block", marginLeft:8,
+            color:"var(--gold)", fontSize:13, verticalAlign:"middle",
+            animation:"fadeIn .4s ease",
+          }}>→</span>
+        )}
+      </div>
+      <button className="ls-moment-dismiss" onClick={(e)=>{e.stopPropagation();handleDismiss();}}>×</button>
     </div>
   );
 }
@@ -4258,7 +4373,7 @@ function BookCover({ isbn, title, author = "", color = ["#1a1408","#0e0c06"], cl
       style={{ background:`linear-gradient(155deg, ${color[0]} 0%, ${color[1]} 100%)`, ...style }}>
       {hasIsbn && !error && (
         <img src={url} alt={title}
-          onLoad={() => setLoaded(true)}
+          onLoad={(e) => { if (e.target.naturalWidth > 5) setLoaded(true); else setError(true); }}
           onError={() => setError(true)}
           style={{ display: loaded ? "block" : "none", position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }}/>
       )}
@@ -4316,7 +4431,7 @@ function BookDetailSheet({ book: b, onClose, onAsk, isSaved, onSave, onDismiss, 
 
         {/* Cover + meta row */}
         <div style={{display:"flex",gap:16,padding:"0 20px 16px"}}>
-          <div style={{width:80,height:118,borderRadius:10,overflow:"hidden",flexShrink:0,boxShadow:"0 8px 28px rgba(0,0,0,.65)"}}>
+          <div style={{width:80,height:118,borderRadius:10,overflow:"hidden",flexShrink:0,boxShadow:"0 8px 28px rgba(0,0,0,.65)",position:"relative"}}>
             <BookCover isbn={b.isbn} title={b.title} author={b.author} color={b.color} className="fill"/>
           </div>
           <div style={{flex:1,minWidth:0,paddingTop:4}}>
@@ -4677,7 +4792,7 @@ function TileModal({ book: b, onClose, onAsk, isSaved, onSave, onDismiss, userSt
     <div className="ls-tile-modal-overlay" onClick={onClose}>
       <div className="ls-tile-modal" onClick={e => e.stopPropagation()}>
         <div className="ls-tile-modal-handle"/>
-        <div className="ls-tile-modal-cover">
+        <div className="ls-tile-modal-cover" style={{position:"relative"}}>
           <BookCover isbn={b.isbn} title={b.title} author={b.author} color={b.color}/>
         </div>
         <div className="ls-tile-modal-title">{b.title}</div>
@@ -4889,7 +5004,7 @@ const MOCK_LISTINGS = [
 function ListingCard({ listing, onTap }) {
   return (
     <div className="ls-listing-card" onClick={() => onTap(listing)}>
-      <div className="ls-listing-cover">
+      <div className="ls-listing-cover" style={{position:"relative"}}>
         <BookCover isbn={listing.isbn} title={listing.title} author={listing.author} color={listing.color} className="fill"/>
       </div>
       <div className="ls-listing-body">
@@ -5900,6 +6015,7 @@ export default function LitSense() {
               signalCandidates={rankedSignals ? [...(rankedSignals.high||[]), ...(rankedSignals.normal||[]), ...(rankedSignals.low||[])] : []}
               recCandidates={wheelBooks.slice(0,6).map(book => ({ book, reasonType: savedBooks.some(sb=>sb.id===book.id)?'affinity_match':'voice_profile' }))}
               behavioral={null}
+              recentMsgs={msgs.slice(-6)}
               context={{ mood, currentBook, intent: currentBook?'mid_book':'next_book', readingState: currentBook?'reading':readBooks.length>0?'finished':'new', hasUnresolvedThread: msgs.length>0 && tab!=='ask', signalLearning: {} }}
               lastSurfaced={lastSurfaced}
               recentlyFailedGenres={Object.entries(reactions).filter(([,r])=>r.reaction==='abandoned'||r.reaction==='too slow').flatMap(([bookId])=>{const b=[...BOOKS,...savedBooks].find(x=>String(x.id)===bookId);return b?.tags||[];})}
@@ -5961,7 +6077,7 @@ export default function LitSense() {
               <div className="ls-proof">
                 
                 <div className="ls-proof-card">
-                  <div className="ls-proof-cover">
+                  <div className="ls-proof-cover" style={{position:"relative"}}>
                     <BookCover isbn="9780802162175" title="The Covenant of Water" author="Abraham Verghese" color={["#1a2430","#0e1820"]}/>
                   </div>
                   <div className="ls-proof-body">
