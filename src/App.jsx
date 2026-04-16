@@ -6521,12 +6521,6 @@ export default function LitSense() {
     return voice;
   }, [savedBooks, readBooks, mood, genre]);
 
-  // Intent-driven background key — reads mood/genre/voice/context in priority order
-  const bgKey = useMemo(() => getBackgroundKey({
-    mood, adaptedVoice, genre,
-    inAsk: tab === "ask" && msgs.length > 0,
-  }), [mood, adaptedVoice, genre, tab, msgs.length]);
-
   const wheelBooks = BOOKS
     .filter(b => !dismissedBooks.includes(b.id))
     .sort((a, b) => b.score - a.score)
@@ -6551,6 +6545,12 @@ export default function LitSense() {
   const adaptedVoice = useMemo(() =>
     adaptVoice(bgVoice, archetype, signalEngagements),
   [bgVoice, archetype, signalEngagements]);
+
+  // Intent-driven background key — must be after adaptedVoice
+  const bgKey = useMemo(() => getBackgroundKey({
+    mood, adaptedVoice, genre,
+    inAsk: tab === "ask" && msgs.length > 0,
+  }), [mood, adaptedVoice, genre, tab, msgs.length]);
 
   const adaptedUserState = useMemo(() => adaptUserState(
     { savedBooks, readBooks, mood, genre, dismissedBooks, voice: adaptedVoice },

@@ -7,10 +7,6 @@ export default defineConfig({
     dedupe: ['react', 'react-dom', '@clerk/clerk-react'],
   },
   build: {
-    // Disable minification — esbuild is creating const bindings with incorrect
-    // initialization order, causing TDZ at runtime. Unminified code preserves
-    // JS function hoisting and source declaration order.
-    minify: false,
     chunkSizeWarningLimit: 5000,
   },
 })
