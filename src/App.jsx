@@ -2176,30 +2176,6 @@ const GENRE_ROW_TITLES = {
   "Philosophy":       { title:"Philosophy written for people who read fiction",   subtitle:"Clearer and more urgent than you'd expect" },
 };
 
-// ── INLINE PROMPT CHIPS — between rows ───────────────────────────────────────
-function InlinePromptChips({ prompts, onPrompt }) {
-  return (
-    <div style={{ padding:"4px 16px 20px", display:"flex", gap:8, flexWrap:"wrap" }}>
-      {prompts.map((p, i) => (
-        <button key={i} onClick={() => onPrompt(p.prompt)}
-          style={{
-            padding:"8px 15px", borderRadius:"var(--r-pill)",
-            border:"1px solid rgba(255,248,236,.12)",
-            background:"rgba(255,248,236,.05)",
-            color:"var(--text2)", fontSize:12.5, fontWeight:500,
-            cursor:"pointer", transition:"all .28s var(--ease)",
-            backdropFilter:"blur(8px)",
-          }}
-          onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--gold)";e.currentTarget.style.color="var(--gold)";e.currentTarget.style.background="var(--gold-l)";}}
-          onMouseLeave={e=>{e.currentTarget.style.borderColor="rgba(255,248,236,.12)";e.currentTarget.style.color="var(--text2)";e.currentTarget.style.background="rgba(255,248,236,.05)";}}
-        >
-          {p.label} →
-        </button>
-      ))}
-    </div>
-  );
-}
-
 function buildDiscoverRows(allBooks, userState) {
   const {
     savedBooks = [], readBooks = [], mood = null, genre = null, dismissedBooks = [],
@@ -7314,7 +7290,15 @@ description: one sentence max.`,
                     onShowDetail={setDetailBook}
                   />
                   {row.prompts && row.prompts.length > 0 && (
-                    <InlinePromptChips prompts={row.prompts} onPrompt={goAsk}/>
+                    <div style={{padding:"4px 16px 20px",display:"flex",gap:8,flexWrap:"wrap"}}>
+                      {row.prompts.map((p, pi) => (
+                        <button key={pi} onClick={()=>goAsk(p.prompt)}
+                          style={{padding:"8px 15px",borderRadius:"var(--r-pill)",border:"1px solid rgba(255,248,236,.12)",background:"rgba(255,248,236,.05)",color:"var(--text2)",fontSize:12.5,fontWeight:500,cursor:"pointer",backdropFilter:"blur(8px)"}}
+                          onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--gold)";e.currentTarget.style.color="var(--gold)";e.currentTarget.style.background="var(--gold-l)";}}
+                          onMouseLeave={e=>{e.currentTarget.style.borderColor="rgba(255,248,236,.12)";e.currentTarget.style.color="var(--text2)";e.currentTarget.style.background="rgba(255,248,236,.05)";}}
+                        >{p.label} →</button>
+                      ))}
+                    </div>
                   )}
                 </div>
               ))

@@ -4,11 +4,21 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   resolve: {
-    // Prevent duplicate React instances which can cause hook errors
-    dedupe: ['react', 'react-dom'],
+    dedupe: ['react', 'react-dom', '@clerk/clerk-react'],
+  },
+  // Force Clerk to pre-bundle as CJS — prevents live-binding TDZ when
+  // supabase.js or App.jsx imports Clerk exports at module init time.
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'react-dom/client',
+      '@clerk/clerk-react',
+      '@supabase/supabase-js',
+      'lucide-react',
+    ],
   },
   build: {
-    // App.jsx is intentionally large — suppress the chunk size warning
     chunkSizeWarningLimit: 5000,
   },
 })
