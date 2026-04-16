@@ -302,7 +302,7 @@ const CSS = `
 
 /* ── CINEMATIC HERO ── */
 .ls-hero{
-  padding:36px 20px 32px;
+  padding:24px 20px 20px;
   position:relative;
 }
 .ls-hero-eyebrow{
@@ -1187,11 +1187,216 @@ const BOOKS = [
     title:"Thinking, Fast and Slow",
     author:"Daniel Kahneman",
     isbn:"9780374533557",
-    tags:["Psychology","Non-Fiction"],
+    tags:["Psychology","Non-Fiction","Award Winner"],
     primary:"Psychology",
     score:88,
     why:"For readers who <strong>want to understand their own minds</strong>. Every decision you make looks different after this. One of the most genuinely useful books written in the last 30 years.",
     color:["#141c14","#0c1408"],
+  },
+  // ── BOOKS EXPANSION — Phase 16 ─────────────────────────────────────────────
+  {
+    id:7, title:"Normal People", author:"Sally Rooney", isbn:"9780571334650",
+    tags:["Literary Fiction","Contemporary","Emotional"], primary:"Literary Fiction", score:92,
+    why:"Rooney writes dialogue that sounds exactly like how people actually talk and don't say. Small book, enormous emotional impact.",
+    color:["#141820","#0c1018"],
+  },
+  {
+    id:8, title:"Gone Girl", author:"Gillian Flynn", isbn:"9780307588371",
+    tags:["Thriller","Gripping","Psychological Thriller"], primary:"Thriller", score:91,
+    why:"Two unreliable narrators, a missing wife, and a structure that keeps completely reversing what you think you know. One of the best page-turners written in the last 20 years.",
+    color:["#1a1010","#100808"],
+  },
+  {
+    id:9, title:"The Silent Patient", author:"Alex Michaelides", isbn:"9781250301697",
+    tags:["Thriller","Gripping","Psychological Thriller"], primary:"Thriller", score:89,
+    why:"A famous painter shoots her husband and never speaks again. Her therapist becomes obsessed. The twist lands — genuinely.",
+    color:["#181818","#101010"],
+  },
+  {
+    id:10, title:"Where the Crawdads Sing", author:"Delia Owens", isbn:"9780735224292",
+    tags:["Literary Fiction","Mystery","Gripping"], primary:"Literary Fiction", score:90,
+    why:"A woman who raised herself in the marshes of North Carolina. A murder. Stunning nature writing wrapped around a propulsive mystery.",
+    color:["#0e1a10","#081008"],
+  },
+  {
+    id:11, title:"The Seven Husbands of Evelyn Hugo", author:"Taylor Jenkins Reid", isbn:"9781501161933",
+    tags:["Literary Fiction","Gripping","Historical"], primary:"Literary Fiction", score:91,
+    why:"Old Hollywood, a legendary actress, seven marriages, and one interview. Reid makes you feel the whole span of a life. Impossible to put down.",
+    color:["#201428","#180e1c"],
+  },
+  {
+    id:12, title:"A Little Life", author:"Hanya Yanagihara", isbn:"9780804172707",
+    tags:["Literary Fiction","Award Winner","Emotional"], primary:"Literary Fiction", score:94,
+    why:"The most devastating novel written in the last decade. Four men in New York over thirty years. Not easy — but one of the most important things you'll read.",
+    color:["#141414","#0c0c0c"],
+  },
+  {
+    id:13, title:"Piranesi", author:"Susanna Clarke", isbn:"9781635575637",
+    tags:["Fantasy","Unexpected","Award Winner"], primary:"Fantasy", score:93,
+    why:"A man lives in a house with infinite halls and tides. He doesn't know how he got there. Utterly original — unlike anything else you'll read.",
+    color:["#101828","#0a1018"],
+  },
+  {
+    id:14, title:"Tomorrow, and Tomorrow, and Tomorrow", author:"Gabrielle Zevin", isbn:"9780593321201",
+    tags:["Literary Fiction","Unexpected","Award Winner"], primary:"Literary Fiction", score:95,
+    why:"About two game designers, their 30-year collaboration, and everything they fail to say to each other. It's about creativity, love, and time. Widely considered the novel of 2022.",
+    color:["#181428","#10101c"],
+  },
+  {
+    id:15, title:"The Kite Runner", author:"Khaled Hosseini", isbn:"9781594631931",
+    tags:["Literary Fiction","Emotional","Family Saga"], primary:"Literary Fiction", score:90,
+    why:"A man haunted by a betrayal he committed as a boy in Afghanistan. Hosseini's debut. Still one of the most powerful first novels you'll read.",
+    color:["#201410","#180e08"],
+  },
+  {
+    id:16, title:"Big Little Lies", author:"Liane Moriarty", isbn:"9780399167065",
+    tags:["Thriller","Gripping","Mystery"], primary:"Thriller", score:88,
+    why:"Trivia night murder at an Australian school. Three women, secrets stacked on secrets, and genuinely funny writing before it turns devastating.",
+    color:["#0e1820","#081018"],
+  },
+  {
+    id:17, title:"Educated", author:"Tara Westover", isbn:"9780399590504",
+    tags:["Biography","Unexpected","Award Winner"], primary:"Biography", score:95,
+    why:"A woman who grew up off-grid with survivalist parents, never went to school, and ended up with a PhD from Cambridge. One of the great memoirs of our time.",
+    color:["#201814","#18100c"],
+  },
+  {
+    id:18, title:"Rebecca", author:"Daphne du Maurier", isbn:"9780380730407",
+    tags:["Thriller","Gripping","Gothic"], primary:"Thriller", score:90,
+    why:"'Last night I dreamt I went to Manderley again.' A nameless narrator, a dead first wife, and a house alive with menace. Still unsurpassed.",
+    color:["#180e10","#100808"],
+  },
+  {
+    id:19, title:"Born a Crime", author:"Trevor Noah", isbn:"9780385540100",
+    tags:["Biography","Unexpected","Funny"], primary:"Biography", score:92,
+    why:"Growing up mixed-race under apartheid in South Africa. Noah is genuinely funny and the stories are genuinely harrowing. The combination is impossible to put down.",
+    color:["#141c10","#0c1408"],
+  },
+  {
+    id:20, title:"The Great Gatsby", author:"F. Scott Fitzgerald", isbn:"9780743273565",
+    tags:["Classics","Quick Read","Literary Fiction"], primary:"Classics", score:88,
+    why:"Still the most elegantly constructed American novel. Parties, obsession, green lights. Read it in an afternoon, think about it for years.",
+    color:["#1c1808","#141004"],
+  },
+  {
+    id:21, title:"Animal Farm", author:"George Orwell", isbn:"9780451526342",
+    tags:["Classics","Quick Read","Political"], primary:"Classics", score:89,
+    why:"A farm, some pigs, and a complete portrait of how power corrupts. 112 pages. Still one of the most efficient political statements in literary history.",
+    color:["#141814","#0c100c"],
+  },
+  {
+    id:22, title:"Pachinko", author:"Min Jin Lee", isbn:"9781455563920",
+    tags:["Literary Fiction","Family Saga","Historical","Award Winner"], primary:"Literary Fiction", score:96,
+    why:"Four generations of a Korean family in Japan across the twentieth century. Makes you feel you've lived several lives. Almost everyone who reads it can't stop talking about it.",
+    color:["#1a1010","#120808"],
+  },
+  {
+    id:23, title:"A Gentleman in Moscow", author:"Amor Towles", isbn:"9780670026197",
+    tags:["Literary Fiction","Unexpected","Historical"], primary:"Literary Fiction", score:93,
+    why:"A Russian count under house arrest in a Moscow hotel for 32 years. Sounds limiting — Towles makes it feel like a whole world. Warm, witty, quietly profound.",
+    color:["#1c1208","#140c04"],
+  },
+  {
+    id:24, title:"The Midnight Library", author:"Matt Haig", isbn:"9780525559474",
+    tags:["Literary Fiction","Emotional","Unexpected"], primary:"Literary Fiction", score:87,
+    why:"A library between life and death, containing every version of her life she could have lived. Haig writes about regret and hope better than almost anyone.",
+    color:["#081828","#041018"],
+  },
+  {
+    id:25, title:"Lessons in Chemistry", author:"Bonnie Garmus", isbn:"9780385547345",
+    tags:["Literary Fiction","Funny","Unexpected","Award Winner"], primary:"Literary Fiction", score:91,
+    why:"A female chemist in 1960s California ends up hosting a cooking show. Wickedly funny and quietly furious — the combination is irresistible.",
+    color:["#1c1a10","#141208"],
+  },
+  {
+    id:26, title:"Hamnet", author:"Maggie O'Farrell", isbn:"9780525657606",
+    tags:["Literary Fiction","Historical","Emotional","Award Winner"], primary:"Literary Fiction", score:93,
+    why:"Shakespeare's son dies of plague, told from his mother's perspective. Exquisitely written, devastating. Won the Women's Prize for Fiction.",
+    color:["#181010","#100808"],
+  },
+  {
+    id:27, title:"The Girl with the Dragon Tattoo", author:"Stieg Larsson", isbn:"9780307454546",
+    tags:["Thriller","Gripping","Mystery"], primary:"Thriller", score:88,
+    why:"A disgraced journalist and a hacker investigate a 40-year-old disappearance. Larsson builds atmosphere like almost no thriller writer since.",
+    color:["#101018","#08080e"],
+  },
+  {
+    id:28, title:"The Secret History", author:"Donna Tartt", isbn:"9781400031702",
+    tags:["Literary Fiction","Gripping","Psychological Thriller"], primary:"Literary Fiction", score:92,
+    why:"You know from page one that a murder happened. The novel is about how. Tartt makes classics students in Vermont feel like the center of the universe.",
+    color:["#181420","#100c18"],
+  },
+  {
+    id:29, title:"The Old Man and the Sea", author:"Ernest Hemingway", isbn:"9780684801223",
+    tags:["Classics","Quick Read","Literary Fiction"], primary:"Classics", score:87,
+    why:"An old Cuban fisherman, a massive marlin, three days at sea. Hemingway at his most essential. One afternoon.",
+    color:["#0e1820","#08101c"],
+  },
+  {
+    id:30, title:"Of Mice and Men", author:"John Steinbeck", isbn:"9780140177398",
+    tags:["Classics","Quick Read","Emotional"], primary:"Classics", score:88,
+    why:"Two migrant workers and a dream of land. Every scene tight, every line doing work. Finish it in two hours. Think about it for weeks.",
+    color:["#141c08","#0c1404"],
+  },
+  {
+    id:31, title:"Giovanni's Room", author:"James Baldwin", isbn:"9780307275776",
+    tags:["Classics","Quick Read","Literary Fiction","Emotional"], primary:"Classics", score:91,
+    why:"An American in Paris, a love affair he can't allow himself to have, and the consequences. Baldwin at his most precise. One of the most beautiful novels in American literature.",
+    color:["#141420","#0c0c18"],
+  },
+  {
+    id:32, title:"A Man Called Ove", author:"Fredrik Backman", isbn:"9781501117732",
+    tags:["Literary Fiction","Unexpected","Emotional","Funny"], primary:"Literary Fiction", score:89,
+    why:"A grumpy Swedish man tries to die and keeps being interrupted by people who need him. Infuriating and then absolutely devastating.",
+    color:["#141c1c","#0c1414"],
+  },
+  {
+    id:33, title:"The House in the Cerulean Sea", author:"T.J. Klune", isbn:"9781250217288",
+    tags:["Fantasy","Unexpected","Funny","Emotional"], primary:"Fantasy", score:88,
+    why:"A government case worker is sent to oversee a magical orphanage. Cozy, warm, and quietly serious. The antidote to books that feel like work.",
+    color:["#0e1820","#081018"],
+  },
+  {
+    id:34, title:"The Overstory", author:"Richard Powers", isbn:"9780393356120",
+    tags:["Literary Fiction","Award Winner","Unexpected"], primary:"Literary Fiction", score:90,
+    why:"Nine Americans whose lives intertwine around trees. Powers writes about ecology with the urgency of a thriller. Pulitzer Prize winner.",
+    color:["#0a180a","#041004"],
+  },
+  {
+    id:35, title:"Klara and the Sun", author:"Kazuo Ishiguro", isbn:"9780593311295",
+    tags:["Literary Fiction","Sci-Fi","Unexpected","Award Winner"], primary:"Literary Fiction", score:91,
+    why:"Told from the perspective of an Artificial Friend watching the world through a shop window. Ishiguro asking what it means to love someone.",
+    color:["#181410","#100c08"],
+  },
+  {
+    id:36, title:"In the Woods", author:"Tana French", isbn:"9780143113492",
+    tags:["Mystery","Gripping","Literary Fiction"], primary:"Mystery", score:90,
+    why:"A detective investigating a child's murder in the Dublin woods — the same woods where he was found as a boy with no memory. French is the best crime writer working.",
+    color:["#0a1408","#061004"],
+  },
+  {
+    id:37, title:"The God of Small Things", author:"Arundhati Roy", isbn:"9780812979657",
+    tags:["Literary Fiction","Award Winner","Family Saga","Emotional"], primary:"Literary Fiction", score:92,
+    why:"A family in Kerala, a forbidden love, and the small things that break everything. Roy's prose is so precise it hurts. Booker Prize. Her only novel.",
+    color:["#1a0e0c","#120808"],
+  },
+  {
+    id:38, title:"Verity", author:"Colleen Hoover", isbn:"9781538724736",
+    tags:["Thriller","Gripping","Psychological Thriller"], primary:"Thriller", score:87,
+    why:"A writer moves into a famous author's home and finds a manuscript that may confess to murder. CoHo's most unhinged book — genuinely can't-put-down.",
+    color:["#180c10","#100808"],
+  },
+  {
+    id:39, title:"Remarkably Bright Creatures", author:"Shelby Van Pelt", isbn:"9780063204157",
+    tags:["Literary Fiction","Unexpected","Funny","Emotional"], primary:"Literary Fiction", score:88,
+    why:"Told partly from the perspective of a giant Pacific octopus at an aquarium. A widow, a young man, and the octopus who sees everything. Exactly as good as everyone says.",
+    color:["#0a1820","#061018"],
+  },
+  {
+    id:40, title:"Lincoln in the Bardo", author:"George Saunders", isbn:"9780812985405",
+    tags:["Literary Fiction","Unexpected","Award Winner"], primary:"Literary Fiction", score:91,
+    why:"Lincoln's dead son in a graveyard, surrounded by ghosts in denial. Told through 166 different voices. Saunders won the Man Booker for this. Nothing else like it.",
+    color:["#141420","#0c0c18"],
   },
 ];
 
@@ -1262,6 +1467,41 @@ const BOOK_AFFINITY = {
       escape:  "The ideas here will follow you for weeks after you finish",
     },
   },
+  // Phase 16 expansion
+  7:  { similarTo:["Normal People","Conversations with Friends","One Day","Beautiful World","Attachments"], toneWords:["precise","restrained","contemporary"], pacing:"moderate" },
+  8:  { similarTo:["Gone Girl","The Girl on the Train","Sharp Objects","Dark Places","Behind Closed Doors"], toneWords:["twisty","propulsive","dark"], pacing:"fast" },
+  9:  { similarTo:["The Silent Patient","The Woman in the Window","Behind Closed Doors","The Couple Next Door"], toneWords:["taut","psychological","twisty"], pacing:"fast" },
+  10: { similarTo:["Where the Crawdads Sing","Big Little Lies","Little Fires Everywhere","The Marsh King's Daughter"], toneWords:["atmospheric","propulsive","literary"], pacing:"moderate" },
+  11: { similarTo:["Daisy Jones and The Six","The Seven Husbands","Malibu Rising","One True Loves"], toneWords:["cinematic","sweeping","emotional"], pacing:"fast" },
+  12: { similarTo:["A Little Life","The Corrections","The Hours","Let the Great World Spin","The Goldfinch"], toneWords:["devastating","literary","essential"], pacing:"slow" },
+  13: { similarTo:["Piranesi","Jonathan Strange","The Night Circus","Mexican Gothic","Babel"], toneWords:["original","mysterious","immersive"], pacing:"moderate" },
+  14: { similarTo:["Tomorrow x3","The Interestings","The Marriage Plot","Freedom","Commonwealth"], toneWords:["ambitious","emotional","original"], pacing:"moderate" },
+  15: { similarTo:["The Kite Runner","A Thousand Splendid Suns","Cutting for Stone","The God of Small Things","Pachinko"], toneWords:["redemptive","emotional","sweeping"], pacing:"moderate" },
+  16: { similarTo:["Big Little Lies","Truly Madly Guilty","The Husband's Secret","Nine Perfect Strangers"], toneWords:["propulsive","sharp","domestic"], pacing:"fast" },
+  17: { similarTo:["Educated","The Glass Castle","Hillbilly Elegy","Wild","Between the World and Me"], toneWords:["urgent","honest","remarkable"], pacing:"moderate" },
+  18: { similarTo:["Rebecca","Jane Eyre","Wuthering Heights","The Little Stranger","Mexican Gothic"], toneWords:["atmospheric","gothic","gripping"], pacing:"moderate" },
+  19: { similarTo:["Born a Crime","Between the World and Me","Just Kids","I Know Why the Caged Bird Sings"], toneWords:["funny","profound","essential"], pacing:"fast" },
+  20: { similarTo:["The Great Gatsby","Tender is the Night","This Side of Paradise","Bright Lights Big City"], toneWords:["elegant","precise","American"], pacing:"fast" },
+  21: { similarTo:["Animal Farm","1984","Brave New World","We","Lord of the Flies"], toneWords:["allegorical","sharp","essential"], pacing:"fast" },
+  22: { similarTo:["Pachinko","The Covenant of Water","A Gentleman in Moscow","Snow Flower","The Kite Runner"], toneWords:["sweeping","generational","essential"], pacing:"slow" },
+  23: { similarTo:["A Gentleman in Moscow","The Rules of Civility","Lincoln Highway","The Storied Life of AJ Fikry"], toneWords:["witty","warm","beautifully constructed"], pacing:"moderate" },
+  24: { similarTo:["The Midnight Library","The Time Traveler's Wife","Before I Fall","Replay"], toneWords:["hopeful","imaginative","emotional"], pacing:"fast" },
+  25: { similarTo:["Lessons in Chemistry","The Thursday Murder Club","Major Pettigrew's Last Stand","The Rosie Project"], toneWords:["witty","warm","funny"], pacing:"moderate" },
+  26: { similarTo:["Hamnet","Wolf Hall","The Miniaturist","Girl with a Pearl Earring","Bring Up the Bodies"], toneWords:["lyrical","devastating","precise"], pacing:"slow" },
+  27: { similarTo:["The Girl with the Dragon Tattoo","The Snowman","I am Pilgrim","The Spy who came in from the Cold"], toneWords:["atmospheric","intelligent","propulsive"], pacing:"fast" },
+  28: { similarTo:["The Secret History","The Goldfinch","Donna Tartt","Brideshead Revisited","The Rules of Attraction"], toneWords:["rich","dark","literary"], pacing:"slow" },
+  29: { similarTo:["The Old Man and the Sea","A Farewell to Arms","For Whom the Bell Tolls","The Sun Also Rises"], toneWords:["spare","essential","timeless"], pacing:"fast" },
+  30: { similarTo:["Of Mice and Men","East of Eden","Grapes of Wrath","The Pearl","Cannery Row"], toneWords:["economic","emotional","essential"], pacing:"fast" },
+  31: { similarTo:["Giovanni's Room","Go Tell It on the Mountain","Another Country","Maurice","The Well of Loneliness"], toneWords:["precise","devastating","beautiful"], pacing:"moderate" },
+  32: { similarTo:["A Man Called Ove","Eleanor Oliphant","The Rosie Project","Major Pettigrew","The 100-Year-Old Man"], toneWords:["funny","heartwarming","unexpected"], pacing:"moderate" },
+  33: { similarTo:["House in Cerulean Sea","Legends & Lattes","The House Witch","Piranesi","The Night Circus"], toneWords:["cozy","warm","magical"], pacing:"moderate" },
+  34: { similarTo:["The Overstory","Braiding Sweetgrass","H is for Hawk","Underland","Entangled Life"], toneWords:["ambitious","urgent","beautiful"], pacing:"slow" },
+  35: { similarTo:["Klara and the Sun","Never Let Me Go","The Remains of the Day","Machines Like Me"], toneWords:["quiet","devastating","philosophical"], pacing:"slow" },
+  36: { similarTo:["In the Woods","The Likeness","Faithful Place","The Dublin Murder Squad","Broken Harbour"], toneWords:["atmospheric","literary","gripping"], pacing:"fast" },
+  37: { similarTo:["The God of Small Things","The Inheritance of Loss","A Fine Balance","Arundhati Roy","Q&A"], toneWords:["lush","devastating","essential"], pacing:"slow" },
+  38: { similarTo:["Verity","It Ends with Us","November 9","Ugly Love","Confess"], toneWords:["propulsive","twisty","emotional"], pacing:"fast" },
+  39: { similarTo:["Remarkably Bright Creatures","A Man Called Ove","The One Hundred-Year-Old Man","The Unlikely Pilgrimage","Eleanor Oliphant"], toneWords:["warm","funny","unexpected"], pacing:"moderate" },
+  40: { similarTo:["Lincoln in the Bardo","Cloud Atlas","The Hours","A Visit from the Goon Squad","Invisible Man"], toneWords:["inventive","profound","ambitious"], pacing:"slow" },
 };
 
 // Maps mood selection to a reason template when no personal signal exists
@@ -1936,6 +2176,30 @@ const GENRE_ROW_TITLES = {
   "Philosophy":       { title:"Philosophy written for people who read fiction",   subtitle:"Clearer and more urgent than you'd expect" },
 };
 
+// ── INLINE PROMPT CHIPS — between rows ───────────────────────────────────────
+function InlinePromptChips({ prompts, onPrompt }) {
+  return (
+    <div style={{ padding:"4px 16px 20px", display:"flex", gap:8, flexWrap:"wrap" }}>
+      {prompts.map((p, i) => (
+        <button key={i} onClick={() => onPrompt(p.prompt)}
+          style={{
+            padding:"8px 15px", borderRadius:"var(--r-pill)",
+            border:"1px solid rgba(255,248,236,.12)",
+            background:"rgba(255,248,236,.05)",
+            color:"var(--text2)", fontSize:12.5, fontWeight:500,
+            cursor:"pointer", transition:"all .28s var(--ease)",
+            backdropFilter:"blur(8px)",
+          }}
+          onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--gold)";e.currentTarget.style.color="var(--gold)";e.currentTarget.style.background="var(--gold-l)";}}
+          onMouseLeave={e=>{e.currentTarget.style.borderColor="rgba(255,248,236,.12)";e.currentTarget.style.color="var(--text2)";e.currentTarget.style.background="rgba(255,248,236,.05)";}}
+        >
+          {p.label} →
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function buildDiscoverRows(allBooks, userState) {
   const {
     savedBooks = [], readBooks = [], mood = null, genre = null, dismissedBooks = [],
@@ -2025,64 +2289,126 @@ function buildDiscoverRows(allBooks, userState) {
     }
   }
 
-  // ── Row 4: WEEKEND READS — fast + moderate pacing ──
+  // ── Row 4: CAN'T PUT DOWN ──
+  const grippingBooks = available.filter(b =>
+    b.tags.some(t => ["Gripping","Thriller","Psychological Thriller","Mystery","Crime"].includes(t)) ||
+    BOOK_AFFINITY[b.id]?.pacing === "fast"
+  );
+  if (grippingBooks.length >= 2) {
+    rows.push({
+      id: "cant-put-down",
+      title: "Can't Put Down",
+      subtitle: "Books that take the weekend with them",
+      books: grippingBooks.slice(0, 12),
+      rowContext: "fast gripping",
+      prompts: [
+        { label:"Something fast", prompt:"I want something I genuinely can't put down this weekend. Fast-paced and gripping. What should I read?" },
+        { label:"A thriller", prompt:"What's the best psychological thriller I haven't read? Be specific about why it's genuinely unsettling." },
+      ],
+    });
+  }
+
+  // ── Row 5: ACTUALLY WORTH READING ──
+  const worthReading = available.filter(b =>
+    b.tags.includes("Award Winner") || b.score >= 91
+  );
+  if (worthReading.length >= 2) {
+    rows.push({
+      id: "worth-reading",
+      title: "Actually Worth Reading",
+      subtitle: "Award winners and genuine standouts — not just bestsellers",
+      books: worthReading.slice(0, 12),
+      rowContext: "literary quality",
+      prompts: [
+        { label:"Something important", prompt:"What's a genuinely important book I should read — not just popular, but one that actually matters? Why?" },
+        { label:"Something emotional", prompt:"I want something emotionally devastating. What's the most moving book you'd recommend and why?" },
+      ],
+    });
+  }
+
+  // ── Row 6: IF YOU LIKED… ──
+  // Surfaces books with high cross-affinity to universally beloved titles
+  const popularAnchors = ["Pachinko","The Kite Runner","Normal People","Gone Girl","A Gentleman in Moscow","Educated","A Little Life"];
+  const ifYouLikedBooks = available.filter(b => {
+    const aff = BOOK_AFFINITY[b.id];
+    return aff?.similarTo?.some(s =>
+      popularAnchors.some(a => s.toLowerCase().includes(a.toLowerCase().split(" ")[0]))
+    );
+  });
+  if (ifYouLikedBooks.length >= 2) {
+    rows.push({
+      id: "if-you-liked",
+      title: "If You Liked…",
+      subtitle: "Books readers recommend when they loved Pachinko, Normal People, or Gone Girl",
+      books: ifYouLikedBooks.slice(0, 12),
+      rowContext: "affinity based",
+    });
+  }
+
+  // ── Row 7: SOMETHING DIFFERENT ──
+  const differentBooks = available.filter(b =>
+    b.tags.includes("Unexpected") ||
+    b.tags.some(t => ["Fantasy","Sci-Fi","Funny","Gothic"].includes(t))
+  );
+  if (differentBooks.length >= 2) {
+    rows.push({
+      id: "something-different",
+      title: "Something Different",
+      subtitle: "Surprising, cross-genre, and unlike anything in your current rotation",
+      books: differentBooks.slice(0, 12),
+      rowContext: "unexpected picks",
+      prompts: [
+        { label:"Something different", prompt:"I want something I'd never usually pick — a book that surprises me. What would you choose for me and why?" },
+        { label:"Something funny", prompt:"What's the most genuinely funny literary novel worth reading? Not just light — actually funny writing." },
+      ],
+    });
+  }
+
+  // ── Row 8: QUICK READS ──
+  const quickBooks = available.filter(b =>
+    b.tags.includes("Quick Read") || b.tags.includes("Classics")
+  );
+  if (quickBooks.length >= 2) {
+    rows.push({
+      id: "quick-reads",
+      title: "Quick Reads",
+      subtitle: "Finished in a sitting — but not forgettable",
+      books: quickBooks.slice(0, 10),
+      rowContext: "short books",
+      prompts: [
+        { label:"Low commitment", prompt:"I have one evening. What's a short book I can finish tonight that will genuinely stay with me?" },
+      ],
+    });
+  }
+
+  // ── Row 9: WEEKEND READS — moderate pacing ──
   const weekendBooks = available.filter(b =>
-    ["fast","moderate"].includes(BOOK_AFFINITY[b.id]?.pacing)
+    ["fast","moderate"].includes(BOOK_AFFINITY[b.id]?.pacing) &&
+    !b.tags.includes("Quick Read")
   );
   if (weekendBooks.length >= 2) {
     rows.push({
       id: "weekend",
-      title: "You tend to finish faster-paced books — start here",
-      subtitle: "Propulsive writing that doesn't let you stop",
-      books: weekendBooks,
+      title: "Good for a weekend",
+      subtitle: "Propulsive enough to read in a few long sittings",
+      books: weekendBooks.slice(0, 10),
       rowContext: "fast-paced",
     });
   }
 
-  // ── Row 5: SLOW-BURN LITERARY — slow pacing, literary/historical tags ──
-  const slowBooks = available.filter(b =>
-    BOOK_AFFINITY[b.id]?.pacing === "slow" ||
-    b.tags.some(t => ["Literary Fiction","Historical","Family Saga"].includes(t))
-  );
-  if (slowBooks.length >= 2) {
-    rows.push({
-      id: "literary",
-      title: "Worth the slow build — the payoff is the whole point",
-      subtitle: "Patient storytelling at its best",
-      books: slowBooks,
-      rowContext: "slow-burn literary",
-    });
-  }
-
-  // ── Row 6: MIND-EXPANDING — non-fiction and psychology ──
-  const nonficBooks = available.filter(b =>
-    b.tags.some(t => ["Non-Fiction","Psychology","Self-Help","Business","Philosophy","Biography"].includes(t))
-  );
-  if (nonficBooks.length >= 1) {
-    rows.push({
-      id: "nonfic",
-      title: "You'll close these knowing something you didn't before",
-      subtitle: "Non-fiction that earns the time you give it",
-      books: nonficBooks,
-      rowContext: "mind-expanding non-fiction",
-    });
-  }
-
-  // ── Row 7: DEFAULT — always shown, smart title ──
+  // ── Row 10: DEFAULT — always shown ──
   const smartTitle = smartRowTitle(readBooks);
   rows.push({
     id: "all",
-    title: smartTitle || (readBooks.length >= 1 ? "More picks shaped around your taste" : "Where to start"),
+    title: smartTitle || (readBooks.length >= 1 ? "More picks shaped around your taste" : "The full list"),
     subtitle: readBooks.length >= 1
       ? "Getting more accurate the more you rate"
-      : "Eight editors. One list. No filler.",
+      : "Forty books. Every one worth your time.",
     books: available,
     rowContext: null,
   });
 
-  // Deduplicate consecutive identical row sets (keep all — overlap is intentional context)
-  // Cap at 5 rows max for a clean layout
-  return rows.filter(r => r.books.length >= 1).slice(0, 5);
+  return rows.filter(r => r.books.length >= 1).slice(0, 8);
 }
 
 // ── FOR YOU FEED BUILDER ──────────────────────────────────────────────────────
@@ -6965,7 +7291,7 @@ description: one sentence max.`,
               </button>
             )}
 
-            {/* Personalised multi-row discovery */}
+            {/* Curated multi-row discovery */}
             {discoverRows.length === 0 ? (
               <div className="ls-empty" style={{padding:"32px 16px"}}>
                 <div className="ls-empty-icon"><BookOpen size={36} strokeWidth={1}/></div>
@@ -6973,20 +7299,24 @@ description: one sentence max.`,
                 <div className="ls-empty-body">You've dismissed all current picks. Reset your filters to see more.</div>
               </div>
             ) : (
-              discoverRows.map(row => (
-                <BookRow
-                  key={row.id}
-                  books={row.books}
-                  title={row.title}
-                  subtitle={row.subtitle}
-                  onAsk={goAsk}
-                  onTap={setTappedBook}
-                  savedBooks={savedBooks}
-                  onSave={handleSaveBook}
-                  onDismiss={handleDismissBook}
-                  userState={adaptedUserState}
-                  onShowDetail={setDetailBook}
-                />
+              discoverRows.map((row, i) => (
+                <div key={row.id}>
+                  <BookRow
+                    books={row.books}
+                    title={row.title}
+                    subtitle={row.subtitle}
+                    onAsk={goAsk}
+                    onTap={setTappedBook}
+                    savedBooks={savedBooks}
+                    onSave={handleSaveBook}
+                    onDismiss={handleDismissBook}
+                    userState={adaptedUserState}
+                    onShowDetail={setDetailBook}
+                  />
+                  {row.prompts && row.prompts.length > 0 && (
+                    <InlinePromptChips prompts={row.prompts} onPrompt={goAsk}/>
+                  )}
+                </div>
               ))
             )}
 
