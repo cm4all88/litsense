@@ -6550,8 +6550,8 @@ export default function LitSense() {
   // Intent-driven background key — must be after adaptedVoice
   const bgKey = useMemo(() => getBackgroundKey({
     mood, adaptedVoice, genre,
-    inAsk: tab === "ask" && msgs.length > 0,
-  }), [mood, adaptedVoice, genre, tab, msgs.length]);
+    inAsk: tab === "ask",
+  }), [mood, adaptedVoice, genre, tab]);
 
   const adaptedUserState = useMemo(() => adaptUserState(
     { savedBooks, readBooks, mood, genre, dismissedBooks, voice: adaptedVoice },
