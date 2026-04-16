@@ -298,7 +298,7 @@ const CSS = `
 
 /* ── LAYOUT ── */
 .ls-main{flex:1;overflow:hidden;display:flex;flex-direction:column;}
-.ls-scroll{flex:1;overflow-y:auto;overscroll-behavior:none;-webkit-overflow-scrolling:auto;}
+.ls-scroll{flex:1;overflow-y:auto;overscroll-behavior:none;-webkit-overflow-scrolling:touch;}
 
 /* ── CINEMATIC HERO ── */
 .ls-hero{
@@ -8251,14 +8251,14 @@ description: one sentence max.`,
             color:"rgba(212,148,26,.55)", textAlign:"center",
           }}>A doorworth opening</div>
 
-          {/* Keyhole image — takes up center */}
-          <div style={{flex:1, display:"flex", alignItems:"center", justifyContent:"center", width:"100%"}}>
+          {/* Keyhole image — takes up center, capped so it never overlaps bottom content */}
+          <div style={{flex:1, display:"flex", alignItems:"center", justifyContent:"center", width:"100%", overflow:"hidden", maxHeight:"55vh"}}>
             <img
               src="/keyhole.svg"
               alt=""
               style={{
-                width:"100%", maxWidth:420,
-                height:"auto",
+                width:"100%", maxWidth:380,
+                height:"100%",
                 objectFit:"contain",
               }}
             />
