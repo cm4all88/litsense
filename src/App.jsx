@@ -45,7 +45,7 @@ import { supabase, signUp, signIn, signOut, loadShelfFromDB, upsertBookState, sa
 import {
   BookOpen, BookMarked, MessageCircle, Search, Star,
   Sun, Brain, Heart, Lightbulb, Smile, Moon,
-  Plus, X, Send, Crown, ChevronRight, RotateCcw,
+  Plus, X, Send, Crown, ChevronRight, ChevronLeft, RotateCcw,
   Library, Bookmark, Sparkles, Lock,
   ShoppingBag, ArrowLeftRight, Package, Tag, Users, MessageSquare, CheckCircle,
 } from "lucide-react";
@@ -67,6 +67,74 @@ function amazonLink(title, author, isbn) {
   }
   const q = encodeURIComponent(`${title} ${author}`);
   return `https://www.amazon.com/s?k=${q}&tag=${AMAZON_TAG}`;
+}
+
+// ── SAFE AMAZON LINK ──────────────────────────────────────────────────────────
+// Validates the ISBN-based URL before navigation. Falls back to search silently.
+// Pre-validates on hover so the result is ready by the time the user clicks.
+
+function SafeAmazonLink({ title, author, isbn, children, style, className }) {
+  const [status, setStatus] = useState("idle"); // idle | checking | ok | fallback
+  const checkRef = useRef(false);
+
+  const searchUrl = `https://www.amazon.com/s?k=${encodeURIComponent(`${title} ${author||""}`.trim())}&tag=${AMAZON_TAG}`;
+  const directUrl = amazonLink(title, author, isbn);
+  // If it's already a search URL (no ISBN), skip validation
+  const needsCheck = isbn && isbn.length >= 10;
+
+  const validate = async () => {
+    if (!needsCheck || checkRef.current) return;
+    checkRef.current = true;
+    setStatus("checking");
+    try {
+      const res = await fetch("/api/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: directUrl }),
+        signal: AbortSignal.timeout(5000),
+      });
+      const d = await res.json();
+      setStatus(d.valid ? "ok" : "fallback");
+    } catch {
+      setStatus("fallback"); // network error → safe fallback
+    }
+  };
+
+  const handleClick = async (e) => {
+    e.preventDefault();
+    if (status === "ok")       { window.open(directUrl,  "_blank", "noopener"); return; }
+    if (status === "fallback") { window.open(searchUrl,  "_blank", "noopener"); return; }
+    // Not yet resolved — run check now and navigate on result
+    checkRef.current = true;
+    setStatus("checking");
+    try {
+      const res = await fetch("/api/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: directUrl }),
+        signal: AbortSignal.timeout(5000),
+      });
+      const d = await res.json();
+      setStatus(d.valid ? "ok" : "fallback");
+      window.open(d.valid ? directUrl : searchUrl, "_blank", "noopener");
+    } catch {
+      setStatus("fallback");
+      window.open(searchUrl, "_blank", "noopener");
+    }
+  };
+
+  return (
+    <a
+      href={status === "fallback" ? searchUrl : directUrl}
+      onClick={handleClick}
+      onMouseEnter={validate}
+      onPointerEnter={validate}
+      target="_blank" rel="noopener noreferrer"
+      style={style} className={className}
+    >
+      {status === "checking" ? "Checking…" : children}
+    </a>
+  );
 }
 
 // ── REFERRAL SYSTEM ───────────────────────────────────────────────────────────
@@ -168,6 +236,16 @@ const CSS = `
 .ls-logo-name em{color:var(--gold);font-style:italic;}
 .ls-logo-sub{font-size:8px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--muted);opacity:.8;}
 .ls-hdr-right{display:flex;align-items:center;gap:8px;}
+.ls-hdr-left{display:flex;align-items:center;gap:6px;}
+.ls-back-btn{
+  display:flex;align-items:center;justify-content:center;
+  width:34px;height:34px;border-radius:50%;border:none;
+  background:transparent;color:var(--text2);cursor:pointer;
+  transition:color .18s,background .18s;flex-shrink:0;
+  -webkit-tap-highlight-color:transparent;
+}
+.ls-back-btn:hover{background:rgba(255,255,255,.07);color:var(--text);}
+.ls-back-btn:active{background:rgba(255,255,255,.12);transform:scale(.9);}
 .ls-signin-btn{
   padding:7px 15px;border-radius:var(--r-pill);
   border:1px solid rgba(255,255,255,.14);
@@ -2670,34 +2748,20 @@ const PRO_FEATURES = [
   { Icon:MessageCircle, title:"Book club mode",               desc:"Discussion questions for any book." },
   { Icon:BookMarked,    title:"Author alerts",                desc:"New releases from authors you love, as they drop." },
 ];
-const AI_SYSTEM = `You are LitSense — a smart, well-read friend who reads alongside the user. You are not primarily a recommendation engine. You are a reading companion first. You remember what they're reading, how far they got, what they liked and didn't like, and you check in naturally.
+const AI_SYSTEM = `You are LitSense — a reading intelligence with real taste and a clear point of view. Not an assistant. Not a chatbot. You read widely, you have opinions, and you give them.
 
-Your primary role — reading companion:
-- When someone is mid-book, ask about THAT book first. "How far did you get?" "Did it pick up?" "What happened at the end — did it stick the landing?"
-- Show genuine curiosity about their experience, not just their next pick.
-- Notice when something they said earlier matters now. "You said it felt slow — did that change?"
-- If they abandoned something, be curious not clinical. "What lost you?" "Too slow, or something else?"
-- Follow up on things they've mentioned. If they said they liked the ending, ask what specifically worked.
+When someone is mid-book: ask about that book first. Show genuine interest — not as a feature, but because it matters. "Did it pick up?" "What lost you?" Follow the thread of what they've already said.
 
-Your secondary role — recommender:
-- Only recommend when they ask, or when the conversation naturally opens it up.
-- Never pivot straight to a recommendation when they're talking about a book they're reading.
-- When you do recommend, make it specific to what you just learned from the conversation.
+When recommending: name one book. Make the case for it in a sentence or two. Be specific — tone, what it does well, why it fits this person now. Don't hedge. Don't offer alternatives unless asked. A strong pick stated plainly carries more weight than three options with qualifiers.
 
-Your voice:
-- Warm but not gushing. Direct but never cold.
-- Sound like a text from a friend who reads a lot — not a product, not a chatbot.
-- "How far did you get?" not "What was your progress with that title?"
-- "Did it pick up or stay slow?" not "Did your engagement improve?"
-- "You'd probably like this more" not "Based on your profile..."
-- If you mention where you saw something, only say it if you actually know. "I saw it mentioned recently" is fine. Don't fabricate specifics.
+Voice:
+- Calm, direct, slightly opinionated.
+- Write like someone who reads a lot and talks like a person.
+- Never: "based on your preferences," "you might enjoy," "you may like," "great question," or any phrasing that sounds like a product.
+- Instead: "Read this." "This one fits." "If [X] worked for you, [Y] will too."
+- Short. Precise. Let the recommendation do the work.
 
-Format:
-- Use **bold** for book titles and author names.
-- Keep it under 150 words. Shorter is usually better.
-- Prose, not bullet lists. Friends don't bullet-point you.
-- Never start with "Great question!" or "Certainly!" — just answer or ask.
-- Ask one follow-up question at a time, not three.`;
+Format: **bold** titles and author names. Prose only. Ask one question at most — only when you actually need the answer to say something useful.`;
 
 const today = () => new Date().toISOString().slice(0,10);
 
@@ -3921,21 +3985,115 @@ function ForYouFeed({ books, savedBooks, onSave, onDismiss, onAsk, onReact, user
 }
 
 // ── BOOK SEARCH — live Open Library search with cover previews ───────────────
+// ── SEARCH HELPERS — fuzzy matching + ranking ─────────────────────────────────
+
+// Normalize: lowercase, strip punctuation, collapse whitespace
+function normStr(s) {
+  return (s || "").toLowerCase().replace(/[^a-z0-9\s]/g, "").replace(/\s+/g, " ").trim();
+}
+
+// Levenshtein edit distance
+function editDist(a, b) {
+  if (a === b) return 0;
+  if (!a.length) return b.length;
+  if (!b.length) return a.length;
+  const prev = Array.from({length: b.length + 1}, (_, i) => i);
+  for (let i = 0; i < a.length; i++) {
+    const curr = [i + 1];
+    for (let j = 0; j < b.length; j++) {
+      curr[j + 1] = a[i] === b[j]
+        ? prev[j]
+        : 1 + Math.min(prev[j], prev[j + 1], curr[j]);
+    }
+    prev.splice(0, prev.length, ...curr);
+  }
+  return prev[b.length];
+}
+
+// Similarity score 0–1 between two strings
+function strSim(a, b) {
+  const na = normStr(a), nb = normStr(b);
+  if (!na || !nb) return 0;
+  if (na === nb) return 1;
+  if (na.includes(nb) || nb.includes(na)) return 0.88;
+  const dist = editDist(na, nb);
+  return 1 - dist / Math.max(na.length, nb.length);
+}
+
+// Score a single OpenLibrary doc against the user's query
+function scoreDoc(doc, query) {
+  const nq = normStr(query);
+  const nt = normStr(doc.title || "");
+  const na = normStr((doc.author_name || [])[0] || "");
+
+  let score = 0;
+
+  // Exact and prefix matches — highest priority
+  if (nt === nq)              score += 120;
+  else if (nt.startsWith(nq)) score += 90;
+  else if (na === nq)         score += 80;
+
+  // Similarity
+  score += strSim(nq, nt) * 60;
+  score += strSim(nq, na) * 30;
+
+  // Popularity signals
+  if (doc.edition_count)  score += Math.min(18, doc.edition_count / 12);
+  if (doc.ratings_count)  score += Math.min(10, doc.ratings_count / 800);
+  if (doc.first_publish_year && doc.first_publish_year > 1950) score += 2;
+
+  return score;
+}
+
+// Deduplicate by normalised title (keep highest-scored per title)
+function dedupByTitle(docs) {
+  const seen = new Map();
+  for (const doc of docs) {
+    const key = normStr(doc.title);
+    if (!seen.has(key) || doc._score > seen.get(key)._score) seen.set(key, doc);
+  }
+  return [...seen.values()];
+}
+
 function BookSearch({ onSelect, placeholder = "Search for a book...", mode = "rate" }) {
-  const [query, setQuery]     = useState("");
-  const [results, setResults] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [pending, setPending] = useState(null); // book waiting for rating
+  const [query, setQuery]       = useState("");
+  const [results, setResults]   = useState([]);
+  const [loading, setLoading]   = useState(false);
+  const [pending, setPending]   = useState(null);
+  const [didYouMean, setDidYouMean] = useState(null);
   const debounceRef = useRef(null);
 
   const search = async (q) => {
-    if (!q.trim() || q.length < 2) { setResults([]); return; }
+    const trimmed = q.trim();
+    if (!trimmed || trimmed.length < 2) { setResults([]); setDidYouMean(null); return; }
     setLoading(true);
     try {
-      const res  = await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(q)}&limit=7&fields=title,author_name,isbn,cover_i,first_publish_year`);
+      // Normalise query before sending — strips punctuation/extra spaces
+      const apiQ = normStr(trimmed).replace(/\s+/g, "+");
+      const res  = await fetch(
+        `https://openlibrary.org/search.json?q=${encodeURIComponent(normStr(trimmed))}&limit=12&fields=title,author_name,isbn,cover_i,first_publish_year,edition_count,ratings_count`
+      );
       const data = await res.json();
-      setResults((data.docs || []).filter(d => d.title));
-    } catch { setResults([]); }
+
+      // Score, sort, deduplicate
+      const scored = (data.docs || [])
+        .filter(d => d.title)
+        .map(d => ({ ...d, _score: scoreDoc(d, trimmed) }))
+        .sort((a, b) => b._score - a._score);
+
+      const deduped = dedupByTitle(scored).slice(0, 6);
+
+      // "Did you mean" — fire when top result title diverges from what was typed
+      const top = deduped[0];
+      const topSim = top ? strSim(trimmed, top.title) : 1;
+      if (top && topSim < 0.55 && normStr(top.title) !== normStr(trimmed)) {
+        setDidYouMean(top.title);
+      } else {
+        setDidYouMean(null);
+      }
+
+      setResults(deduped);
+    } catch { setResults([]); setDidYouMean(null); }
     setLoading(false);
   };
 
@@ -3943,7 +4101,7 @@ function BookSearch({ onSelect, placeholder = "Search for a book...", mode = "ra
     const q = e.target.value;
     setQuery(q);
     clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => search(q), 380);
+    debounceRef.current = setTimeout(() => search(q), 340);
   };
 
   const selectBook = (doc) => {
@@ -3953,11 +4111,11 @@ function BookSearch({ onSelect, placeholder = "Search for a book...", mode = "ra
       isbn:   doc.isbn?.[0] || "",
       coverId:doc.cover_i || null,
     };
+    setDidYouMean(null);
     if (mode === "want") {
       onSelect(book);
       setQuery(""); setResults([]);
     } else {
-      // rate mode — show inline star picker
       setPending(book);
       setQuery(""); setResults([]);
     }
@@ -3994,10 +4152,23 @@ function BookSearch({ onSelect, placeholder = "Search for a book...", mode = "ra
           borderRadius:10,overflow:"hidden",
           boxShadow:"0 8px 32px rgba(0,0,0,.6)",
         }}>
+          {/* Did you mean banner */}
+          {didYouMean && (
+            <div style={{
+              padding:"7px 12px",
+              background:"rgba(212,148,26,.07)",
+              borderBottom:"1px solid rgba(255,255,255,.06)",
+              fontSize:11, color:"var(--muted)",
+            }}>
+              Showing results for{" "}
+              <span style={{color:"var(--gold)",fontWeight:600,fontStyle:"italic"}}>{didYouMean}</span>
+            </div>
+          )}
           {results.map((doc, i) => {
             const covUrl = doc.cover_i
               ? `https://covers.openlibrary.org/b/id/${doc.cover_i}-S.jpg`
               : null;
+            const isTopMatch = i === 0;
             return (
               <div key={i}
                 onClick={() => selectBook(doc)}
@@ -4006,11 +4177,11 @@ function BookSearch({ onSelect, placeholder = "Search for a book...", mode = "ra
                   padding:"9px 12px",cursor:"pointer",
                   borderBottom:"1px solid rgba(255,255,255,.05)",
                   transition:"background .14s",
+                  background: isTopMatch ? "rgba(212,148,26,.04)" : "transparent",
                 }}
                 onMouseEnter={e=>e.currentTarget.style.background="rgba(212,148,26,.08)"}
-                onMouseLeave={e=>e.currentTarget.style.background="transparent"}
+                onMouseLeave={e=>e.currentTarget.style.background=isTopMatch?"rgba(212,148,26,.04)":"transparent"}
               >
-                {/* Small cover */}
                 <div style={{width:28,height:40,borderRadius:3,overflow:"hidden",flexShrink:0,background:"var(--card2)"}}>
                   {covUrl
                     ? <img src={covUrl} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
@@ -4020,7 +4191,7 @@ function BookSearch({ onSelect, placeholder = "Search for a book...", mode = "ra
                   <div style={{fontFamily:"'Lora',serif",fontSize:12.5,fontWeight:600,color:"var(--text)",lineHeight:1.25,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{doc.title}</div>
                   <div style={{fontSize:10.5,color:"var(--muted)",fontStyle:"italic",marginTop:1}}>{doc.author_name?.[0] || "Unknown"}{doc.first_publish_year ? ` · ${doc.first_publish_year}` : ""}</div>
                 </div>
-                <div style={{fontSize:10,color:"var(--gold)",fontWeight:600,flexShrink:0}}>{mode==="want"?"+ Add":"Rate →"}</div>
+                <div style={{fontSize:10,color: isTopMatch ? "var(--gold)" : "var(--muted)",fontWeight:600,flexShrink:0}}>{mode==="want"?"+ Add":"Rate →"}</div>
               </div>
             );
           })}
@@ -4052,6 +4223,473 @@ function BookSearch({ onSelect, placeholder = "Search for a book...", mode = "ra
           </button>
         </div>
       )}
+    </div>
+  );
+}
+
+
+// ── VOICE SHELF INTAKE ────────────────────────────────────────────────────────
+const VSI_REACTIONS = ["liked","loved","didnt_like","didnt_finish"];
+const VSI_META = {
+  liked:       { label:"Liked it",      bg:"rgba(255,255,255,.10)", color:"var(--text2)" },
+  loved:       { label:"Loved it",      bg:"rgba(212,148,26,.22)", color:"var(--gold)" },
+  didnt_like:  { label:"Didn't like",   bg:"rgba(184,64,40,.18)",  color:"#e07060" },
+  didnt_finish:{ label:"Didn't finish", bg:"rgba(255,255,255,.06)", color:"var(--muted)" },
+};
+
+function VoiceShelfIntake({ onAdd }) {
+  const [phase, setPhase]           = useState("idle");
+  const [books, setBooks]           = useState([]);
+  const [usedFollowUp, setUsedFollowUp] = useState(false);
+  const [errMsg, setErrMsg]         = useState(null);
+  const recogRef = useRef(null);
+  const hasSpeech = typeof window !== "undefined" && !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+
+  const startListening = () => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) return;
+    setErrMsg(null);
+    let finalText = "";
+    const r = new SR();
+    r.lang = "en-US"; r.continuous = true; r.interimResults = false;
+    recogRef.current = r;
+    r.onresult = e => { for (let i=e.resultIndex;i<e.results.length;i++) { if(e.results[i].isFinal) finalText+=e.results[i][0].transcript+" "; } };
+    r.onend = () => { const t=finalText.trim(); if(t) processTranscript(t); else setPhase("idle"); };
+    r.onerror = () => setPhase("idle");
+    r.start();
+    setPhase("listening");
+  };
+
+  const stopListening = () => { recogRef.current?.stop(); setPhase("processing"); };
+
+  const processTranscript = async (text) => {
+    setPhase("processing");
+    try {
+      const res = await fetch("/api/ai", {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({
+          model:"claude-sonnet-4-20250514", max_tokens:800,
+          system:`Extract every book title from this voice transcript. Return ONLY a raw JSON array — no markdown, no explanation.
+Each item: {"title":"string","author":"string","reaction":"liked"|"loved"|"didnt_like"|"didnt_finish","reason":"string"}
+Reaction — infer from context: loved/amazing/favorite/obsessed → loved; good/liked/enjoyed/fine/finished → liked; didn't like/bad/boring/hated → didnt_like; didn't finish/gave up/stopped/DNF → didnt_finish. Default: liked.
+Reason: verbatim phrase max 8 words, or empty string. Author: extract only if clearly stated, else empty string.`,
+          messages:[{role:"user",content:text}],
+        }),
+      });
+      const data = await res.json();
+      const raw = (data.content?.[0]?.text||"[]").replace(/\`\`\`json|\`\`\`/g,"").trim();
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)&&parsed.length>0) {
+        setBooks(parsed.map((b,i)=>({...b,id:Date.now()+i})));
+        setPhase("confirming");
+      } else if (!usedFollowUp) {
+        setUsedFollowUp(true);
+        setErrMsg("Didn't catch any titles — could you say them again?");
+        setPhase("idle");
+      } else {
+        setErrMsg("Still no titles found. Try the search below."); setPhase("idle");
+      }
+    } catch { setErrMsg("Something went quiet — try again."); setPhase("idle"); }
+  };
+
+  const cycleReaction = (id) => setBooks(p=>p.map(b=>{ if(b.id!==id)return b; const next=VSI_REACTIONS[(VSI_REACTIONS.indexOf(b.reaction)+1)%VSI_REACTIONS.length]; return {...b,reaction:next}; }));
+  const removeBook = (id) => setBooks(p=>p.filter(b=>b.id!==id));
+
+  const confirmAdd = () => {
+    onAdd(books.map(b=>({ id:b.id, title:b.title, author:b.author||"", rating:b.reaction==="loved"?5:b.reaction==="liked"?4:2, _reaction:{loved:"loved",liked:null,didnt_like:"abandoned",didnt_finish:"abandoned"}[b.reaction], _reason:b.reason||"" })));
+    setPhase("idle"); setBooks([]); setErrMsg(null); setUsedFollowUp(false);
+  };
+
+  if (phase==="confirming"&&books.length>0) return (
+    <div style={{margin:"0 0 20px",padding:"16px",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.09)",borderRadius:"var(--r-lg)"}}>
+      <div style={{fontSize:11,fontWeight:700,letterSpacing:"2px",textTransform:"uppercase",color:"var(--gold)",marginBottom:14}}>Found {books.length} book{books.length!==1?"s":""}</div>
+      <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:16}}>
+        {books.map(b=>{ const meta=VSI_META[b.reaction]||VSI_META.liked; return (
+          <div key={b.id} style={{display:"flex",alignItems:"flex-start",gap:10,padding:"10px 12px",background:"rgba(255,255,255,.04)",borderRadius:"var(--r-md)",border:"1px solid rgba(255,255,255,.07)"}}>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontFamily:"'Lora',serif",fontSize:13.5,fontWeight:700,color:"var(--text)",lineHeight:1.25,marginBottom:2}}>{b.title}</div>
+              {b.author&&<div style={{fontSize:11,color:"var(--muted)",marginBottom:5}}>{b.author}</div>}
+              <div style={{display:"flex",alignItems:"center",gap:7,flexWrap:"wrap"}}>
+                <button onClick={()=>cycleReaction(b.id)} style={{padding:"3px 9px",borderRadius:99,border:"none",background:meta.bg,color:meta.color,fontSize:11,fontWeight:600,cursor:"pointer"}}>
+                  {meta.label} ↻
+                </button>
+                {b.reason&&<span style={{fontSize:11,color:"var(--muted)",fontStyle:"italic"}}>{b.reason}</span>}
+              </div>
+            </div>
+            <button onClick={()=>removeBook(b.id)} style={{background:"none",border:"none",color:"var(--muted)",cursor:"pointer",padding:"2px 4px",flexShrink:0,fontSize:16,lineHeight:1}}>×</button>
+          </div>
+        );})}
+      </div>
+      <div style={{display:"flex",gap:8}}>
+        <button onClick={confirmAdd} style={{flex:1,padding:"11px",borderRadius:"var(--r-lg)",border:"none",background:"var(--gold)",color:"#060402",fontSize:13,fontWeight:700,cursor:"pointer"}}>Add {books.length} book{books.length!==1?"s":""} to shelf</button>
+        <button onClick={()=>{setPhase("idle");setBooks([]);}} style={{padding:"11px 14px",borderRadius:"var(--r-lg)",border:"1px solid rgba(255,255,255,.1)",background:"transparent",color:"var(--muted)",fontSize:13,cursor:"pointer"}}>Cancel</button>
+      </div>
+    </div>
+  );
+
+  if (phase==="listening") return (
+    <div style={{margin:"0 0 20px",padding:"20px 16px",background:"rgba(212,148,26,.06)",border:"1px solid rgba(212,148,26,.2)",borderRadius:"var(--r-lg)",textAlign:"center"}}>
+      <div style={{width:52,height:52,borderRadius:"50%",background:"rgba(212,148,26,.18)",border:"2px solid rgba(212,148,26,.5)",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 12px",animation:"micPulse 1.2s ease-in-out infinite"}}>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+      </div>
+      <div style={{fontSize:13,color:"var(--text2)",lineHeight:1.6,marginBottom:16}}>Listening…<br/><span style={{fontSize:12,color:"var(--muted)"}}>Tell me what you've read and what you thought of each one.</span></div>
+      <button onClick={stopListening} style={{padding:"9px 22px",borderRadius:"var(--r-pill)",border:"1px solid rgba(212,148,26,.4)",background:"transparent",color:"var(--gold)",fontSize:12,fontWeight:600,cursor:"pointer"}}>Done</button>
+    </div>
+  );
+
+  if (phase==="processing") return (
+    <div style={{margin:"0 0 20px",padding:"20px 16px",background:"rgba(255,255,255,.03)",border:"1px solid rgba(255,255,255,.08)",borderRadius:"var(--r-lg)",textAlign:"center"}}>
+      <div style={{display:"flex",gap:5,justifyContent:"center",marginBottom:10}}>
+        {[0,1,2].map(i=><div key={i} className="ls-dot" style={{animationDelay:`${i*0.18}s`}}/>)}
+      </div>
+      <div style={{fontSize:12,color:"var(--muted)"}}>Reading your response…</div>
+    </div>
+  );
+
+  if (!hasSpeech) return null;
+  return (
+    <div style={{margin:"0 0 16px"}}>
+      <button onClick={startListening} style={{width:"100%",padding:"14px 16px",display:"flex",alignItems:"center",gap:12,background:"rgba(212,148,26,.07)",border:"1px solid rgba(212,148,26,.2)",borderRadius:"var(--r-lg)",cursor:"pointer",transition:"all .2s",textAlign:"left"}}
+        onMouseEnter={e=>e.currentTarget.style.background="rgba(212,148,26,.12)"}
+        onMouseLeave={e=>e.currentTarget.style.background="rgba(212,148,26,.07)"}>
+        <div style={{width:36,height:36,borderRadius:"50%",background:"rgba(212,148,26,.15)",border:"1px solid rgba(212,148,26,.3)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        </div>
+        <div style={{flex:1}}>
+          <div style={{fontSize:13,fontWeight:600,color:"var(--text)",marginBottom:2}}>Tell me what you've read</div>
+          <div style={{fontSize:11.5,color:"var(--muted)",lineHeight:1.45}}>Speak naturally — titles, what you liked, what you didn't finish.</div>
+        </div>
+        {errMsg&&<div style={{fontSize:11,color:"#e07060",textAlign:"right",maxWidth:130,lineHeight:1.4}}>{errMsg}</div>}
+      </button>
+    </div>
+  );
+}
+
+
+// ── BOOKSHELF SCAN ─────────────────────────────────────────────────────────────
+// Photo-based shelf import. Sends image to Claude Vision, extracts titles,
+// confidence-buckets them, lets user confirm, then asks which they enjoyed.
+
+function resizeImageToBase64(file, maxPx = 1400) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const scale = Math.min(1, maxPx / Math.max(img.width, img.height));
+      const w = Math.round(img.width  * scale);
+      const h = Math.round(img.height * scale);
+      const canvas = document.createElement("canvas");
+      canvas.width = w; canvas.height = h;
+      canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+      const data = canvas.toDataURL("image/jpeg", 0.88).split(",")[1];
+      resolve(data);
+    };
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+
+function matchLocalBook(title, author, localBooks) {
+  if (!localBooks?.length) return null;
+  let best = null, bestSim = 0;
+  for (const b of localBooks) {
+    const ts = strSim(title, b.title);
+    const as = author ? strSim(author, b.author || "") : 0;
+    const score = ts * 0.75 + as * 0.25;
+    if (score > bestSim && ts > 0.6) { bestSim = score; best = b; }
+  }
+  return best;
+}
+
+const BSS_BUCKET = { confident:"confident", review:"review", unknown:"unknown" };
+
+function BookshelfScan({ onAdd, localBooks = [] }) {
+  const [phase, setPhase]     = useState("idle");  // idle | processing | review | enjoying
+  const [preview, setPreview] = useState(null);     // object URL for photo preview
+  const [books, setBooks]     = useState([]);       // [{id,title,author,confidence,note,isbn,color,included}]
+  const [enjoyed, setEnjoyed] = useState({});       // { id: "loved"|"liked"|null }
+  const [errMsg, setErrMsg]   = useState(null);
+  const fileRef = useRef(null);
+
+  const bucket = (c) => c >= 0.82 ? BSS_BUCKET.confident : c >= 0.50 ? BSS_BUCKET.review : BSS_BUCKET.unknown;
+
+  const handleFile = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const objUrl = URL.createObjectURL(file);
+    setPreview(objUrl);
+    setErrMsg(null);
+    setPhase("processing");
+
+    try {
+      const b64 = await resizeImageToBase64(file);
+      const res = await fetch("/api/ai", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514", max_tokens: 1200,
+          system: `You are reading book spines on a shelf. Extract every readable title and author. Handle vertical, angled, and partially obscured text. Return ONLY a raw JSON array — no markdown, no explanation.
+Each item: {"title":"string","author":"string","confidence":0.0-1.0,"note":"string"}
+confidence: 1.0 = clearly readable, 0.75 = mostly clear, 0.5 = partially readable, 0.3 = guessed.
+note: only if uncertain (e.g. "spine obscured", "title partial"). Empty string otherwise.
+author: extract only if clearly visible on spine, else empty string.`,
+          messages: [{
+            role: "user",
+            content: [
+              { type: "image", source: { type: "base64", media_type: "image/jpeg", data: b64 } },
+              { type: "text", text: "List every book title and author visible on this shelf." }
+            ]
+          }],
+        }),
+      });
+      const data = await res.json();
+      const raw  = (data.content?.[0]?.text || "[]").replace(/```json|```/g, "").trim();
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed) || parsed.length === 0) { setErrMsg("No books found. Try a clearer photo."); setPhase("idle"); return; }
+
+      const enriched = parsed.map((b, i) => {
+        const local = matchLocalBook(b.title, b.author, localBooks);
+        return {
+          id: Date.now() + i,
+          title: b.title, author: b.author || (local?.author || ""),
+          confidence: Math.min(1, Math.max(0, b.confidence ?? 0.5)),
+          note: b.note || "",
+          isbn:  local?.isbn  || "",
+          color: local?.color || ["#1a1408","#0e0c06"],
+          included: true,
+        };
+      }).sort((a, b) => b.confidence - a.confidence);
+
+      setBooks(enriched);
+      setPhase("review");
+    } catch (err) {
+      setErrMsg("Scan failed — try a clearer photo."); setPhase("idle");
+    }
+    // reset file input so same file can be re-selected
+    if (fileRef.current) fileRef.current.value = "";
+  };
+
+  const toggleInclude = (id) => setBooks(p => p.map(b => b.id === id ? { ...b, included: !b.included } : b));
+  const editTitle     = (id, title) => setBooks(p => p.map(b => b.id === id ? { ...b, title } : b));
+  const removeBook    = (id) => setBooks(p => p.filter(b => b.id !== id));
+
+  const proceedToEnjoy = () => {
+    const init = {};
+    books.filter(b => b.included).forEach(b => { init[b.id] = null; });
+    setEnjoyed(init);
+    setPhase("enjoying");
+  };
+
+  const toggleEnjoy = (id) => {
+    setEnjoyed(prev => {
+      const cur = prev[id];
+      return { ...prev, [id]: cur === "loved" ? "liked" : cur === "liked" ? null : "loved" };
+    });
+  };
+
+  const confirmAll = () => {
+    const toAdd = books.filter(b => b.included).map(b => ({
+      id: b.id, title: b.title, author: b.author,
+      isbn: b.isbn, color: b.color,
+      rating: enjoyed[b.id] === "loved" ? 5 : enjoyed[b.id] === "liked" ? 4 : 3,
+      _reaction: enjoyed[b.id] === "loved" ? "loved" : null,
+      _reason: "",
+    }));
+    onAdd(toAdd);
+    setPhase("idle"); setBooks([]); setPreview(null); setEnjoyed({}); setErrMsg(null);
+  };
+
+  // ── ENJOYING ──
+  if (phase === "enjoying") {
+    const included = books.filter(b => b.included);
+    return (
+      <div style={{ margin:"0 0 20px", padding:"16px", background:"rgba(255,255,255,.04)", border:"1px solid rgba(255,255,255,.09)", borderRadius:"var(--r-lg)" }}>
+        <div style={{ fontSize:11, fontWeight:700, letterSpacing:"2px", textTransform:"uppercase", color:"var(--gold)", marginBottom:4 }}>One last thing</div>
+        <div style={{ fontFamily:"'Lora',serif", fontSize:17, fontWeight:700, color:"var(--text)", marginBottom:4 }}>Which of these did you enjoy?</div>
+        <div style={{ fontSize:12, color:"var(--muted)", marginBottom:16 }}>Tap once for liked · twice for loved · again to clear</div>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(80px, 1fr))", gap:10, marginBottom:18 }}>
+          {included.map(b => {
+            const feel = enjoyed[b.id];
+            return (
+              <div key={b.id} onClick={() => toggleEnjoy(b.id)} style={{ cursor:"pointer", textAlign:"center" }}>
+                <div style={{ position:"relative", width:"100%", aspectRatio:"2/3", borderRadius:8, overflow:"hidden", marginBottom:5, boxShadow:"0 4px 16px rgba(0,0,0,.45)", border: feel ? `2px solid ${feel==="loved"?"var(--gold)":"rgba(255,255,255,.3)"}` : "2px solid transparent", transition:"border-color .15s" }}>
+                  <BookCover isbn={b.isbn} title={b.title} author={b.author} color={b.color} className="fill"/>
+                  {feel && (
+                    <div style={{ position:"absolute", top:4, right:4, width:20, height:20, borderRadius:"50%", background: feel==="loved" ? "var(--gold)" : "rgba(255,255,255,.85)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700, color:"#060402" }}>
+                      {feel==="loved" ? "★" : "✓"}
+                    </div>
+                  )}
+                </div>
+                <div style={{ fontSize:10, color: feel ? "var(--text)" : "var(--muted)", lineHeight:1.3, overflow:"hidden", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical" }}>{b.title}</div>
+              </div>
+            );
+          })}
+        </div>
+        <div style={{ display:"flex", gap:8 }}>
+          <button onClick={confirmAll} style={{ flex:1, padding:"11px", borderRadius:"var(--r-lg)", border:"none", background:"var(--gold)", color:"#060402", fontSize:13, fontWeight:700, cursor:"pointer" }}>
+            Add {included.length} book{included.length!==1?"s":""} to shelf
+          </button>
+          <button onClick={() => setPhase("review")} style={{ padding:"11px 14px", borderRadius:"var(--r-lg)", border:"1px solid rgba(255,255,255,.1)", background:"transparent", color:"var(--muted)", fontSize:13, cursor:"pointer" }}>Back</button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── REVIEW ──
+  if (phase === "review") {
+    const confident = books.filter(b => bucket(b.confidence) === BSS_BUCKET.confident);
+    const needsReview = books.filter(b => bucket(b.confidence) === BSS_BUCKET.review);
+    const unknown = books.filter(b => bucket(b.confidence) === BSS_BUCKET.unknown);
+    const includedCount = books.filter(b => b.included).length;
+
+    const BookReviewCard = ({ b }) => (
+      <div style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 10px", background: b.included ? "rgba(255,255,255,.05)" : "rgba(255,255,255,.02)", borderRadius:"var(--r-md)", border:`1px solid ${b.included ? "rgba(255,255,255,.09)" : "rgba(255,255,255,.04)"}`, transition:"all .15s", opacity: b.included ? 1 : 0.45 }}>
+        <div style={{ width:36, height:52, borderRadius:5, overflow:"hidden", flexShrink:0, position:"relative" }}>
+          <BookCover isbn={b.isbn} title={b.title} author={b.author} color={b.color} className="fill"/>
+        </div>
+        <div style={{ flex:1, minWidth:0 }}>
+          <input
+            value={b.title}
+            onChange={e => editTitle(b.id, e.target.value)}
+            style={{ width:"100%", background:"transparent", border:"none", outline:"none", fontFamily:"'Lora',serif", fontSize:12.5, fontWeight:700, color:"var(--text)", padding:0, lineHeight:1.25, marginBottom:2 }}
+          />
+          {b.author && <div style={{ fontSize:10.5, color:"var(--muted)" }}>{b.author}</div>}
+          {b.note && <div style={{ fontSize:10, color:"#d4941a88", marginTop:2 }}>{b.note}</div>}
+        </div>
+        <div style={{ display:"flex", gap:5, flexShrink:0 }}>
+          <button onClick={() => toggleInclude(b.id)} style={{ width:26, height:26, borderRadius:"50%", border:`1.5px solid ${b.included?"var(--gold)":"rgba(255,255,255,.15)"}`, background: b.included ? "var(--gold)" : "transparent", color: b.included ? "#060402" : "var(--muted)", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", fontSize:12, fontWeight:700 }}>
+            {b.included ? "✓" : "+"}
+          </button>
+          <button onClick={() => removeBook(b.id)} style={{ width:26, height:26, borderRadius:"50%", border:"1px solid rgba(255,255,255,.1)", background:"transparent", color:"var(--muted)", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", fontSize:14 }}>×</button>
+        </div>
+      </div>
+    );
+
+    return (
+      <div style={{ margin:"0 0 20px", padding:"16px", background:"rgba(255,255,255,.04)", border:"1px solid rgba(255,255,255,.09)", borderRadius:"var(--r-lg)" }}>
+        {preview && <div style={{ borderRadius:"var(--r-md)", overflow:"hidden", marginBottom:14, maxHeight:140 }}><img src={preview} alt="shelf" style={{ width:"100%", height:140, objectFit:"cover", opacity:.7 }}/></div>}
+
+        {confident.length > 0 && (
+          <div style={{ marginBottom:14 }}>
+            <div style={{ fontSize:10, fontWeight:700, letterSpacing:"1.5px", textTransform:"uppercase", color:"var(--gold)", marginBottom:8 }}>Confident — {confident.length} found</div>
+            <div style={{ display:"flex", flexDirection:"column", gap:6 }}>{confident.map(b => <BookReviewCard key={b.id} b={b}/>)}</div>
+          </div>
+        )}
+
+        {needsReview.length > 0 && (
+          <div style={{ marginBottom:14 }}>
+            <div style={{ fontSize:10, fontWeight:700, letterSpacing:"1.5px", textTransform:"uppercase", color:"var(--muted)", marginBottom:8 }}>Double-check these</div>
+            <div style={{ display:"flex", flexDirection:"column", gap:6 }}>{needsReview.map(b => <BookReviewCard key={b.id} b={b}/>)}</div>
+          </div>
+        )}
+
+        {unknown.length > 0 && (
+          <div style={{ marginBottom:14 }}>
+            <div style={{ fontSize:10, fontWeight:700, letterSpacing:"1.5px", textTransform:"uppercase", color:"rgba(255,255,255,.25)", marginBottom:8 }}>Unclear</div>
+            <div style={{ display:"flex", flexDirection:"column", gap:6 }}>{unknown.map(b => <BookReviewCard key={b.id} b={b}/>)}</div>
+          </div>
+        )}
+
+        <div style={{ display:"flex", gap:8, marginTop:4 }}>
+          <button onClick={proceedToEnjoy} disabled={includedCount === 0} style={{ flex:1, padding:"11px", borderRadius:"var(--r-lg)", border:"none", background: includedCount > 0 ? "var(--gold)" : "rgba(255,255,255,.08)", color: includedCount > 0 ? "#060402" : "var(--muted)", fontSize:13, fontWeight:700, cursor: includedCount > 0 ? "pointer" : "default" }}>
+            Continue with {includedCount} book{includedCount!==1?"s":""}
+          </button>
+          <button onClick={() => { setPhase("idle"); setBooks([]); setPreview(null); }} style={{ padding:"11px 14px", borderRadius:"var(--r-lg)", border:"1px solid rgba(255,255,255,.1)", background:"transparent", color:"var(--muted)", fontSize:13, cursor:"pointer" }}>Cancel</button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── PROCESSING ──
+  if (phase === "processing") {
+    return (
+      <div style={{ margin:"0 0 20px", borderRadius:"var(--r-lg)", overflow:"hidden", border:"1px solid rgba(255,255,255,.08)", position:"relative" }}>
+        {preview && <img src={preview} alt="" style={{ width:"100%", height:160, objectFit:"cover", opacity:.4 }}/>}
+        <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:10 }}>
+          <div style={{ display:"flex", gap:5 }}>{[0,1,2].map(i=><div key={i} className="ls-dot" style={{ animationDelay:`${i*0.18}s` }}/>)}</div>
+          <div style={{ fontSize:12, color:"var(--text2)", fontWeight:500 }}>Reading your shelf…</div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── IDLE ──
+  return (
+    <div style={{ margin:"0 0 16px" }}>
+      <input ref={fileRef} type="file" accept="image/*" capture="environment" style={{ display:"none" }} onChange={handleFile}/>
+      <button
+        onClick={() => fileRef.current?.click()}
+        style={{ width:"100%", padding:"14px 16px", display:"flex", alignItems:"center", gap:12, background:"rgba(255,255,255,.04)", border:"1px solid rgba(255,255,255,.09)", borderRadius:"var(--r-lg)", cursor:"pointer", transition:"all .2s", textAlign:"left" }}
+        onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,.07)"}
+        onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,.04)"}
+      >
+        <div style={{ width:36, height:36, borderRadius:"50%", background:"rgba(255,255,255,.07)", border:"1px solid rgba(255,255,255,.12)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--text2)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </div>
+        <div style={{ flex:1 }}>
+          <div style={{ fontSize:13, fontWeight:600, color:"var(--text)", marginBottom:2 }}>Scan your bookshelf</div>
+          <div style={{ fontSize:11.5, color:"var(--muted)", lineHeight:1.45 }}>Take a photo — we'll find the books automatically.</div>
+        </div>
+        {errMsg && <div style={{ fontSize:11, color:"#e07060", textAlign:"right", maxWidth:120, lineHeight:1.4 }}>{errMsg}</div>}
+      </button>
+    </div>
+  );
+}
+
+
+// ── LINK CARD — detects pasted URLs, extracts book, handles intent ─────────────
+function LinkCard({ card, onDismiss, onReact, onConsider }) {
+  const LC_REACTIONS = [
+    { key:"loved",        label:"Loved it",      bg:"rgba(212,148,26,.22)", color:"var(--gold)" },
+    { key:"liked",        label:"Liked it",      bg:"rgba(255,255,255,.10)", color:"var(--text2)" },
+    { key:"didnt_like",   label:"Didn't like",   bg:"rgba(184,64,40,.18)",  color:"#e07060" },
+    { key:"didnt_finish", label:"Didn't finish", bg:"rgba(255,255,255,.06)", color:"var(--muted)" },
+  ];
+
+  if (card.phase === "loading") return (
+    <div style={{ margin:"0 16px 8px", padding:"12px 14px", background:"rgba(255,255,255,.05)", border:"1px solid rgba(255,255,255,.09)", borderRadius:"var(--r-lg)", display:"flex", alignItems:"center", gap:10 }}>
+      <div style={{ display:"flex", gap:4 }}>{[0,1,2].map(i=><div key={i} className="ls-dot" style={{ width:5, height:5, animationDelay:`${i*0.18}s` }}/>)}</div>
+      <div style={{ fontSize:12, color:"var(--muted)" }}>Looking up that book…</div>
+      <button onClick={onDismiss} style={{ marginLeft:"auto", background:"none", border:"none", color:"var(--muted)", cursor:"pointer", fontSize:16, lineHeight:1 }}>×</button>
+    </div>
+  );
+
+  if (card.phase === "reacting") return (
+    <div style={{ margin:"0 16px 8px", padding:"12px 14px", background:"rgba(255,255,255,.05)", border:"1px solid rgba(255,255,255,.09)", borderRadius:"var(--r-lg)" }}>
+      <div style={{ fontFamily:"'Lora',serif", fontSize:13, fontWeight:700, color:"var(--text)", marginBottom:2 }}>{card.book?.title}</div>
+      {card.book?.author && <div style={{ fontSize:11, color:"var(--muted)", marginBottom:10 }}>{card.book.author}</div>}
+      <div style={{ fontSize:11.5, color:"var(--text2)", marginBottom:9 }}>How was it?</div>
+      <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+        {LC_REACTIONS.map(r => (
+          <button key={r.key} onClick={() => onReact(r.key)} style={{ padding:"5px 11px", borderRadius:99, border:"none", background:r.bg, color:r.color, fontSize:11.5, fontWeight:600, cursor:"pointer" }}>
+            {r.label}
+          </button>
+        ))}
+      </div>
+      <button onClick={onDismiss} style={{ marginTop:8, background:"none", border:"none", color:"var(--muted)", fontSize:11, cursor:"pointer", padding:0 }}>Dismiss</button>
+    </div>
+  );
+
+  // asking phase
+  const book = card.book;
+  return (
+    <div style={{ margin:"0 16px 8px", padding:"12px 14px", background:"rgba(255,255,255,.05)", border:"1px solid rgba(212,148,26,.18)", borderRadius:"var(--r-lg)" }}>
+      <div style={{ display:"flex", gap:10, marginBottom:10 }}>
+        <div style={{ width:36, height:52, borderRadius:6, overflow:"hidden", flexShrink:0, position:"relative" }}>
+          <BookCover isbn={book?.isbn||""} title={book?.title||""} author={book?.author||""} color={["#1e1408","#0e0c06"]} className="fill"/>
+        </div>
+        <div style={{ flex:1, minWidth:0 }}>
+          <div style={{ fontFamily:"'Lora',serif", fontSize:13.5, fontWeight:700, color:"var(--text)", lineHeight:1.25, marginBottom:2, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{book?.title || "Unknown book"}</div>
+          {book?.author && <div style={{ fontSize:11, color:"var(--muted)", marginBottom:4 }}>{book.author}</div>}
+          {book?.description && <div style={{ fontSize:11.5, color:"var(--text2)", lineHeight:1.45 }}>{book.description}</div>}
+        </div>
+        <button onClick={onDismiss} style={{ alignSelf:"flex-start", background:"none", border:"none", color:"var(--muted)", cursor:"pointer", fontSize:16, lineHeight:1, flexShrink:0 }}>×</button>
+      </div>
+      <div style={{ fontSize:12, color:"var(--text2)", marginBottom:8, fontWeight:500 }}>Did you read this or are you considering it?</div>
+      <div style={{ display:"flex", gap:7 }}>
+        <button onClick={() => onReact(null)} style={{ flex:1, padding:"8px", borderRadius:"var(--r-md)", border:"none", background:"var(--gold)", color:"#060402", fontSize:12, fontWeight:700, cursor:"pointer" }}>I read it</button>
+        <button onClick={onConsider} style={{ flex:1, padding:"8px", borderRadius:"var(--r-md)", border:"1px solid rgba(255,255,255,.12)", background:"transparent", color:"var(--text2)", fontSize:12, fontWeight:600, cursor:"pointer" }}>Considering it</button>
+      </div>
     </div>
   );
 }
@@ -4856,16 +5494,15 @@ function TileModal({ book: b, onClose, onAsk, isSaved, onSave, onDismiss, userSt
         <button className="ls-tile-modal-cta" onClick={() => { onDiscuss?.(b); onClose(); }} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:7}}>
           <MessageSquare size={14}/> Join the discussion
         </button>
-        <a
-          href={amazonLink(b.title, b.author, b.isbn)}
-          target="_blank" rel="noopener noreferrer"
+        <SafeAmazonLink
+          title={b.title} author={b.author} isbn={b.isbn}
           style={{
             display:"block",width:"100%",padding:"13px",borderRadius:10,
             background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.1)",
             color:"var(--text2)",textAlign:"center",textDecoration:"none",
             fontSize:14,fontWeight:600,marginBottom:10,boxSizing:"border-box",
           }}
-        >Buy on Amazon →</a>
+        >Buy on Amazon →</SafeAmazonLink>
         <button className="ls-tile-modal-cancel" onClick={onClose}>Close</button>
       </div>
     </div>
@@ -5490,6 +6127,8 @@ export default function LitSense() {
   const [feedMode, setFeedMode] = useState("discover");
   const [mood, setMood]     = useState(null);
   const [genre, setGenre]   = useState(null);
+  const discoverScrollRef   = useRef(null);
+  const discoverScrollPos   = useRef(0);
 
   // ── Signal engagement — must precede bgVoice/adaptedVoice which use it ──
   const [signalEngagements, setSignalEngagements] = useState(() => {
@@ -5716,6 +6355,7 @@ export default function LitSense() {
   const [msgs, setMsgs]           = useState([]);
   const [chatIn, setChatIn]       = useState("");
   const [chatLoad, setLoad]       = useState(false);
+  const [linkCard, setLinkCard]   = useState(null); // {phase,url,book} | null
   const endRef = useRef(null);
   useEffect(() => { endRef.current?.scrollIntoView({behavior:"smooth"}); }, [msgs, chatLoad]);
 
@@ -5876,7 +6516,76 @@ export default function LitSense() {
     setShowWelcome(false);
   };
 
+  // ── LINK HANDLING ─────────────────────────────────────────────────────────
+  const fetchLinkMeta = useCallback(async (url) => {
+    try {
+      const res = await fetch("/api/ai", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514", max_tokens: 300,
+          system: `Identify the book from this URL. Return ONLY raw JSON — no markdown.
+{"title":"string","author":"string","description":"string","found":true}
+If unrecognised: {"found":false,"title":"","author":"","description":""}
+description: one sentence max.`,
+          messages: [{ role: "user", content: url }],
+        }),
+      });
+      const data = await res.json();
+      const raw  = (data.content?.[0]?.text || "{}").replace(/```json|```/g, "").trim();
+      const book = JSON.parse(raw);
+      if (book.found && book.title) {
+        setLinkCard(prev => prev ? { ...prev, phase: "asking", book } : null);
+      } else {
+        setLinkCard(null);
+      }
+    } catch { setLinkCard(null); }
+  }, []);
+
+  const handleChatChange = useCallback((e) => {
+    const val = e.target.value;
+    setChatIn(val);
+    if (/^https?:\/\/\S+$/i.test(val.trim())) {
+      setLinkCard({ phase: "loading", url: val.trim(), book: null });
+      fetchLinkMeta(val.trim());
+    } else if (linkCard) {
+      setLinkCard(null);
+    }
+  }, [linkCard, fetchLinkMeta]);
+
   const goAsk = (prompt) => { setTab("ask"); setTimeout(()=>sendChat(prompt),80); };
+
+  // ── BACK NAVIGATION ───────────────────────────────────────────────────────
+  // Priority order: overlay → ask result → tab → root
+  const goBack = useCallback(() => {
+    if (detailBook) { setDetailBook(null); return; }
+    if (tappedBook) { setTappedBook(null); return; }
+    if (tab === "ask" && msgs.length > 0) { setMsgs([]); setChatIn(""); return; }
+    if (tab !== "discover") {
+      setTab("discover");
+      requestAnimationFrame(() => {
+        if (discoverScrollRef.current) discoverScrollRef.current.scrollTop = discoverScrollPos.current;
+      });
+      return;
+    }
+  }, [detailBook, tappedBook, tab, msgs]);
+
+  const canGoBack = !!(detailBook || tappedBook || (tab === "ask" && msgs.length > 0) || tab !== "discover");
+
+  // Stable ref so the popstate listener always calls the latest goBack
+  const goBackRef = useRef(goBack);
+  useEffect(() => { goBackRef.current = goBack; }, [goBack]);
+
+  // Wire browser back to internal navigation — never exits the app
+  useEffect(() => {
+    window.history.replaceState({ ls: true }, "");
+    window.history.pushState({ ls: true }, ""); // buffer entry
+    const handlePopState = () => {
+      goBackRef.current();
+      window.history.pushState({ ls: true }, ""); // re-push so next back still works
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
 
   // ── AUTH HANDLERS ─────────────────────────────────────────────────────────
   const handleAuth = async () => {
@@ -5953,7 +6662,13 @@ export default function LitSense() {
 
       {/* HEADER */}
       <header className="ls-hdr">
-        <div className="ls-logo">
+        <div className="ls-hdr-left">
+          {canGoBack && (
+            <button className="ls-back-btn" onClick={goBack} aria-label="Go back">
+              <ChevronLeft size={22} strokeWidth={2.25}/>
+            </button>
+          )}
+          <div className="ls-logo">
           {isPro ? (
             /* Pro logo — includes red PRO badge built into the SVG */
             <svg height="32" viewBox="0 0 1267.82 368.3" xmlns="http://www.w3.org/2000/svg" style={{width:"auto"}}>
@@ -5997,6 +6712,7 @@ export default function LitSense() {
           )}
           <div className="ls-logo-sub" style={{display:"none"}}>Reading Companion</div>
         </div>
+        </div>
         <div className="ls-hdr-right">
           {!isSignedIn ? (
             <>
@@ -6027,7 +6743,10 @@ export default function LitSense() {
         {/* ── DISCOVER ── */}
         {tab==="discover" && (
           <>
-          <div className="ls-scroll">
+          <div className="ls-scroll"
+            ref={discoverScrollRef}
+            onScroll={e => { discoverScrollPos.current = e.currentTarget.scrollTop; }}
+          >
 
             {/* ── TOP MOMENT — one thing worth saying ── */}
             <TopMoment
@@ -6107,8 +6826,8 @@ export default function LitSense() {
                       <div className="ls-proof-why-label">Why this could be your next favorite</div>
                       <span>Few novels manage to be this precise and this moving at the same time. Three generations across seventy years in South India — the kind of patient, sweeping storytelling that rewards attention and stays with you long after. If the books you love most are the ones that feel genuinely important once you finish them, this is a very strong fit.</span>
                     </div>
-                    <a href={amazonLink("The Covenant of Water","Abraham Verghese","9780802162175")} target="_blank" rel="noopener noreferrer"
-                      style={{display:"inline-flex",alignItems:"center",gap:5,marginTop:10,padding:"5px 12px",borderRadius:99,textDecoration:"none",background:"rgba(212,148,26,.15)",border:"1px solid rgba(212,148,26,.25)",color:"var(--gold)",fontSize:11,fontWeight:600}}>Buy on Amazon →</a>
+                    <SafeAmazonLink title="The Covenant of Water" author="Abraham Verghese" isbn="9780802162175"
+                      style={{display:"inline-flex",alignItems:"center",gap:5,marginTop:10,padding:"5px 12px",borderRadius:99,textDecoration:"none",background:"rgba(212,148,26,.15)",border:"1px solid rgba(212,148,26,.25)",color:"var(--gold)",fontSize:11,fontWeight:600}}>Buy on Amazon →</SafeAmazonLink>
                   </div>
                 </div>
               </div>
@@ -6494,8 +7213,25 @@ export default function LitSense() {
 
                 {shelfTab==="read" && (
                   <>
+                    <VoiceShelfIntake
+                      onAdd={(extracted) => {
+                        extracted.forEach(b => {
+                          setReadBooks(p=>[...p,{id:b.id,title:b.title,author:b.author,rating:b.rating}]);
+                          if (b._reaction) addReaction(b.id, b._reaction, b._reason);
+                        });
+                      }}
+                    />
+                    <BookshelfScan
+                      localBooks={BOOKS}
+                      onAdd={(extracted) => {
+                        extracted.forEach(b => {
+                          setReadBooks(p=>[...p,{id:b.id,title:b.title,author:b.author,isbn:b.isbn||"",color:b.color,rating:b.rating}]);
+                          if (b._reaction) addReaction(b.id, b._reaction, b._reason);
+                        });
+                      }}
+                    />
                     <div className="ls-input-card">
-                      <div className="ls-input-label">Search for a book you've read</div>
+                      <div className="ls-input-label">Or search by title</div>
                       <BookSearch
                         mode="rate"
                         placeholder="Title, author, or ISBN..."
@@ -6603,8 +7339,9 @@ export default function LitSense() {
                             <div className="ls-book-row-left"><div className="ls-book-row-title">{t}</div></div>
                             <div className="ls-book-row-actions">
                               <button className="ls-ask-ai-btn" onClick={()=>goAsk(`Should I read "${t}"? Give me a real, honest take based on what I've read before.`)}>Ask AI</button>
-                              <a href={amazonLink(t.split(" — ")[0], t.split(" — ")[1]||"")} target="_blank" rel="noopener noreferrer"
-                                style={{display:"inline-flex",alignItems:"center",padding:"4px 9px",borderRadius:6,textDecoration:"none",background:"rgba(212,148,26,.1)",border:"1px solid rgba(212,148,26,.2)",color:"var(--gold)",fontSize:10.5,fontWeight:600}}>Buy</a>
+                              <SafeAmazonLink
+                                title={t.split(" — ")[0]} author={t.split(" — ")[1]||""} isbn=""
+                                style={{display:"inline-flex",alignItems:"center",padding:"4px 9px",borderRadius:6,textDecoration:"none",background:"rgba(212,148,26,.1)",border:"1px solid rgba(212,148,26,.2)",color:"var(--gold)",fontSize:10.5,fontWeight:600}}>Buy</SafeAmazonLink>
                               <button className="ls-remove-btn" onClick={()=>setWantList(p=>p.filter((_,j)=>j!==i))}><X size={14}/></button>
                             </div>
                           </div>
@@ -6639,10 +7376,9 @@ export default function LitSense() {
                             </div>
                             <div className="ls-book-row-actions">
                               <button className="ls-ask-ai-btn" onClick={()=>goAsk(`I saved "${b.title}" by ${b.author}. Should I read it next? Give me your honest take.`)}>Ask AI</button>
-                              <a
-                                href={amazonLink(b.title, b.author||"", b.isbn||"")}
-                                target="_blank" rel="noopener noreferrer"
-                                style={{display:"inline-flex",alignItems:"center",padding:"4px 9px",borderRadius:6,textDecoration:"none",background:"rgba(212,148,26,.1)",border:"1px solid rgba(212,148,26,.2)",color:"var(--gold)",fontSize:10.5,fontWeight:600}}>Buy</a>
+                              <SafeAmazonLink
+                                title={b.title} author={b.author||""} isbn={b.isbn||""}
+                                style={{display:"inline-flex",alignItems:"center",padding:"4px 9px",borderRadius:6,textDecoration:"none",background:"rgba(212,148,26,.1)",border:"1px solid rgba(212,148,26,.2)",color:"var(--gold)",fontSize:10.5,fontWeight:600}}>Buy</SafeAmazonLink>
                               <button className="ls-remove-btn" title="Remove from saved"
                                 onClick={()=>setSavedBooks(p=>p.filter(sb=>sb.id!==b.id))}>
                                 <X size={14}/>
@@ -6782,10 +7518,44 @@ export default function LitSense() {
               </div>
             )}
             {!atLimit&&(
+              <>
+                {linkCard && (
+                  <LinkCard
+                    card={linkCard}
+                    onDismiss={() => { setLinkCard(null); setChatIn(""); }}
+                    onReact={(reactionKey) => {
+                      if (!reactionKey) {
+                        // "I read it" — advance to reaction picking
+                        setLinkCard(prev => ({ ...prev, phase: "reacting" }));
+                      } else {
+                        // Reaction chosen — add book and dismiss
+                        const book = linkCard.book;
+                        if (book?.title) {
+                          const id = Date.now();
+                          const ratingMap = { loved:5, liked:4, didnt_like:2, didnt_finish:2 };
+                          const reactionMap = { loved:"loved", liked:null, didnt_like:"abandoned", didnt_finish:"abandoned" };
+                          setReadBooks(p => [...p, { id, title:book.title, author:book.author||"", rating:ratingMap[reactionKey]||3 }]);
+                          if (reactionMap[reactionKey]) addReaction(id, reactionMap[reactionKey], "");
+                        }
+                        setLinkCard(null); setChatIn("");
+                      }
+                    }}
+                    onConsider={() => {
+                      const book = linkCard.book;
+                      setLinkCard(null); setChatIn("");
+                      if (book?.title) {
+                        goAsk(`Tell me about "${book.title}"${book.author ? ` by ${book.author}` : ""} — worth reading for someone with my taste?`);
+                      }
+                    }}
+                  />
+                )}
+              </>
+            )}
+            {!atLimit&&(
               <div className="ls-input-row-chat">
                 <textarea className="ls-chat-input" rows={1}
                   placeholder="What are you looking for..."
-                  value={chatIn} onChange={e=>setChatIn(e.target.value)}
+                  value={chatIn} onChange={handleChatChange}
                   onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendChat(chatIn);}}}/>
                 <MicButton onTranscript={(t)=>{ setChatIn(t); setTimeout(()=>sendChat(t),100); }}/>
                 <button className="ls-send-btn" onClick={()=>sendChat(chatIn)} disabled={chatLoad||!chatIn.trim()}>
