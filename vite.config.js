@@ -3,29 +3,20 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-
-  optimizeDeps: {
-    include: [
-      'react',
-      'react-dom',
-      'react-dom/client',
-      'lucide-react',
-      '@clerk/clerk-react',
-      '@supabase/supabase-js',
-    ],
+  resolve: {
+    dedupe: ['react', 'react-dom'],
   },
-
   build: {
-    // Single output bundle — no chunk splitting, no cross-chunk TDZ possible.
-    // App.jsx + all vendor code evaluates in one deterministic pass.
     rollupOptions: {
+      // Disable tree-shaking — this is what converts `function X()` declarations
+      // to `const X =` bindings in the bundle output, breaking JS hoisting
+      // and causing "Cannot access 'X' before initialization" TDZ errors.
+      treeshake: false,
       output: {
         manualChunks: () => 'bundle',
-        entryFileNames: 'assets/[name]-[hash].js',
-        chunkFileNames:  'assets/[name]-[hash].js',
+        hoistTransitiveImports: false,
       },
     },
-    // LitSense is intentionally a large single-file app
     chunkSizeWarningLimit: 5000,
   },
 })
