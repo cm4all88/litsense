@@ -6743,11 +6743,11 @@ export default function LitSense() {
   const atLimit = !isPro && questionsUsed >= questionLimit;
 
   // ── SHELF ACTIONS ─────────────────────────────────────────────────────────
-  const requireAuth = (cb) => { if (!isSignedIn) { setAuthMode("signup"); setShowAuth(true); return; } cb(); };
-  const addBook    = () => requireAuth(() => { if (!bookInput.trim()) return; setReadBooks(p=>[...p,{id:Date.now(),title:bookInput.trim(),author:"",rating:3}]); setBookInput(""); });
-  const setRating  = (id,r) => setReadBooks(p=>p.map(b=>b.id===id?{...b,rating:r}:b));
-  const removeBook = (id) => setReadBooks(p=>p.filter(b=>b.id!==id));
-  const addWant    = () => requireAuth(() => { if (!wantInput.trim()) return; setWantList(p=>[...p,wantInput.trim()]); setWantInput(""); });
+  const requireAuth = useCallback((cb) => { if (!isSignedIn) { setAuthMode("signup"); setShowAuth(true); return; } cb(); }, [isSignedIn]);
+  const addBook    = useCallback(() => requireAuth(() => { if (!bookInput.trim()) return; setReadBooks(p=>[...p,{id:Date.now(),title:bookInput.trim(),author:"",rating:3}]); setBookInput(""); }), [requireAuth, bookInput]);
+  const setRating  = useCallback((id,r) => setReadBooks(p=>p.map(b=>b.id===id?{...b,rating:r}:b)), []);
+  const removeBook = useCallback((id) => setReadBooks(p=>p.filter(b=>b.id!==id)), []);
+  const addWant    = useCallback(() => requireAuth(() => { if (!wantInput.trim()) return; setWantList(p=>[...p,wantInput.trim()]); setWantInput(""); }), [requireAuth, wantInput]);
 
   // ── PROFILE ───────────────────────────────────────────────────────────────
   // ── STEP 2: intelligence-aware profile for AI system prompt ─────────────────
@@ -6812,7 +6812,7 @@ export default function LitSense() {
   }, [readBooks, currentBook, wantList, mood, genre, isPro, intelligence, reactions, savedBooks]);
 
   // ── CHAT ──────────────────────────────────────────────────────────────────
-  const sendChat = async (msg, isRetry=false) => {
+  const sendChat = useCallback(async (msg, isRetry=false) => {
     if (chatLoad||!msg.trim()) return;
     if (atLimit) { setPro(true); return; }
 
@@ -6892,12 +6892,12 @@ export default function LitSense() {
       });
     }
     setLoad(false);
-  };
+  }, [chatLoad, atLimit, msgs, questionsUsed, buildProfile, saveCounter]);
 
-  const dismissWelcome = () => {
+  const dismissWelcome = useCallback(() => {
     try { localStorage.setItem("ls_welcome_shown", new Date().toISOString()); } catch {}
     setShowWelcome(false);
-  };
+  }, []);
 
   // ── LINK HANDLING ─────────────────────────────────────────────────────────
   const fetchLinkMeta = useCallback(async (url) => {
@@ -6935,7 +6935,7 @@ description: one sentence max.`,
     }
   }, [linkCard, fetchLinkMeta]);
 
-  const goAsk = (prompt) => { setTab("ask"); setTimeout(()=>sendChat(prompt),80); };
+  const goAsk = useCallback((prompt) => { setTab("ask"); setTimeout(()=>sendChat(prompt),80); }, [sendChat]);
 
   // ── BACK NAVIGATION ───────────────────────────────────────────────────────
   // Priority order: overlay → ask result → tab → root
@@ -6952,7 +6952,8 @@ description: one sentence max.`,
     }
   }, [detailBook, tappedBook, tab, msgs]);
 
-  const canGoBack = !!(detailBook || tappedBook || (tab === "ask" && msgs.length > 0) || tab !== "discover");
+  const canGoBack = useMemo(() => !!(detailBook || tappedBook || (tab === "ask" && msgs.length > 0) || tab !== "discover"),
+    [detailBook, tappedBook, tab, msgs.length]);
 
   // Stable ref so the popstate listener always calls the latest goBack
   const goBackRef = useRef(goBack);
@@ -6971,14 +6972,12 @@ description: one sentence max.`,
   }, []);
 
   // ── AUTH HANDLERS ─────────────────────────────────────────────────────────
-  const handleAuth = async () => {
+  const handleAuth = useCallback(async () => {
     setAuthError("");
     if (!authEmail.trim() || !authPass.trim()) { setAuthError("Please fill in both fields."); return; }
     try {
       if (authMode === "signup") {
         await signUp(authEmail.trim(), authPass.trim());
-        // Supabase sends a confirmation email by default
-        // For now we auto-sign-in after signup
         await signIn(authEmail.trim(), authPass.trim());
       } else {
         await signIn(authEmail.trim(), authPass.trim());
@@ -6987,21 +6986,21 @@ description: one sentence max.`,
     } catch (err) {
       setAuthError(err.message || "Something went wrong. Please try again.");
     }
-  };
+  }, [authEmail, authPass, authMode]);
 
-  const handleSignOut = async () => {
+  const handleSignOut = useCallback(async () => {
     await signOut();
     setIsPro(false);
     setReadBooks([]); setCurrentBook(""); setWantList([]);
     localStorage.removeItem("ls_pro");
-  };
+  }, []);
 
-  const handleUpgrade = () => {
+  const handleUpgrade = useCallback(() => {
     if (!isSignedIn) { setShowAuth(true); setAuthMode("signup"); setPro(false); return; }
     localStorage.setItem("ls_pro", "1");
     setIsPro(true);
     setPro(false);
-  };
+  }, [isSignedIn]);
 
 
   // ── BACKGROUND — inline gradients, no CSS class dependency ─────────────────
