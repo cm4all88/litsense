@@ -6521,15 +6521,16 @@ export default function LitSense() {
     return voice;
   }, [savedBooks, readBooks, mood, genre]);
 
-  const wheelBooks = BOOKS
+  const wheelBooks = useMemo(() => BOOKS
     .filter(b => !dismissedBooks.includes(b.id))
     .sort((a, b) => b.score - a.score)
-    .slice(0, 7);
+    .slice(0, 7),
+  [dismissedBooks]);
 
   // Tracks which book is centered in the wheel — drives scene illustration
-  const [activeWheelBook, setActiveWheelBook] = useState(wheelBooks[0] || null);
+  const [activeWheelBook, setActiveWheelBook] = useState(null);
 
-  const userInitial = userEmail ? userEmail[0].toUpperCase() : "";
+  const userInitial = useMemo(() => userEmail ? userEmail[0].toUpperCase() : "", [userEmail]);
   const [userName,  setUserName]  = useState(() => { try { return localStorage.getItem("ls_username") || ""; } catch { return ""; } });
   const [userPhoto, setUserPhoto] = useState(() => { try { return localStorage.getItem("ls_photo") || ""; } catch { return ""; } });
 
@@ -6727,17 +6728,19 @@ export default function LitSense() {
   const [quickRateDone, setQuickRateDone] = useState(() => { try { return !!localStorage.getItem("ls_qr_done"); } catch { return false; } });
   const [referralCount, setReferralCount] = useState(() => { try { return parseInt(localStorage.getItem("ls_refs")||"0",10); } catch { return 0; } });
   // Referral bonus adds to daily question limit
-  const refMilestone = getReferralMilestone(referralCount);
-  const refBonus = (!isPro && isSignedIn && refMilestone) ? refMilestone.bonus : 0;
-  const questionLimit = isPro ? Infinity : isSignedIn ? LIMIT_FREE + refBonus : LIMIT_ANON;
-  const questionsLeft = questionLimit === Infinity ? null : Math.max(0, questionLimit - questionsUsed);
-  const atLimit = !isPro && questionsUsed >= questionLimit;
   const [msgs, setMsgs]           = useState([]);
   const [chatIn, setChatIn]       = useState("");
   const [chatLoad, setLoad]       = useState(false);
   const [linkCard, setLinkCard]   = useState(null); // {phase,url,book} | null
   const endRef = useRef(null);
   useEffect(() => { endRef.current?.scrollIntoView({behavior:"smooth"}); }, [msgs, chatLoad]);
+
+  // ── DERIVED VALUES — after all hooks ──────────────────────────────────────
+  const refMilestone = getReferralMilestone(referralCount);
+  const refBonus = (!isPro && isSignedIn && refMilestone) ? refMilestone.bonus : 0;
+  const questionLimit = isPro ? Infinity : isSignedIn ? LIMIT_FREE + refBonus : LIMIT_ANON;
+  const questionsLeft = questionLimit === Infinity ? null : Math.max(0, questionLimit - questionsUsed);
+  const atLimit = !isPro && questionsUsed >= questionLimit;
 
   // ── SHELF ACTIONS ─────────────────────────────────────────────────────────
   const requireAuth = (cb) => { if (!isSignedIn) { setAuthMode("signup"); setShowAuth(true); return; } cb(); };
@@ -7002,7 +7005,7 @@ description: one sentence max.`,
 
 
   // ── BACKGROUND — inline gradients, no CSS class dependency ─────────────────
-  const discoverRows = buildDiscoverRows(BOOKS, adaptedUserState);
+  const discoverRows = useMemo(() => buildDiscoverRows(BOOKS, adaptedUserState), [adaptedUserState]);
 
   return (
     <div style={{ position:"relative", height:"100dvh", overflow:"hidden", background:"#12100E" }}>
