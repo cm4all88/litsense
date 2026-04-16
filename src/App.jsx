@@ -181,53 +181,53 @@ const CSS = `
 .ls {
   font-family:'Inter',sans-serif;
   height:100dvh;display:flex;flex-direction:column;overflow:hidden;
-  background:transparent;color:#f0e8d8;
+  background:transparent;color:#E8E2D9;
   position:relative;z-index:1;
   overscroll-behavior:none;
 
-  --gold:    #d4941a;
-  --gold-r:  #e8a820;
-  --gold-l:  rgba(212,148,26,.15);
-  --gold-d:  #9a6808;
+  --gold:    #C6A15B;
+  --gold-r:  #D4B06A;
+  --gold-l:  rgba(198,161,91,.13);
+  --gold-d:  #8A6E3A;
   --sage:    #4a8060;
-  --rust:    #b84028;
+  --rust:    #9B3828;
 
-  /* Glass system — everything layered over the gradient bg */
-  --glass:        rgba(255,255,255,.035);
-  --glass-mid:    rgba(255,255,255,.06);
-  --glass-lift:   rgba(255,255,255,.10);
-  --glass-border: rgba(255,255,255,.09);
-  --glass-strong: rgba(20,17,13,.50);
+  /* Glass system — over warm-dark bg */
+  --glass:        rgba(255,248,236,.028);
+  --glass-mid:    rgba(255,248,236,.052);
+  --glass-lift:   rgba(255,248,236,.09);
+  --glass-border: rgba(255,248,236,.07);
+  --glass-strong: rgba(18,16,14,.58);
 
-  --bg:      #14110d;
-  --bg2:     rgba(255,255,255,.04);
-  --bg3:     rgba(22,17,12,.78);
+  --bg:      #12100E;
+  --bg2:     rgba(30,26,23,.55);
+  --bg3:     rgba(30,26,23,.92);
   --card:    var(--glass);
   --card2:   var(--glass-mid);
 
-  --text:    #f5efe5;
-  --text2:   #e8e2da;
-  --muted:   #c4bdb4;
-  --faint:   rgba(255,255,255,.08);
+  --text:    #E8E2D9;
+  --text2:   #CFC8BE;
+  --muted:   #8A8178;
+  --faint:   rgba(255,248,236,.07);
 
-  --r-sm:  8px;
-  --r-md:  14px;
-  --r-lg:  20px;
-  --r-xl:  26px;
+  --r-sm:  10px;
+  --r-md:  16px;
+  --r-lg:  22px;
+  --r-xl:  30px;
   --r-pill:99px;
-  --glow:  rgba(212,148,26,.28);
+  --glow:  rgba(198,161,91,.20);
   --spring: cubic-bezier(0.34,1.56,0.64,1);
   --ease:   cubic-bezier(0.25,0.46,0.45,0.94);
 }
 .ls ::-webkit-scrollbar{display:none;}
 
-/* ── HEADER — glass, floats above bg ── */
+/* ── HEADER — espresso glass ── */
 .ls-hdr{
   height:58px;min-height:58px;padding:0 20px;
   display:flex;align-items:center;justify-content:space-between;
-  background:rgba(18,14,10,.65);
-  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
-  border-bottom:1px solid rgba(255,255,255,.07);
+  background:rgba(18,16,14,.72);
+  backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);
+  border-bottom:1px solid rgba(255,248,236,.06);
   flex-shrink:0;z-index:10;
 }
 .ls-logo{display:flex;flex-direction:column;gap:2px;}
@@ -248,44 +248,53 @@ const CSS = `
 .ls-back-btn:active{background:rgba(255,255,255,.12);transform:scale(.9);}
 .ls-signin-btn{
   padding:7px 15px;border-radius:var(--r-pill);
-  border:1px solid rgba(255,255,255,.14);
-  background:rgba(255,255,255,.07);color:var(--text2);
+  border:1px solid rgba(255,248,236,.12);
+  background:rgba(255,248,236,.06);color:var(--text2);
   font-size:12px;font-weight:600;cursor:pointer;
-  transition:all .22s var(--ease);
+  transition:all .30s var(--ease);
   backdrop-filter:blur(8px);
 }
 .ls-signin-btn:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-l);}
 .ls-pro-btn{
   display:flex;align-items:center;gap:5px;
   padding:7px 15px;border-radius:var(--r-pill);
-  background:var(--gold);color:#0a0806;border:none;
+  background:var(--gold);color:#0e0c09;border:none;
   font-size:12px;font-weight:700;cursor:pointer;
-  transition:all .22s var(--ease);
-  box-shadow:0 2px 16px var(--glow);
+  transition:all .30s var(--ease);
+  box-shadow:0 2px 18px var(--glow);
 }
-.ls-pro-btn:hover{background:var(--gold-r);transform:translateY(-1px);box-shadow:0 4px 24px rgba(212,148,26,.45);}
+.ls-pro-btn:hover{background:var(--gold-r);transform:translateY(-1px);box-shadow:0 5px 26px rgba(198,161,91,.38);}
 .ls-user-avatar{
   width:32px;height:32px;border-radius:50%;
-  background:rgba(212,148,26,.12);border:1.5px solid rgba(212,148,26,.35);
+  background:rgba(198,161,91,.10);border:1.5px solid rgba(198,161,91,.32);
   display:flex;align-items:center;justify-content:center;
   font-size:12px;font-weight:700;color:var(--gold);cursor:pointer;
-  transition:all .2s;
+  transition:all .28s;
 }
-.ls-user-avatar:hover{background:rgba(212,148,26,.2);}
-.ls-pro-pip{font-size:9px;font-weight:700;color:#0a0806;background:var(--gold);padding:2px 9px;border-radius:var(--r-pill);letter-spacing:.3px;}
+.ls-user-avatar:hover{background:rgba(198,161,91,.18);}
+.ls-pro-pip{font-size:9px;font-weight:700;color:#0e0c09;background:var(--gold);padding:2px 9px;border-radius:var(--r-pill);letter-spacing:.3px;}
 
-/* ── BOTTOM NAV — glass ── */
+/* ── BOTTOM NAV — espresso glass ── */
 .ls-nav{
   display:flex;
-  background:rgba(18,14,10,.70);
-  backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);
-  border-top:1px solid rgba(255,255,255,.07);
+  background:rgba(18,16,14,.80);
+  backdrop-filter:blur(32px);-webkit-backdrop-filter:blur(32px);
+  border-top:1px solid rgba(255,248,236,.06);
   flex-shrink:0;padding-bottom:env(safe-area-inset-bottom,0);
 }
-.ls-nav-btn{flex:1;padding:11px 4px 9px;border:none;background:transparent;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;color:var(--muted);transition:color .2s var(--ease),transform .2s var(--spring);}
+.ls-nav-btn{flex:1;padding:11px 4px 9px;border:none;background:transparent;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;color:var(--muted);transition:color .28s var(--ease),transform .28s var(--spring);}
 .ls-nav-btn.on{color:var(--gold);}
 .ls-nav-btn:active{transform:scale(.88);}
 .ls-nav-label{font-family:'Inter',sans-serif;font-size:9.5px;font-weight:500;letter-spacing:.3px;color:inherit;}
+
+/* ── GRAIN TEXTURE — paper/leather tactile layer ── */
+.ls-grain{
+  position:fixed;inset:0;z-index:9998;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  background-size:180px 180px;
+  opacity:0.038;
+  mix-blend-mode:overlay;
+}
 
 /* ── LAYOUT ── */
 .ls-main{flex:1;overflow:hidden;display:flex;flex-direction:column;}
@@ -407,18 +416,18 @@ const CSS = `
 .ls-books{display:flex;flex-direction:column;gap:14px;padding:0 20px 8px;}
 .ls-book-card{
   display:flex;gap:14px;padding:14px 16px;
-  background:rgba(255,255,255,.055);
-  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  background:rgba(30,26,23,.50);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
   border-radius:var(--r-lg);
-  border:1px solid rgba(255,255,255,.09);
-  cursor:pointer;transition:all .25s var(--ease);
-  box-shadow:0 4px 24px rgba(0,0,0,.2);
+  border:1px solid rgba(255,248,236,.07);
+  cursor:pointer;transition:all .32s var(--ease);
+  box-shadow:0 4px 28px rgba(6,4,2,.25);
 }
 .ls-book-card:hover{
-  background:rgba(255,255,255,.09);
-  border-color:rgba(212,148,26,.25);
+  background:rgba(30,26,23,.75);
+  border-color:rgba(198,161,91,.22);
   transform:translateY(-2px);
-  box-shadow:0 8px 36px rgba(0,0,0,.35),0 0 0 1px rgba(212,148,26,.12);
+  box-shadow:0 10px 40px rgba(6,4,2,.38),0 0 0 1px rgba(198,161,91,.10);
 }
 
 /* ── BOOK COVER ── */
@@ -870,6 +879,7 @@ textarea.ls-chat-input::placeholder{color:var(--muted);}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
 .ls-cursor{display:inline-block;width:2px;height:14px;background:var(--gold);margin-left:2px;vertical-align:middle;animation:blink .7s ease infinite;}
 @keyframes toastIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes bgFadeIn{from{opacity:0}to{opacity:1}}
 .ls-shelf-toast{
   position:fixed;bottom:90px;left:50%;transform:translateX(-50%);
   background:rgba(212,148,26,.95);color:#060402;
@@ -2146,6 +2156,52 @@ const MOODS = [
   { id:"unwind", name:"Unwind",  Icon:Moon       },
 ];
 const GENRES = ["Literary Fiction","Thriller","Mystery","Sci-Fi","Fantasy","Historical","Romance","Biography","Self-Help","Business","True Crime","Psychology","Philosophy","Essays"];
+
+// ── BACKGROUND SYSTEM — intent-mapped, not genre-matched ─────────────────────
+// Each image maps to a felt experience, not a category label.
+// Selection uses explicit signals first (mood, genre filter) then
+// derived signals (voice profile, screen context). Never random.
+const BACKGROUNDS = {
+  literary:     "/backgrounds/2y88r.jpg",   // immersive / literary     — candlelit bookshelves
+  reflective:   "/backgrounds/zorEp.jpg",   // reflective / light       — open books, afternoon
+  emotional:    "/backgrounds/laZvI.jpg",   // emotional / romantic     — flowers, warm fabric
+  fantasy:      "/backgrounds/I6yup.jpg",   // fantasy / escapism       — quill, old maps, candles
+  enchanted:    "/backgrounds/mLL3D.jpg",   // fantasy / escapism (alt) — glowing forest
+  dark:         "/backgrounds/yAZGN.jpg",   // dark / mysterious        — foggy Victorian street
+  fast:         "/backgrounds/2Xnwr.jpg",   // fast / gripping          — neon rain, wet city
+  investigative:"/backgrounds/5YgWB.jpg",   // investigative            — desk, scattered papers
+  analytical:   "/backgrounds/6XTvH.jpg",   // intellectual / analytical — blueprint gears
+  cosmic:       "/backgrounds/chrBZ.jpg",   // intellectual / analytical — nebula, planets
+};
+
+function getBackgroundKey({ mood, adaptedVoice, genre, inAsk }) {
+  // 1. Mood — most explicit, user-declared
+  if (mood === "escape")   return "fantasy";
+  if (mood === "feel")     return "emotional";
+  if (mood === "think")    return "analytical";
+  if (mood === "learn")    return "investigative";
+  if (mood === "unwind")   return "reflective";
+
+  // 2. Genre filter — explicit content signal
+  if (genre === "Fantasy")                   return "enchanted";
+  if (genre === "Sci-Fi")                    return "cosmic";
+  if (genre === "Thriller" || genre === "True Crime") return "fast";
+  if (genre === "Mystery")                   return "dark";
+  if (genre === "Romance")                   return "emotional";
+  if (genre === "Literary Fiction" || genre === "Essays" || genre === "Historical") return "literary";
+  if (["Biography","Psychology","Philosophy","Self-Help","Business"].includes(genre)) return "analytical";
+
+  // 3. Derived voice profile — from reading patterns
+  if (adaptedVoice === "emotional") return "reflective";
+  if (adaptedVoice === "analytical") return "analytical";
+  if (adaptedVoice === "fast")       return "fast";
+  if (adaptedVoice === "literary")   return "literary";
+
+  // 4. Context — searching/asking implies investigation
+  if (inAsk) return "investigative";
+
+  return "literary"; // default: the library
+}
 const ASK_PROMPTS = [
   "I want something I genuinely can't put down this weekend.",
   "What should I read if I loved Pachinko?",
@@ -5156,23 +5212,31 @@ function BookDetailSheet({ book: b, onClose, onAsk, isSaved, onSave, onDismiss, 
 }
 
 function BookTile({ book: b, onAsk, onTap, scrollScale = 1, isFirst, isLast, isSaved, onSave, onDismiss, userState, rowContext, onShowDetail }) {
-  const [dismissing,setDismissing]= useState(false);
-  const isTouchRef = useRef(false);
-
+  const [dismissing, setDismissing] = useState(false);
+  const [elevated,   setElevated]   = useState(false);
+  const isTouchRef    = useRef(false);
+  const tileRef       = useRef(null);
   const hoverTimerRef = useRef(null);
+
+  // Scroll tile to horizontal center of its track, then open detail
+  const handleClick = () => {
+    // Center in the horizontal scroll container
+    tileRef.current?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+    // Brief visual elevation
+    setElevated(true);
+    setTimeout(() => setElevated(false), 480);
+    if (isTouchRef.current) {
+      isTouchRef.current = false;
+      onShowDetail?.(b);
+    }
+  };
+
   const handleMouseEnter = () => {
     if (isTouchRef.current) return;
     hoverTimerRef.current = setTimeout(() => onShowDetail?.(b), 900);
   };
   const handleMouseLeave = () => { clearTimeout(hoverTimerRef.current); };
   const handleTouchStart = () => { isTouchRef.current = true; clearTimeout(hoverTimerRef.current); };
-
-  const handleClick = () => {
-    if (isTouchRef.current) {
-      isTouchRef.current = false;
-      onShowDetail?.(b);
-    }
-  };
 
   const handleSaveClick = (e) => {
     e.stopPropagation();
@@ -5190,6 +5254,7 @@ function BookTile({ book: b, onAsk, onTap, scrollScale = 1, isFirst, isLast, isS
 
   return (
     <div
+      ref={tileRef}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onTouchStart={handleTouchStart}
@@ -5205,14 +5270,20 @@ function BookTile({ book: b, onAsk, onTap, scrollScale = 1, isFirst, isLast, isS
       <div style={{
         width: 150,
         height: 220,
-        transform: `scale(${finalScale})`,
+        transform: elevated
+          ? `scale(${Math.max(finalScale, 1.14)}) translateY(-6px)`
+          : `scale(${finalScale})`,
         transformOrigin: origin,
-        transition: "transform .3s cubic-bezier(.2,.8,.2,1)",
+        transition: elevated
+          ? "transform .22s cubic-bezier(.34,1.56,.64,1), box-shadow .22s ease"
+          : "transform .3s cubic-bezier(.2,.8,.2,1), box-shadow .3s ease",
         borderRadius: 10,
         overflow: "hidden", position: "relative",
-        boxShadow: scrollScale > 1.05
-          ? "0 12px 32px rgba(0,0,0,.7), 0 0 0 1px rgba(212,148,26,.2)"
-          : "0 2px 8px rgba(0,0,0,.4)",
+        boxShadow: elevated
+          ? "0 18px 52px rgba(0,0,0,.80), 0 0 0 2px rgba(212,148,26,.55)"
+          : scrollScale > 1.05
+            ? "0 12px 32px rgba(0,0,0,.7), 0 0 0 1px rgba(212,148,26,.2)"
+            : "0 2px 8px rgba(0,0,0,.4)",
       }}>
         <BookCover isbn={b.isbn} title={b.title} author={b.author} color={b.color} className="fill"/>
 
@@ -6060,6 +6131,7 @@ export default function LitSense() {
   const [authEmail, setAuthEmail]   = useState("");
   const [authPass, setAuthPass]     = useState("");
   const [authError, setAuthError]   = useState("");
+  const [authExitWarn, setAuthExitWarn] = useState(false);
 
   // ── COUNTER ───────────────────────────────────────────────────────────────
   const loadCounter = () => { try { const r = localStorage.getItem("ls_counter"); if (!r) return 0; const {count,date} = JSON.parse(r); return date===today()?count:0; } catch { return 0; } };
@@ -6146,6 +6218,12 @@ export default function LitSense() {
     if (voice === "analytical") return "nonfiction";
     return voice;
   }, [savedBooks, readBooks, mood, genre]);
+
+  // Intent-driven background key — reads mood/genre/voice/context in priority order
+  const bgKey = useMemo(() => getBackgroundKey({
+    mood, adaptedVoice, genre,
+    inAsk: tab === "ask" && msgs.length > 0,
+  }), [mood, adaptedVoice, genre, tab, msgs.length]);
 
   const wheelBooks = BOOKS
     .filter(b => !dismissedBooks.includes(b.id))
@@ -6622,43 +6700,41 @@ description: one sentence max.`,
 
 
   // ── BACKGROUND — inline gradients, no CSS class dependency ─────────────────
-  const BG_GRADIENTS = {
-    literary:   "radial-gradient(ellipse 80% 90% at 5% 70%, rgba(195,108,18,.9) 0%, transparent 55%), radial-gradient(ellipse 65% 75% at 90% 15%, rgba(155,92,14,.75) 0%, transparent 52%), radial-gradient(ellipse 70% 60% at 80% 75%, rgba(100,62,10,.6) 0%, transparent 50%), linear-gradient(170deg,#1e1409 0%,#0d0a07 100%)",
-    nonfiction: "radial-gradient(ellipse 75% 85% at 10% 60%, rgba(52,75,128,.85) 0%, transparent 55%), radial-gradient(ellipse 65% 70% at 88% 20%, rgba(38,58,105,.70) 0%, transparent 52%), radial-gradient(ellipse 60% 55% at 70% 80%, rgba(35,55,95,.55) 0%, transparent 50%), linear-gradient(175deg,#080c14 0%,#060708 100%)",
-    thriller:   "radial-gradient(ellipse 75% 88% at 6% 72%, rgba(128,18,18,.90) 0%, transparent 55%), radial-gradient(ellipse 60% 70% at 90% 18%, rgba(72,10,10,.65) 0%, transparent 52%), radial-gradient(ellipse 65% 58% at 82% 82%, rgba(18,22,42,.55) 0%, transparent 50%), linear-gradient(170deg,#0e0707 0%,#080505 100%)",
-    sciFi:      "radial-gradient(ellipse 78% 88% at 5% 65%, rgba(18,52,175,.88) 0%, transparent 55%), radial-gradient(ellipse 65% 72% at 88% 20%, rgba(58,18,138,.70) 0%, transparent 52%), radial-gradient(ellipse 60% 58% at 78% 78%, rgba(28,14,85,.55) 0%, transparent 50%), linear-gradient(175deg,#050a1c 0%,#04060f 100%)",
-    curious:    "radial-gradient(ellipse 78% 88% at 5% 68%, rgba(195,108,18,.82) 0%, transparent 56%), radial-gradient(ellipse 62% 72% at 88% 16%, rgba(140,82,14,.65) 0%, transparent 52%), radial-gradient(ellipse 68% 72% at 82% 78%, rgba(52,68,108,.55) 0%, transparent 52%), linear-gradient(170deg,#191208 0%,#0d0a06 100%)",
-  };
-
-  const bgGrad = BG_GRADIENTS[bgVoice] || BG_GRADIENTS.curious;
   const discoverRows = buildDiscoverRows(BOOKS, adaptedUserState);
 
   return (
-    <div style={{ position:"relative", height:"100dvh", overflow:"hidden", background:"#14110d" }}>
+    <div style={{ position:"relative", height:"100dvh", overflow:"hidden", background:"#12100E" }}>
       <style>{CSS}</style>
 
-      {/* ── BACKGROUND — fully inline, guaranteed to render ── */}
-      {/* Blurred gradient layer */}
-      <div style={{
-        position:"absolute", inset:0, zIndex:0, pointerEvents:"none",
-        overflow:"hidden",
-      }}>
-        <div style={{
-          position:"absolute", inset:"-20%",
-          background: bgGrad,
-          filter:"blur(40px) saturate(0.9)",
-          opacity:1,
-          animation:"lsBgBreath 28s ease-in-out infinite alternate",
-        }}/>
+      {/* ── BACKGROUND — intent-driven photography ── */}
+      {/* Image layer — crossfades on bgKey change */}
+      <div style={{ position:"absolute", inset:0, zIndex:0, pointerEvents:"none", overflow:"hidden" }}>
+        <div
+          key={bgKey}
+          style={{
+            position:"absolute", inset:"-5%",
+            backgroundImage: `url('${BACKGROUNDS[bgKey]}')`,
+            backgroundSize: "cover", backgroundPosition: "center",
+            filter: "blur(8px) saturate(0.9) brightness(0.8)",
+            animation: "bgFadeIn 1.4s ease forwards",
+          }}
+        />
       </div>
-      {/* Vignette — just edge darkening, no heavy overlay */}
+      {/* Dark overlay — spec: rgba(10,8,6,0.65) */}
       <div style={{
         position:"absolute", inset:0, zIndex:1, pointerEvents:"none",
-        background:"radial-gradient(ellipse 130% 100% at 50% 40%, transparent 0%, rgba(10,8,6,.15) 55%, rgba(8,6,4,.50) 100%)",
+        background: "rgba(10,8,6,0.65)",
       }}/>
+      {/* Vignette — deep warm edge shadow */}
+      <div style={{
+        position:"absolute", inset:0, zIndex:2, pointerEvents:"none",
+        background:"radial-gradient(ellipse 130% 100% at 50% 40%, transparent 0%, rgba(8,6,4,.18) 52%, rgba(6,4,2,.62) 100%)",
+      }}/>
+      {/* Grain — paper/leather tactile texture */}
+      <div className="ls-grain"/>
 
       {/* ── APP ── */}
-      <div className="ls" style={{ position:"relative", zIndex:2, background:"transparent" }}>
+      <div className="ls" style={{ position:"relative", zIndex:3, background:"transparent" }}>
 
       {/* HEADER */}
       <header className="ls-hdr">
@@ -7663,11 +7739,13 @@ description: one sentence max.`,
                 <div className="ls-stripe-field">
                   <div className="ls-stripe-label">Name on card</div>
                   <input className="ls-stripe-input" placeholder="Jane Smith"
+                    name="ccname" autoComplete="cc-name"
                     value={proCard.name} onChange={e=>setProCard(p=>({...p,name:e.target.value}))}/>
                 </div>
                 <div className="ls-stripe-field">
                   <div className="ls-stripe-label">Card number</div>
                   <input className="ls-stripe-input" placeholder="1234 5678 9012 3456"
+                    name="cardnumber" autoComplete="cc-number" inputMode="numeric"
                     maxLength={19}
                     value={proCard.number}
                     onChange={e=>{
@@ -7679,6 +7757,7 @@ description: one sentence max.`,
                   <div className="ls-stripe-field" style={{flex:1}}>
                     <div className="ls-stripe-label">Expiry</div>
                     <input className="ls-stripe-input" placeholder="MM/YY" maxLength={5}
+                      name="cc-exp" autoComplete="cc-exp" inputMode="numeric"
                       value={proCard.expiry}
                       onChange={e=>{
                         const v = e.target.value.replace(/\D/g,"").slice(0,4);
@@ -7688,6 +7767,7 @@ description: one sentence max.`,
                   <div className="ls-stripe-field" style={{flex:1}}>
                     <div className="ls-stripe-label">CVC</div>
                     <input className="ls-stripe-input" placeholder="123" maxLength={4}
+                      name="cvc" autoComplete="cc-csc" inputMode="numeric"
                       value={proCard.cvc}
                       onChange={e=>setProCard(p=>({...p,cvc:e.target.value.replace(/\D/g,"").slice(0,4)}))}/>
                   </div>
@@ -7773,9 +7853,29 @@ description: one sentence max.`,
 
       {/* AUTH MODAL */}
       {showAuth&&(
-        <div className="ls-auth-overlay" onClick={()=>{setShowAuth(false);setAuthError("");}}>
+        <div className="ls-auth-overlay" onClick={()=>{
+          const hasInput = authEmail.trim() || authPass.trim();
+          if (hasInput && !authExitWarn) { setAuthExitWarn(true); return; }
+          setShowAuth(false); setAuthError(""); setAuthExitWarn(false);
+        }}>
           <div className="ls-auth-modal" onClick={e=>e.stopPropagation()}>
             <div className="ls-auth-handle"/>
+
+            {/* Exit warning — shown only when user taps backdrop with unsaved input */}
+            {authExitWarn && (
+              <div style={{
+                margin:"0 0 16px", padding:"11px 14px",
+                background:"rgba(184,64,40,.15)", border:"1px solid rgba(184,64,40,.3)",
+                borderRadius:"var(--r-md)", display:"flex", alignItems:"center", justifyContent:"space-between", gap:10,
+              }}>
+                <span style={{ fontSize:12.5, color:"#f0c8b8", lineHeight:1.4 }}>Leave signup? Your progress is not saved.</span>
+                <div style={{ display:"flex", gap:6, flexShrink:0 }}>
+                  <button onClick={()=>setAuthExitWarn(false)} style={{ padding:"5px 10px", borderRadius:6, border:"none", background:"rgba(255,255,255,.12)", color:"var(--text2)", fontSize:11.5, fontWeight:600, cursor:"pointer" }}>Stay</button>
+                  <button onClick={()=>{ setShowAuth(false); setAuthError(""); setAuthExitWarn(false); }} style={{ padding:"5px 10px", borderRadius:6, border:"none", background:"rgba(184,64,40,.4)", color:"#f0c8b8", fontSize:11.5, fontWeight:600, cursor:"pointer" }}>Leave</button>
+                </div>
+              </div>
+            )}
+
             <div className="ls-auth-eyebrow">LitSense</div>
             <div className="ls-auth-title">
               {authMode==="signup"?<>Your shelf, <em>remembered.</em></>:<>Welcome <em>back.</em></>}
@@ -7788,14 +7888,18 @@ description: one sentence max.`,
             {authError&&<div className="ls-auth-error">{authError}</div>}
             <div className="ls-auth-field">
               <div className="ls-auth-label">Email</div>
-              <input className="ls-auth-input" type="email" placeholder="you@example.com"
-                value={authEmail} onChange={e=>setAuthEmail(e.target.value)}
+              <input className="ls-auth-input" type="email"
+                name="email" autoComplete="email"
+                placeholder="you@example.com"
+                value={authEmail} onChange={e=>{setAuthEmail(e.target.value);setAuthExitWarn(false);}}
                 onKeyDown={e=>{if(e.key==="Enter")handleAuth();}}/>
             </div>
             <div className="ls-auth-field">
               <div className="ls-auth-label">Password</div>
-              <input className="ls-auth-input" type="password" placeholder="••••••••"
-                value={authPass} onChange={e=>setAuthPass(e.target.value)}
+              <input className="ls-auth-input" type="password"
+                name="password" autoComplete={authMode==="signup"?"new-password":"current-password"}
+                placeholder="••••••••"
+                value={authPass} onChange={e=>{setAuthPass(e.target.value);setAuthExitWarn(false);}}
                 onKeyDown={e=>{if(e.key==="Enter")handleAuth();}}/>
             </div>
             <button className="ls-auth-cta" onClick={handleAuth}>
@@ -7803,10 +7907,14 @@ description: one sentence max.`,
             </button>
             <div className="ls-auth-switch">
               {authMode==="signup"
-                ?<>Already have an account? <button onClick={()=>{setAuthMode("login");setAuthError("");}}>Sign in</button></>
-                :<>Don't have an account? <button onClick={()=>{setAuthMode("signup");setAuthError("");}}>Sign up free</button></>}
+                ?<>Already have an account? <button onClick={()=>{setAuthMode("login");setAuthError("");setAuthExitWarn(false);}}>Sign in</button></>
+                :<>Don't have an account? <button onClick={()=>{setAuthMode("signup");setAuthError("");setAuthExitWarn(false);}}>Sign up free</button></>}
             </div>
-            <button className="ls-auth-cancel" onClick={()=>{setShowAuth(false);setAuthError("");}}>Maybe later</button>
+            <button className="ls-auth-cancel" onClick={()=>{
+              const hasInput = authEmail.trim() || authPass.trim();
+              if (hasInput && !authExitWarn) { setAuthExitWarn(true); return; }
+              setShowAuth(false); setAuthError(""); setAuthExitWarn(false);
+            }}>Maybe later</button>
           </div>
         </div>
       )}
