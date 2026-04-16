@@ -4,19 +4,11 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   resolve: {
+    // Prevent duplicate React instances which can cause hook errors
     dedupe: ['react', 'react-dom'],
   },
   build: {
-    rollupOptions: {
-      // Disable tree-shaking — this is what converts `function X()` declarations
-      // to `const X =` bindings in the bundle output, breaking JS hoisting
-      // and causing "Cannot access 'X' before initialization" TDZ errors.
-      treeshake: false,
-      output: {
-        manualChunks: () => 'bundle',
-        hoistTransitiveImports: false,
-      },
-    },
+    // App.jsx is intentionally large — suppress the chunk size warning
     chunkSizeWarningLimit: 5000,
   },
 })
