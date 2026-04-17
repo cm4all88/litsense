@@ -4726,7 +4726,7 @@ function TopMoment({ intelligence, signalCandidates, recCandidates, behavioral, 
       onClick={done ? handleClick : undefined}
       style={{ minHeight:72, cursor: done ? "pointer" : "default" }}
     >
-      {/* Sage label */}
+      {/* Intelligence label */}
       <div style={{
         fontSize:12, fontWeight:700, letterSpacing:"2.5px", textTransform:"uppercase",
         color:"rgba(212,148,26,.5)", marginBottom:9,
@@ -4738,7 +4738,7 @@ function TopMoment({ intelligence, signalCandidates, recCandidates, behavioral, 
           display:"flex", alignItems:"center", justifyContent:"center",
           fontSize:12, color:"var(--gold)",
         }}>✦</div>
-        Sage
+        LitSense
       </div>
       {/* Typing text */}
       <div className="ls-moment-msg" style={{paddingRight:28}}>
@@ -6031,6 +6031,17 @@ export default function LitSense() {
     activeBookGenre: tab === "discover" && !mood && !genre ? (activeWheelBook?.primary ?? null) : null,
   }), [mood, adaptedVoice, genre, tab, msgs.length, activeWheelBook]);
 
+  // ── BACKGROUND CROSSFADE — holds previous image visible while new one loads ─
+  const [bgCurrent, setBgCurrent] = useState(bgKey);
+  const [bgPrev,    setBgPrev]    = useState(null);
+  useEffect(() => {
+    if (bgKey === bgCurrent) return;
+    setBgPrev(bgCurrent);
+    setBgCurrent(bgKey);
+    const t = setTimeout(() => setBgPrev(null), 1400);
+    return () => clearTimeout(t);
+  }, [bgKey]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const adaptedUserState = useMemo(() => adaptUserState(
     { savedBooks, readBooks, mood, genre, dismissedBooks, voice: adaptedVoice },
     archetype,
@@ -6483,20 +6494,28 @@ description: one sentence max.`,
 
       {/* ── BACKGROUND ── */}
       <div style={{ position:"absolute", inset:0, zIndex:0, pointerEvents:"none", overflow:"hidden" }}>
-        <div
-          key={bgKey}
-          style={{
+        {/* Previous image — fades out */}
+        {bgPrev && (
+          <div style={{
             position:"absolute", inset:"-5%",
-            backgroundImage: `url('${BACKGROUNDS[bgKey]}')`,
-            backgroundSize: "cover", backgroundPosition: "center",
-            filter: "blur(8px) saturate(0.85) brightness(0.72)",
-            animation: "bgFadeIn 1.4s ease forwards",
-          }}
-        />
+            backgroundImage: `url('${BACKGROUNDS[bgPrev]}')`,
+            backgroundSize:"cover", backgroundPosition:"center",
+            filter:"blur(4px) saturate(0.85) brightness(0.72)",
+            opacity:0, transition:"opacity 1.2s ease",
+          }}/>
+        )}
+        {/* Current image — always visible */}
+        <div style={{
+          position:"absolute", inset:"-5%",
+          backgroundImage: `url('${BACKGROUNDS[bgCurrent]}')`,
+          backgroundSize:"cover", backgroundPosition:"center",
+          filter:"blur(4px) saturate(0.85) brightness(0.72)",
+          opacity:1, transition:"opacity 1.2s ease",
+        }}/>
         {/* Overlay + vignette — single pass */}
         <div style={{
           position:"absolute", inset:0,
-          background: "radial-gradient(ellipse 140% 110% at 50% 38%, rgba(10,8,6,.38) 0%, rgba(8,6,4,.55) 55%, rgba(6,4,2,.76) 100%)",
+          background:"radial-gradient(ellipse 140% 110% at 50% 38%, rgba(10,8,6,.32) 0%, rgba(8,6,4,.50) 55%, rgba(6,4,2,.72) 100%)",
         }}/>
       </div>
       {/* Grain — paper/leather tactile texture */}
