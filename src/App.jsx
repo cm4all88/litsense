@@ -7727,67 +7727,73 @@ description: one sentence max.`,
 
       {/* ── WELCOME SCREEN — shown once per day ── */}
       {showWelcome && (
-        <div style={{
-          position:"fixed", inset:0, zIndex:500,
-          display:"flex", flexDirection:"column",
-          alignItems:"center", justifyContent:"space-between",
-          background:"#0a0806",
-          paddingBottom:"env(safe-area-inset-bottom,0)",
-        }}>
+        <div
+          onClick={dismissWelcome}
+          style={{
+            position:"fixed", inset:0, zIndex:500,
+            display:"flex", flexDirection:"column",
+            alignItems:"center", justifyContent:"space-between",
+            background:"#0a0806", cursor:"pointer",
+            paddingBottom:"env(safe-area-inset-bottom,0)",
+          }}>
           {/* Eyebrow */}
           <div style={{
-            paddingTop:32, fontSize:14, fontWeight:700,
+            paddingTop:32, fontSize:11, fontWeight:700,
             letterSpacing:"4px", textTransform:"uppercase",
             color:"rgba(212,148,26,.55)", textAlign:"center",
+            flexShrink:0,
           }}>A doorworth opening</div>
 
-          {/* Keyhole image — takes up center */}
-          <div style={{flex:1, display:"flex", alignItems:"center", justifyContent:"center", width:"100%"}}>
+          {/* Keyhole image — constrained so it never covers the button */}
+          <div style={{
+            flex:1, display:"flex", alignItems:"center", justifyContent:"center",
+            width:"100%", overflow:"hidden", minHeight:0,
+          }}>
             <img
               src="/keyhole.svg"
               alt=""
               style={{
-                width:"100%", maxWidth:420,
-                height:"auto",
+                width:"100%", maxWidth:380,
+                maxHeight:"100%",
                 objectFit:"contain",
               }}
             />
           </div>
 
           {/* Bottom content */}
-          <div style={{width:"100%", padding:"0 32px 48px", textAlign:"center"}}>
+          <div style={{width:"100%", padding:"0 32px 40px", textAlign:"center", flexShrink:0}}>
             <div style={{
-              fontFamily:"'Lora',serif", fontSize:42, fontWeight:700,
-              color:"#f0e8d8", lineHeight:1.25, marginBottom:12,
+              fontFamily:"'Lora',serif", fontSize:26, fontWeight:700,
+              color:"#f0e8d8", lineHeight:1.25, marginBottom:10,
               fontStyle:"italic",
             }}>On the other side is your<br/>next great read.</div>
 
             <div style={{
               height:1, width:40, background:"rgba(212,148,26,.4)",
-              margin:"0 auto 18px",
+              margin:"0 auto 14px",
             }}/>
 
             <div style={{
-              fontSize:21, color:"rgba(240,232,216,.65)",
-              lineHeight:1.75, marginBottom:32, maxWidth:300, margin:"0 auto 32px",
+              fontSize:14, color:"rgba(240,232,216,.60)",
+              lineHeight:1.7, marginBottom:24, maxWidth:300, margin:"0 auto 24px",
             }}>
-              There are books that stay with you for life — that shift how you see, feel, think. We find yours. Curated to your taste, your mood, this moment in your reading life.
+              Books that stay with you for life. Curated to your taste, your mood, this moment in your reading life.
             </div>
 
             <button
-              onClick={dismissWelcome}
+              onClick={e => { e.stopPropagation(); dismissWelcome(); }}
               style={{
-                width:"100%", maxWidth:320, padding:"16px",
+                width:"100%", maxWidth:320, padding:"15px",
                 borderRadius:"var(--r-lg)", border:"1px solid rgba(212,148,26,.5)",
                 background:"transparent", color:"var(--text)",
-                fontSize:18, fontWeight:700, letterSpacing:"3px",
+                fontSize:13, fontWeight:700, letterSpacing:"3px",
                 textTransform:"uppercase", cursor:"pointer",
                 transition:"all .2s",
               }}
             >Open the door</button>
 
             <div style={{
-              marginTop:16, fontSize:18, color:"rgba(240,232,216,.3)",
+              marginTop:14, fontSize:12, color:"rgba(240,232,216,.3)",
               fontStyle:"italic",
             }}>No account needed to begin</div>
           </div>
