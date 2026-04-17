@@ -6210,6 +6210,8 @@ export default function LitSense() {
       return lastDate !== new Date().toDateString(); // show once per day
     } catch { return true; }
   });
+  const [welcomePlaying, setWelcomePlaying] = useState(false);
+  const welcomeVideoRef = useRef(null);
   const [shelfTab, setShelfTab]   = useState("read");
   const [bookInput, setBookInput] = useState("");
   const [wantInput, setWantInput] = useState("");
@@ -7727,76 +7729,96 @@ description: one sentence max.`,
 
       {/* ── WELCOME SCREEN — shown once per day ── */}
       {showWelcome && (
-        <div
-          onClick={dismissWelcome}
-          style={{
-            position:"fixed", inset:0, zIndex:500,
-            display:"flex", flexDirection:"column",
-            alignItems:"center", justifyContent:"space-between",
-            background:"#0a0806", cursor:"pointer",
-            paddingBottom:"env(safe-area-inset-bottom,0)",
-          }}>
+        <div style={{
+          position:"fixed", inset:0, zIndex:500,
+          display:"flex", flexDirection:"column",
+          alignItems:"center", justifyContent:"space-between",
+          background:"#07050380",
+          backdropFilter:"blur(2px)",
+          paddingBottom:"env(safe-area-inset-bottom,0)",
+        }}>
+
           {/* Eyebrow */}
           <div style={{
-            paddingTop:32, fontSize:11, fontWeight:700,
-            letterSpacing:"4px", textTransform:"uppercase",
-            color:"rgba(212,148,26,.55)", textAlign:"center",
-            flexShrink:0,
-          }}>A doorworth opening</div>
+            paddingTop:36, fontSize:10, fontWeight:700,
+            letterSpacing:"5px", textTransform:"uppercase",
+            color:"rgba(198,161,91,.5)", textAlign:"center", flexShrink:0,
+          }}>Your reading life begins here</div>
 
-          {/* Keyhole image — constrained so it never covers the button */}
-          <div style={{
-            flex:1, display:"flex", alignItems:"center", justifyContent:"center",
-            width:"100%", overflow:"hidden", minHeight:0,
-          }}>
+          {/* Video — static until tapped, plays once, then dismisses */}
+          <div
+            onClick={() => {
+              if (welcomePlaying) return;
+              setWelcomePlaying(true);
+              welcomeVideoRef.current?.play();
+            }}
+            style={{
+              flex:1, display:"flex", alignItems:"center", justifyContent:"center",
+              width:"100%", overflow:"hidden", minHeight:0,
+              cursor: welcomePlaying ? "default" : "pointer",
+              position:"relative",
+            }}
+          >
             <video
+              ref={welcomeVideoRef}
               src="/keyhole.mp4"
-              autoPlay loop muted playsInline
+              poster="/keyhole.svg"
+              muted playsInline
+              onEnded={dismissWelcome}
               style={{
-                width:"100%", maxWidth:380,
+                width:"100%", maxWidth:400,
                 maxHeight:"100%",
                 objectFit:"contain",
               }}
             />
+            {/* Tap hint — visible only before play */}
+            {!welcomePlaying && (
+              <div style={{
+                position:"absolute",
+                bottom:"12%", left:"50%", transform:"translateX(-50%)",
+                display:"flex", flexDirection:"column", alignItems:"center", gap:8,
+                animation:"fadeIn .6s ease",
+              }}>
+                <div style={{
+                  width:48, height:48, borderRadius:"50%",
+                  border:"1.5px solid rgba(198,161,91,.5)",
+                  display:"flex", alignItems:"center", justifyContent:"center",
+                  background:"rgba(6,4,2,.45)", backdropFilter:"blur(8px)",
+                }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(198,161,91,.85)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="5 3 19 12 5 21 5 3"/>
+                  </svg>
+                </div>
+                <div style={{
+                  fontSize:10, fontWeight:700, letterSpacing:"3px",
+                  textTransform:"uppercase", color:"rgba(198,161,91,.55)",
+                }}>Tap the door</div>
+              </div>
+            )}
           </div>
 
-          {/* Bottom content */}
-          <div style={{width:"100%", padding:"0 32px 40px", textAlign:"center", flexShrink:0}}>
-            <div style={{
-              fontFamily:"'Lora',serif", fontSize:26, fontWeight:700,
-              color:"#f0e8d8", lineHeight:1.25, marginBottom:10,
-              fontStyle:"italic",
-            }}>On the other side is your<br/>next great read.</div>
-
-            <div style={{
-              height:1, width:40, background:"rgba(212,148,26,.4)",
-              margin:"0 auto 14px",
-            }}/>
-
-            <div style={{
-              fontSize:14, color:"rgba(240,232,216,.60)",
-              lineHeight:1.7, marginBottom:24, maxWidth:300, margin:"0 auto 24px",
-            }}>
-              Books that stay with you for life. Curated to your taste, your mood, this moment in your reading life.
+          {/* Bottom — hidden once video starts */}
+          {!welcomePlaying && (
+            <div style={{width:"100%", padding:"0 32px 44px", textAlign:"center", flexShrink:0}}>
+              <div style={{
+                fontFamily:"'Lora',serif", fontSize:24, fontWeight:700,
+                color:"#f0e8d8", lineHeight:1.3, marginBottom:10,
+                fontStyle:"italic",
+              }}>
+                Behind this door is every book<br/>you were meant to read.
+              </div>
+              <div style={{
+                height:1, width:36, background:"rgba(198,161,91,.35)",
+                margin:"0 auto 14px",
+              }}/>
+              <div style={{
+                fontSize:13, color:"rgba(240,232,216,.52)",
+                lineHeight:1.75, maxWidth:290, margin:"0 auto 0",
+              }}>
+                LitSense doesn't just recommend books — it learns exactly how you read. Your pace. Your mood. What moves you. What you can't put down. Then it finds what's next.
+              </div>
             </div>
-
-            <button
-              onClick={e => { e.stopPropagation(); dismissWelcome(); }}
-              style={{
-                width:"100%", maxWidth:320, padding:"15px",
-                borderRadius:"var(--r-lg)", border:"1px solid rgba(212,148,26,.5)",
-                background:"transparent", color:"var(--text)",
-                fontSize:13, fontWeight:700, letterSpacing:"3px",
-                textTransform:"uppercase", cursor:"pointer",
-                transition:"all .2s",
-              }}
-            >Open the door</button>
-
-            <div style={{
-              marginTop:14, fontSize:12, color:"rgba(240,232,216,.3)",
-              fontStyle:"italic",
-            }}>No account needed to begin</div>
-          </div>
+          )}
         </div>
       )}
 
