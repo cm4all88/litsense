@@ -7749,9 +7749,9 @@ description: one sentence max.`,
             flex:1, display:"flex", alignItems:"center", justifyContent:"center",
             width:"100%", overflow:"hidden", minHeight:0,
           }}>
-            <img
-              src="/keyhole.svg"
-              alt=""
+            <video
+              src="/keyhole.mp4"
+              autoPlay loop muted playsInline
               style={{
                 width:"100%", maxWidth:380,
                 maxHeight:"100%",
