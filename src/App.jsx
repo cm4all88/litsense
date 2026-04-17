@@ -223,18 +223,29 @@ const CSS = `
 
 /* ── HEADER — espresso glass ── */
 .ls-hdr{
-  height:58px;min-height:58px;padding:0 20px;
+  height:68px;min-height:68px;padding:0 20px;
   display:flex;align-items:center;justify-content:space-between;
+  position:relative;
   background:rgba(18,16,14,.72);
   backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);
   border-bottom:1px solid rgba(255,248,236,.06);
   flex-shrink:0;z-index:10;
 }
-.ls-logo{display:flex;flex-direction:column;gap:2px;}
-.ls-logo-img{height:26px;width:auto;display:block;filter:brightness(1.3);}
+@keyframes logoIn{
+  from{opacity:0;transform:translateX(-50%) translateY(-6px)}
+  to{opacity:1;transform:translateX(-50%) translateY(0)}
+}
+.ls-logo{
+  position:absolute;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+  animation:logoIn .6s var(--ease) both;
+  pointer-events:none;user-select:none;
+}
+.ls-logo svg{filter:drop-shadow(0 0 18px rgba(198,161,91,.16));transition:filter .4s;}
+.ls-logo-img{height:28px;width:auto;display:block;}
 .ls-logo-name{font-family:'Lora',serif;font-size:22px;font-weight:700;letter-spacing:-.5px;line-height:1;color:var(--text);}
 .ls-logo-name em{color:var(--gold);font-style:italic;}
-.ls-logo-sub{font-size:8px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--muted);opacity:.8;}
+.ls-logo-sub{font-size:7.5px;font-weight:700;letter-spacing:4.5px;text-transform:uppercase;color:rgba(198,161,91,.42);display:block;line-height:1;}
 .ls-hdr-right{display:flex;align-items:center;gap:8px;}
 .ls-hdr-left{display:flex;align-items:center;gap:6px;}
 .ls-back-btn{
@@ -298,7 +309,7 @@ const CSS = `
 
 /* ── LAYOUT ── */
 .ls-main{flex:1;overflow:hidden;display:flex;flex-direction:column;}
-.ls-scroll{flex:1;overflow-y:auto;overscroll-behavior:none;-webkit-overflow-scrolling:touch;}
+.ls-scroll{flex:1;overflow-y:auto;overscroll-behavior:none;-webkit-overflow-scrolling:auto;}
 
 /* ── CINEMATIC HERO ── */
 .ls-hero{
@@ -632,9 +643,6 @@ const CSS = `
 .ls-dot:nth-child(2){animation-delay:.2s;}.ls-dot:nth-child(3){animation-delay:.4s;}
 @keyframes ldot{0%,60%,100%{transform:translateY(0);opacity:.3}30%{transform:translateY(-6px);opacity:1}}
 .ls-retry-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 11px;border-radius:6px;border:1px solid rgba(184,64,40,.3);background:transparent;color:var(--rust);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;align-self:flex-start;}
-.ls-prompt-btn{width:100%;padding:13px 16px;border-radius:var(--r-md);border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.06);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);color:var(--text2);font-size:13.5px;font-weight:500;font-family:'Inter',sans-serif;text-align:left;cursor:pointer;transition:all .22s var(--ease);line-height:1.4;}
-.ls-prompt-btn:hover{background:rgba(212,148,26,.10);border-color:rgba(212,148,26,.35);color:var(--gold);transform:translateX(3px);}
-.ls-prompt-btn:active{transform:scale(.98);}
 
 /* ── CHAT INPUT — glass ── */
 .ls-input-row-chat{display:flex;gap:9px;padding:10px 16px;border-top:1px solid rgba(255,255,255,.07);background:rgba(18,14,10,.75);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);flex-shrink:0;}
@@ -6524,16 +6532,15 @@ export default function LitSense() {
     return voice;
   }, [savedBooks, readBooks, mood, genre]);
 
-  const wheelBooks = useMemo(() => BOOKS
+  const wheelBooks = BOOKS
     .filter(b => !dismissedBooks.includes(b.id))
     .sort((a, b) => b.score - a.score)
-    .slice(0, 7),
-  [dismissedBooks]);
+    .slice(0, 7);
 
   // Tracks which book is centered in the wheel — drives scene illustration
-  const [activeWheelBook, setActiveWheelBook] = useState(null);
+  const [activeWheelBook, setActiveWheelBook] = useState(wheelBooks[0] || null);
 
-  const userInitial = useMemo(() => userEmail ? userEmail[0].toUpperCase() : "", [userEmail]);
+  const userInitial = userEmail ? userEmail[0].toUpperCase() : "";
   const [userName,  setUserName]  = useState(() => { try { return localStorage.getItem("ls_username") || ""; } catch { return ""; } });
   const [userPhoto, setUserPhoto] = useState(() => { try { return localStorage.getItem("ls_photo") || ""; } catch { return ""; } });
 
@@ -6553,8 +6560,8 @@ export default function LitSense() {
   // Intent-driven background key — must be after adaptedVoice
   const bgKey = useMemo(() => getBackgroundKey({
     mood, adaptedVoice, genre,
-    inAsk: tab === "ask",
-  }), [mood, adaptedVoice, genre, tab]);
+    inAsk: tab === "ask" && msgs.length > 0,
+  }), [mood, adaptedVoice, genre, tab, msgs.length]);
 
   const adaptedUserState = useMemo(() => adaptUserState(
     { savedBooks, readBooks, mood, genre, dismissedBooks, voice: adaptedVoice },
@@ -6731,6 +6738,11 @@ export default function LitSense() {
   const [quickRateDone, setQuickRateDone] = useState(() => { try { return !!localStorage.getItem("ls_qr_done"); } catch { return false; } });
   const [referralCount, setReferralCount] = useState(() => { try { return parseInt(localStorage.getItem("ls_refs")||"0",10); } catch { return 0; } });
   // Referral bonus adds to daily question limit
+  const refMilestone = getReferralMilestone(referralCount);
+  const refBonus = (!isPro && isSignedIn && refMilestone) ? refMilestone.bonus : 0;
+  const questionLimit = isPro ? Infinity : isSignedIn ? LIMIT_FREE + refBonus : LIMIT_ANON;
+  const questionsLeft = questionLimit === Infinity ? null : Math.max(0, questionLimit - questionsUsed);
+  const atLimit = !isPro && questionsUsed >= questionLimit;
   const [msgs, setMsgs]           = useState([]);
   const [chatIn, setChatIn]       = useState("");
   const [chatLoad, setLoad]       = useState(false);
@@ -6738,19 +6750,12 @@ export default function LitSense() {
   const endRef = useRef(null);
   useEffect(() => { endRef.current?.scrollIntoView({behavior:"smooth"}); }, [msgs, chatLoad]);
 
-  // ── DERIVED VALUES — after all hooks ──────────────────────────────────────
-  const refMilestone = getReferralMilestone(referralCount);
-  const refBonus = (!isPro && isSignedIn && refMilestone) ? refMilestone.bonus : 0;
-  const questionLimit = isPro ? Infinity : isSignedIn ? LIMIT_FREE + refBonus : LIMIT_ANON;
-  const questionsLeft = questionLimit === Infinity ? null : Math.max(0, questionLimit - questionsUsed);
-  const atLimit = !isPro && questionsUsed >= questionLimit;
-
   // ── SHELF ACTIONS ─────────────────────────────────────────────────────────
-  const requireAuth = useCallback((cb) => { if (!isSignedIn) { setAuthMode("signup"); setShowAuth(true); return; } cb(); }, [isSignedIn]);
-  const addBook    = useCallback(() => requireAuth(() => { if (!bookInput.trim()) return; setReadBooks(p=>[...p,{id:Date.now(),title:bookInput.trim(),author:"",rating:3}]); setBookInput(""); }), [requireAuth, bookInput]);
-  const setRating  = useCallback((id,r) => setReadBooks(p=>p.map(b=>b.id===id?{...b,rating:r}:b)), []);
-  const removeBook = useCallback((id) => setReadBooks(p=>p.filter(b=>b.id!==id)), []);
-  const addWant    = useCallback(() => requireAuth(() => { if (!wantInput.trim()) return; setWantList(p=>[...p,wantInput.trim()]); setWantInput(""); }), [requireAuth, wantInput]);
+  const requireAuth = (cb) => { if (!isSignedIn) { setAuthMode("signup"); setShowAuth(true); return; } cb(); };
+  const addBook    = () => requireAuth(() => { if (!bookInput.trim()) return; setReadBooks(p=>[...p,{id:Date.now(),title:bookInput.trim(),author:"",rating:3}]); setBookInput(""); });
+  const setRating  = (id,r) => setReadBooks(p=>p.map(b=>b.id===id?{...b,rating:r}:b));
+  const removeBook = (id) => setReadBooks(p=>p.filter(b=>b.id!==id));
+  const addWant    = () => requireAuth(() => { if (!wantInput.trim()) return; setWantList(p=>[...p,wantInput.trim()]); setWantInput(""); });
 
   // ── PROFILE ───────────────────────────────────────────────────────────────
   // ── STEP 2: intelligence-aware profile for AI system prompt ─────────────────
@@ -6815,7 +6820,7 @@ export default function LitSense() {
   }, [readBooks, currentBook, wantList, mood, genre, isPro, intelligence, reactions, savedBooks]);
 
   // ── CHAT ──────────────────────────────────────────────────────────────────
-  const sendChat = useCallback(async (msg, isRetry=false) => {
+  const sendChat = async (msg, isRetry=false) => {
     if (chatLoad||!msg.trim()) return;
     if (atLimit) { setPro(true); return; }
 
@@ -6895,12 +6900,12 @@ export default function LitSense() {
       });
     }
     setLoad(false);
-  }, [chatLoad, atLimit, msgs, questionsUsed, buildProfile, saveCounter]);
+  };
 
-  const dismissWelcome = useCallback(() => {
+  const dismissWelcome = () => {
     try { localStorage.setItem("ls_welcome_shown", new Date().toISOString()); } catch {}
     setShowWelcome(false);
-  }, []);
+  };
 
   // ── LINK HANDLING ─────────────────────────────────────────────────────────
   const fetchLinkMeta = useCallback(async (url) => {
@@ -6938,7 +6943,7 @@ description: one sentence max.`,
     }
   }, [linkCard, fetchLinkMeta]);
 
-  const goAsk = useCallback((prompt) => { setTab("ask"); setTimeout(()=>sendChat(prompt),80); }, [sendChat]);
+  const goAsk = (prompt) => { setTab("ask"); setTimeout(()=>sendChat(prompt),80); };
 
   // ── BACK NAVIGATION ───────────────────────────────────────────────────────
   // Priority order: overlay → ask result → tab → root
@@ -6955,8 +6960,7 @@ description: one sentence max.`,
     }
   }, [detailBook, tappedBook, tab, msgs]);
 
-  const canGoBack = useMemo(() => !!(detailBook || tappedBook || (tab === "ask" && msgs.length > 0) || tab !== "discover"),
-    [detailBook, tappedBook, tab, msgs.length]);
+  const canGoBack = !!(detailBook || tappedBook || (tab === "ask" && msgs.length > 0) || tab !== "discover");
 
   // Stable ref so the popstate listener always calls the latest goBack
   const goBackRef = useRef(goBack);
@@ -6975,12 +6979,14 @@ description: one sentence max.`,
   }, []);
 
   // ── AUTH HANDLERS ─────────────────────────────────────────────────────────
-  const handleAuth = useCallback(async () => {
+  const handleAuth = async () => {
     setAuthError("");
     if (!authEmail.trim() || !authPass.trim()) { setAuthError("Please fill in both fields."); return; }
     try {
       if (authMode === "signup") {
         await signUp(authEmail.trim(), authPass.trim());
+        // Supabase sends a confirmation email by default
+        // For now we auto-sign-in after signup
         await signIn(authEmail.trim(), authPass.trim());
       } else {
         await signIn(authEmail.trim(), authPass.trim());
@@ -6989,25 +6995,25 @@ description: one sentence max.`,
     } catch (err) {
       setAuthError(err.message || "Something went wrong. Please try again.");
     }
-  }, [authEmail, authPass, authMode]);
+  };
 
-  const handleSignOut = useCallback(async () => {
+  const handleSignOut = async () => {
     await signOut();
     setIsPro(false);
     setReadBooks([]); setCurrentBook(""); setWantList([]);
     localStorage.removeItem("ls_pro");
-  }, []);
+  };
 
-  const handleUpgrade = useCallback(() => {
+  const handleUpgrade = () => {
     if (!isSignedIn) { setShowAuth(true); setAuthMode("signup"); setPro(false); return; }
     localStorage.setItem("ls_pro", "1");
     setIsPro(true);
     setPro(false);
-  }, [isSignedIn]);
+  };
 
 
   // ── BACKGROUND — inline gradients, no CSS class dependency ─────────────────
-  const discoverRows = useMemo(() => buildDiscoverRows(BOOKS, adaptedUserState), [adaptedUserState]);
+  const discoverRows = buildDiscoverRows(BOOKS, adaptedUserState);
 
   return (
     <div style={{ position:"relative", height:"100dvh", overflow:"hidden", background:"#12100E" }}>
@@ -7054,8 +7060,8 @@ description: one sentence max.`,
           <div className="ls-logo">
           {isPro ? (
             /* Pro logo — includes red PRO badge built into the SVG */
-            <svg height="32" viewBox="0 0 1267.82 368.3" xmlns="http://www.w3.org/2000/svg" style={{width:"auto"}}>
-              <defs><style>{`.lp1{fill:#931a1d}.lp2{fill:#fff;stroke:#fff;stroke-miterlimit:10}.lp3{fill:#d4941a}.ls2{fill:#fff}`}</style></defs>
+            <svg height="44" viewBox="0 0 1267.82 368.3" xmlns="http://www.w3.org/2000/svg" style={{width:"auto"}}>
+              <defs><style>{`.lp1{fill:#931a1d}.lp2{fill:#f0e8d8;stroke:#f0e8d8;stroke-miterlimit:10}.lp3{fill:#d4941a}.ls2{fill:#f0e8d8}`}</style></defs>
               <g><g>
                 <path className="lp3" d="M799.84,92.35c7.82,0,13.41,4.25,16.78,12.74,3.37,8.49,3.81,19.41,1.35,32.77-1.26,6.61-1.1,10.44.49,11.47h2.51c17.19-19.83,26.45-32.28,27.77-37.34,1.52-5.83-1.11-13.13-7.9-21.88-6.79-8.75-17.03-13.13-30.71-13.13-18.06,0-34.74,8.43-50.03,25.28-15.3,16.85-25.57,35.33-30.82,55.42-3.02,11.54-4.07,23.4-3.16,35.59.91,12.19,5.69,27.07,14.34,44.66,8.65,17.59,13.45,30.04,14.39,37.36.94,7.32.57,14.22-1.12,20.69-3.28,12.56-9.85,23.61-19.69,33.13-9.84,9.52-19.7,14.28-29.56,14.28-9.03,0-15.36-3.82-18.99-11.47-3.63-7.65-3.5-21.58.38-41.81,1.23-6.48,1.53-10.92.9-13.32-.63-2.4-2.44-3.6-5.41-3.6-.84,0-5.83,6.61-14.96,19.83-9.14,13.22-14.18,21.65-15.12,25.28-1.69,6.48,1.28,14.88,8.92,25.18,7.64,10.31,19.42,15.46,35.34,15.46,19.27,0,38.39-8.78,57.36-26.35,18.97-17.56,31.47-37.88,37.51-60.96,2.61-9.98,3.36-20.52,2.25-31.6-1.11-11.08-6.26-25.97-15.46-44.67-9.2-18.7-14.36-32.35-15.48-40.96-1.12-8.61-.7-16.67,1.27-24.18,2.71-10.36,7.69-19.26,14.94-26.71,7.25-7.44,14.55-11.17,21.91-11.17Z"/>
                 <path className="lp3" d="M1139.37,213.87c1.42-5.44,3.66-11.14,6.7-17.1,1.28-2.07,2.18-4.08,2.69-6.02.27-1.04-.06-1.56-.99-1.56-1.3,0-5.41.75-12.31,2.24-6.91,1.49-13.88,3.4-20.91,5.74-15.12,29.01-37.4,59.54-66.81,91.6h0c-.05.05-.11.11-.16.17-1.43,1.56-2.86,3.11-4.32,4.68l-.09.33c-19.19,21.55-31.96,32.34-38.28,32.34-4.57,0-5.84-3.9-3.8-11.7,1.53-5.85,7.6-18.56,18.2-38.14,15.46-28.52,24.81-49,28.06-61.43,1.96-7.51,2.02-13.76.16-18.74-1.86-4.98-5.16-7.48-9.89-7.48-6.97,0-16.13,4.57-27.49,13.71-11.36,9.14-27.76,25.57-49.22,49.29,6.27-15.43,16.49-36.56,30.67-63.39l-36.46,9.14c-13.83,23.33-24.92,44.34-33.29,63-4.1,9.15-7.85,18.56-11.25,28.23-15.38,15.79-26.46,25.99-33.24,30.59-6.79,4.6-13.25,6.9-19.4,6.9-15.73,0-22.16-12.64-19.27-37.92,45.33-16.72,71.5-38.5,78.51-65.34,2.64-10.11,2.17-18.28-1.42-24.5-3.59-6.22-9.71-9.33-18.37-9.33-16.66,0-34.74,11.12-54.24,33.35-19.5,22.23-32.83,47.09-40.02,74.57-4.81,18.41-4.81,33.25.02,44.53,4.82,11.28,13.57,16.92,26.23,16.92,11.36,0,22.74-3.86,34.16-11.57,10.99-7.42,24.14-18.82,39.43-34.1-.65,2.31-1.28,4.63-1.9,6.97-2.24,8.56-5.13,21.58-8.68,39.09l33.5-10.11c3.05-11.67,5.61-20.93,7.69-27.81,2.87-9.2,6.44-19.31,10.72-30.34,2.53-6.48,6.28-12.64,11.25-18.47l11.12-12.64c4.1-4.67,7.89-8.81,11.35-12.45,4-4.28,7.56-7.91,10.67-10.89,3.45-3.24,6.39-5.77,8.82-7.58,2.61-1.81,4.57-2.72,5.88-2.72,2.33,0,2.95,2.08,1.86,6.22s-5.81,13.87-14.19,29.17c-15.65,28.52-25.28,49.72-28.91,63.59-2.68,10.24-2.9,18.41-.68,24.5,2.22,6.09,6.45,9.14,12.69,9.14,15.36,0,37.92-15.81,67.7-47.45,23.21-25.41,43.38-50.23,60.52-74.48-.36,9.21.85,20.61,3.63,34.22,2.77,13.61,3.09,24.5.95,32.67-2.2,8.43-6.75,16.31-13.65,23.63-6.9,7.33-13.18,10.99-18.86,10.99s-8.29-5.31-7.84-15.95c.45-10.63-.81-15.95-3.79-15.95-2.23,0-7.07,4.34-14.51,13.03-7.44,8.69-11.56,14.58-12.37,17.7-1.39,5.32-.09,10.31,3.91,14.97,3.99,4.67,9.15,7,15.48,7,14.61,0,31.15-9.2,49.6-27.61,18.45-18.41,30.26-37.53,35.45-57.36,2.61-9.98,2.65-20.81.12-32.48-2.53-11.67-2.92-20.88-1.17-27.62ZM862.68,224.29c8.99-13.03,16.56-19.54,22.7-19.54,6.52,0,8.15,6.22,4.9,18.67-6.57,25.15-23,42.39-49.26,51.73,5.45-20.87,12.68-37.82,21.67-50.85Z"/>
@@ -7077,9 +7083,9 @@ description: one sentence max.`,
               </g>
             </svg>
           ) : (
-            /* Standard logo — white version */
-            <svg height="32" viewBox="0 0 1267.82 368.3" xmlns="http://www.w3.org/2000/svg" style={{width:"auto"}}>
-              <defs><style>{`.ls1{fill:#d4941a}.ls2{fill:#fff}`}</style></defs>
+            /* Standard logo — warm cream version */
+            <svg height="44" viewBox="0 0 1267.82 368.3" xmlns="http://www.w3.org/2000/svg" style={{width:"auto"}}>
+              <defs><style>{`.ls1{fill:#d4941a}.ls2{fill:#f0e8d8}`}</style></defs>
               <g><g>
                 <path className="ls1" d="M799.84,92.35c7.82,0,13.41,4.25,16.78,12.74,3.37,8.49,3.81,19.41,1.35,32.77-1.26,6.61-1.1,10.44.49,11.47h2.51c17.19-19.83,26.45-32.28,27.77-37.34,1.52-5.83-1.11-13.13-7.9-21.88-6.79-8.75-17.03-13.13-30.71-13.13-18.06,0-34.74,8.43-50.03,25.28-15.3,16.85-25.57,35.33-30.82,55.42-3.02,11.54-4.07,23.4-3.16,35.59.91,12.19,5.69,27.07,14.34,44.66,8.65,17.59,13.45,30.04,14.39,37.36.94,7.32.57,14.22-1.12,20.69-3.28,12.56-9.85,23.61-19.69,33.13-9.84,9.52-19.7,14.28-29.56,14.28-9.03,0-15.36-3.82-18.99-11.47-3.63-7.65-3.5-21.58.38-41.81,1.23-6.48,1.53-10.92.9-13.32-.63-2.4-2.44-3.6-5.41-3.6-.84,0-5.83,6.61-14.96,19.83-9.14,13.22-14.18,21.65-15.12,25.28-1.69,6.48,1.28,14.88,8.92,25.18,7.64,10.31,19.42,15.46,35.34,15.46,19.27,0,38.39-8.78,57.36-26.35,18.97-17.56,31.47-37.88,37.51-60.96,2.61-9.98,3.36-20.52,2.25-31.6-1.11-11.08-6.26-25.97-15.46-44.67-9.2-18.7-14.36-32.35-15.48-40.96-1.12-8.61-.7-16.67,1.27-24.18,2.71-10.36,7.69-19.26,14.94-26.71,7.25-7.44,14.55-11.17,21.91-11.17Z"/>
                 <path className="ls1" d="M1139.37,213.87c1.42-5.44,3.66-11.14,6.7-17.1,1.28-2.07,2.18-4.08,2.69-6.02.27-1.04-.06-1.56-.99-1.56-1.3,0-5.41.75-12.31,2.24-6.91,1.49-13.88,3.4-20.91,5.74-15.12,29.01-37.4,59.54-66.81,91.6h0c-.05.05-.11.11-.16.17-1.43,1.56-2.86,3.11-4.32,4.68l-.09.33c-19.19,21.55-31.96,32.34-38.28,32.34-4.57,0-5.84-3.9-3.8-11.7,1.53-5.85,7.6-18.56,18.2-38.14,15.46-28.52,24.81-49,28.06-61.43,1.96-7.51,2.02-13.76.16-18.74-1.86-4.98-5.16-7.48-9.89-7.48-6.97,0-16.13,4.57-27.49,13.71-11.36,9.14-27.76,25.57-49.22,49.29,6.27-15.43,16.49-36.56,30.67-63.39l-36.46,9.14c-13.83,23.33-24.92,44.34-33.29,63-4.1,9.15-7.85,18.56-11.25,28.23-15.38,15.79-26.46,25.99-33.24,30.59-6.79,4.6-13.25,6.9-19.4,6.9-15.73,0-22.16-12.64-19.27-37.92,45.33-16.72,71.5-38.5,78.51-65.34,2.64-10.11,2.17-18.28-1.42-24.5-3.59-6.22-9.71-9.33-18.37-9.33-16.66,0-34.74,11.12-54.24,33.35-19.5,22.23-32.83,47.09-40.02,74.57-4.81,18.41-4.81,33.25.02,44.53,4.82,11.28,13.57,16.92,26.23,16.92,11.36,0,22.74-3.86,34.16-11.57,10.99-7.42,24.14-18.82,39.43-34.1-.65,2.31-1.28,4.63-1.9,6.97-2.24,8.56-5.13,21.58-8.68,39.09l33.5-10.11c3.05-11.67,5.61-20.93,7.69-27.81,2.87-9.2,6.44-19.31,10.72-30.34,2.53-6.48,6.28-12.64,11.25-18.47l11.12-12.64c4.1-4.67,7.89-8.81,11.35-12.45,4-4.28,7.56-7.91,10.67-10.89,3.45-3.24,6.39-5.77,8.82-7.58,2.61-1.81,4.57-2.72,5.88-2.72,2.33,0,2.95,2.08,1.86,6.22s-5.81,13.87-14.19,29.17c-15.65,28.52-25.28,49.72-28.91,63.59-2.68,10.24-2.9,18.41-.68,24.5,2.22,6.09,6.45,9.14,12.69,9.14,15.36,0,37.92-15.81,67.7-47.45,23.21-25.41,43.38-50.23,60.52-74.48-.36,9.21.85,20.61,3.63,34.22,2.77,13.61,3.09,24.5.95,32.67-2.2,8.43-6.75,16.31-13.65,23.63-6.9,7.33-13.18,10.99-18.86,10.99s-8.29-5.31-7.84-15.95c.45-10.63-.81-15.95-3.79-15.95-2.23,0-7.07,4.34-14.51,13.03-7.44,8.69-11.56,14.58-12.37,17.7-1.39,5.32-.09,10.31,3.91,14.97,3.99,4.67,9.15,7,15.48,7,14.61,0,31.15-9.2,49.6-27.61,18.45-18.41,30.26-37.53,35.45-57.36,2.61-9.98,2.65-20.81.12-32.48-2.53-11.67-2.92-20.88-1.17-27.62ZM862.68,224.29c8.99-13.03,16.56-19.54,22.7-19.54,6.52,0,8.15,6.22,4.9,18.67-6.57,25.15-23,42.39-49.26,51.73,5.45-20.87,12.68-37.82,21.67-50.85Z"/>
@@ -7093,7 +7099,7 @@ description: one sentence max.`,
               <path className="ls1" d="M356.87,35.66c-7.41.84-14.7,1.85-21.87,3.01V0l-12.14,2.66c-29.04,6.36-55.87,18.36-79.73,35.67-27.97,20.29-46.55,44.23-58.59,64.66-.18.17-.36.34-.53.5-.18-.17-.36-.34-.54-.5-12.04-20.43-30.62-44.37-58.59-64.66C101.01,21.02,74.18,9.02,45.14,2.66l-12.14-2.66v38.67c-7.17-1.16-14.46-2.17-21.87-3.01l-11.13-1.26v278.88l8.91.98c29.92,3.29,58.65,8.78,85.38,16.3,29.82,8.39,56.6,19.14,79.71,31.98,1.67.93,3.33,1.87,4.97,2.82l3.38,1.96,1.66.96,1.66-.96,3.38-1.96c1.64-.95,3.29-1.89,4.97-2.82,23.11-12.84,49.89-23.59,79.71-31.98,26.73-7.53,55.46-13.01,85.38-16.3l8.91-.98V34.4l-11.13,1.26ZM254.87,54.52c18.26-13.25,38.43-23.06,60.13-29.27v235.2c-22.79,5.55-44.71,14.01-65.28,25.19-20.26,11.02-38.93,24.49-55.72,40.21V127.68c1.82-3.78,3.92-7.83,6.33-12.06,8.62-15.13,21.26-32.65,39.36-48.84,4.69-4.2,9.74-8.3,15.18-12.26ZM53,25.25c21.69,6.2,41.87,16.02,60.13,29.27,5.45,3.95,10.49,8.06,15.18,12.26,18.1,16.19,30.73,33.71,39.36,48.84,2.41,4.23,4.52,8.28,6.33,12.06v198.18c-16.79-15.72-35.46-29.2-55.72-40.21-20.57-11.18-42.49-19.64-65.28-25.19V25.25ZM99.71,311.31c-25.12-7.07-51.89-12.4-79.71-15.88V56.93c4.38.61,8.71,1.28,13,2v217.59l7.92,1.68c23.75,5.04,46.56,13.46,67.8,25,12.28,6.67,23.91,14.33,34.85,22.9-13.82-5.52-28.47-10.47-43.87-14.8ZM348,295.43c-27.82,3.48-54.59,8.81-79.71,15.88-15.4,4.33-30.04,9.28-43.87,14.8,10.94-8.57,22.58-16.23,34.85-22.9,21.24-11.55,44.06-19.96,67.8-25l7.92-1.68V58.93c4.29-.72,8.62-1.4,13-2v238.5Z"/>
             </svg>
           )}
-          <div className="ls-logo-sub" style={{display:"none"}}>Reading Companion</div>
+          <div className="ls-logo-sub">Reading Companion</div>
         </div>
         </div>
         <div className="ls-hdr-right">
@@ -8254,14 +8260,14 @@ description: one sentence max.`,
             color:"rgba(212,148,26,.55)", textAlign:"center",
           }}>A doorworth opening</div>
 
-          {/* Keyhole image — takes up center, capped so it never overlaps bottom content */}
-          <div style={{flex:1, display:"flex", alignItems:"center", justifyContent:"center", width:"100%", overflow:"hidden", maxHeight:"55vh"}}>
+          {/* Keyhole image — takes up center */}
+          <div style={{flex:1, display:"flex", alignItems:"center", justifyContent:"center", width:"100%"}}>
             <img
               src="/keyhole.svg"
               alt=""
               style={{
-                width:"100%", maxWidth:380,
-                height:"100%",
+                width:"100%", maxWidth:420,
+                height:"auto",
                 objectFit:"contain",
               }}
             />
@@ -8307,7 +8313,47 @@ description: one sentence max.`,
         </div>
       )}
 
+      {false && showWelcome && (
+        <div className="ls-welcome">
+          {/* Logo */}
+          <div className="ls-welcome-logo">
+            <svg height="40" viewBox="0 0 1267.82 368.3" xmlns="http://www.w3.org/2000/svg" style={{width:"auto"}}>
+              <defs><style>{`.wl1{fill:#d4941a}.wl2{fill:#fff}`}</style></defs>
+              <path className="wl2" d="M551.37,199.01c-2.51,10.46-4.77,17.95-6.77,22.47-2,4.52-4.59,8.72-7.75,12.59-1.95,3.62-6.14,7.24-12.57,10.85-8.57,4.78-20.34,7.17-35.33,7.17l-8.8-.19-8.24.19-13.27-.75c-.93-1.17-1.4-3.7-1.4-7.59l.56-92.27c0-5.19.05-9.41.14-12.65.28-8.7.42-16.42.42-23.17,0-5.84-.14-12.65-.42-20.44-.19-4.93-.28-8.43-.28-10.51,0-1.69.03-3.37.1-5.06.21-6.49.31-10.06.31-10.71v-5.64l.42-12.26.14-5.45c.19-.65.46-1.43.84-2.34,1.12-.78,1.91-1.29,2.37-1.56l17.31-5.65c3.54-.65,5.59-1.43,6.14-2.34,1.02-1.54,1.54-3.78,1.54-6.72,0-3.71-.37-6.27-1.12-7.68-.56-1.02-1.54-1.54-2.93-1.54-.47,0-2.19.18-5.17.53-10.05,1.08-18.29,1.61-24.72,1.61l-14.8-.39-19.97.19c-13.96-1.04-22.06-1.56-24.3-1.56-.93,0-1.82.33-2.65.97-.09,2.08-.14,3.63-.14,4.67,0,1.82.09,4.41.28,7.78,1.3,1.56,3.58,2.92,6.84,4.08,1.86.52,3.96,1.43,6.28,2.72,3.07,1.69,4.84,2.66,5.31,2.92,4.75,2.08,7.42,3.8,8.03,5.16.6,1.36,1.23,8.85,1.89,22.48v2.73l-.14,19.66-.56,43.4.28,20.25-.14,19.07v16.15l-.84,25.3.28,24.91c0,2.08-.28,4.67-.84,7.78-1.21,1.5-3.63,2.32-7.26,2.44-.93,0-4.03.53-9.29,1.6-5.26,1.07-9.33,2.18-12.22,3.35-.65,2.46-.98,6.42-.98,11.86,0,1.04.09,2.27.28,3.69,1.21.13,2.09.19,2.65.19h2.09c9.59-1.04,19.87-1.75,30.86-2.14l28.49-1.17c15.27,0,30.86.39,46.78,1.17s24.81,1.23,26.67,1.36c10.24,1.04,15.78,1.56,16.62,1.56l7.26-.19h5.17c.56,0,1.91-.26,4.05-.78.65-2.07,1.3-7.76,1.95-17.07,1.68-23.27,2.51-39.56,2.51-48.87v-5.43c-2.79-.52-5.31-.78-7.54-.78h-4.47Z"/>
+              <path className="wl1" d="M799.84,92.35c7.82,0,13.41,4.25,16.78,12.74,3.37,8.49,3.81,19.41,1.35,32.77-1.26,6.61-1.1,10.44.49,11.47h2.51c17.19-19.83,26.45-32.28,27.77-37.34,1.52-5.83-1.11-13.13-7.9-21.88-6.79-8.75-17.03-13.13-30.71-13.13-18.06,0-34.74,8.43-50.03,25.28-15.3,16.85-25.57,35.33-30.82,55.42-3.02,11.54-4.07,23.4-3.16,35.59.91,12.19,5.69,27.07,14.34,44.66,8.65,17.59,13.45,30.04,14.39,37.36.94,7.32.57,14.22-1.12,20.69-3.28,12.56-9.85,23.61-19.69,33.13-9.84,9.52-19.7,14.28-29.56,14.28-9.03,0-15.36-3.82-18.99-11.47-3.63-7.65-3.5-21.58.38-41.81,1.23-6.48,1.53-10.92.9-13.32-.63-2.4-2.44-3.6-5.41-3.6-.84,0-5.83,6.61-14.96,19.83-9.14,13.22-14.18,21.65-15.12,25.28-1.69,6.48,1.28,14.88,8.92,25.18,7.64,10.31,19.42,15.46,35.34,15.46,19.27,0,38.39-8.78,57.36-26.35,18.97-17.56,31.47-37.88,37.51-60.96,2.61-9.98,3.36-20.52,2.25-31.6-1.11-11.08-6.26-25.97-15.46-44.67-9.2-18.7-14.36-32.35-15.48-40.96-1.12-8.61-.7-16.67,1.27-24.18,2.71-10.36,7.69-19.26,14.94-26.71,7.25-7.44,14.55-11.17,21.91-11.17Z"/>
+              <path className="wl1" d="M356.87,35.66c-7.41.84-14.7,1.85-21.87,3.01V0l-12.14,2.66c-29.04,6.36-55.87,18.36-79.73,35.67-27.97,20.29-46.55,44.23-58.59,64.66-.18.17-.36.34-.53.5-.18-.17-.36-.34-.54-.5-12.04-20.43-30.62-44.37-58.59-64.66C101.01,21.02,74.18,9.02,45.14,2.66l-12.14-2.66v38.67c-7.17-1.16-14.46-2.17-21.87-3.01l-11.13-1.26v278.88l8.91.98c29.92,3.29,58.65,8.78,85.38,16.3,29.82,8.39,56.6,19.14,79.71,31.98,1.67.93,3.33,1.87,4.97,2.82l3.38,1.96,1.66.96,1.66-.96,3.38-1.96c1.64-.95,3.29-1.89,4.97-2.82,23.11-12.84,49.89-23.59,79.71-31.98,26.73-7.53,55.46-13.01,85.38-16.3l8.91-.98V34.4l-11.13,1.26Z"/>
+            </svg>
+          </div>
 
+          <div className="ls-welcome-title">Your smart,<br/><em>observant</em> reading friend.</div>
+
+          <div className="ls-welcome-features">
+            {[
+              [BookOpen, "Reads with you", "Tell it what you're reading. It checks in, asks how it's going, and remembers."],
+              [Star, "Learns your taste", "The more you rate and react, the more personal your recommendations get."],
+              [MessageCircle, "Honest opinions", "Ask anything. Get a real answer — not an algorithm, a considered opinion."],
+              [Sparkles, "No assumptions", "It only knows what you tell it. Nothing is invented."],
+            ].map(([Icon, title, desc]) => (
+              <div key={title} className="ls-welcome-feature">
+                <div className="ls-welcome-feature-icon">
+                  <Icon size={15} strokeWidth={1.75} style={{color:"var(--gold)"}}/>
+                </div>
+                <div className="ls-welcome-feature-text">
+                  <div className="ls-welcome-feature-title">{title}</div>
+                  <div className="ls-welcome-feature-desc">{desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <button className="ls-welcome-cta" onClick={dismissWelcome}>
+            Start reading smarter →
+          </button>
+          <button className="ls-welcome-skip" onClick={dismissWelcome}>
+            Skip for now
+          </button>
+        </div>
+      )}
 
       </div>
     </div>
