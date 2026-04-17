@@ -223,7 +223,7 @@ const CSS = `
 
 /* ── HEADER — espresso glass ── */
 .ls-hdr{
-  height:288px;min-height:288px;padding:100px 20px;
+  height:68px;min-height:68px;padding:0 20px;
   display:flex;align-items:center;justify-content:space-between;
   position:relative;
   background:rgba(18,16,14,.72);
@@ -6519,7 +6519,8 @@ description: one sentence max.`,
       {/* ── APP ── */}
       <div className="ls" style={{ position:"relative", zIndex:3, background:"transparent" }}>
 
-      {/* HEADER */}
+      {/* HEADER — hidden on Discover where logo scrolls with content */}
+      {tab !== "discover" && (
       <header className="ls-hdr">
         <div className="ls-hdr-left">
           {canGoBack && (
@@ -6589,8 +6590,7 @@ description: one sentence max.`,
           )}
         </div>
       </header>
-
-      {/* ── Shelf toast — appears when a book is auto-added from chat ── */}
+      )} — appears when a book is auto-added from chat ── */}
       {shelfToast && (
         <div className="ls-shelf-toast">
           ✓ Added "{shelfToast.length > 30 ? shelfToast.slice(0,28)+"…" : shelfToast}" to your shelf
@@ -6606,6 +6606,48 @@ description: one sentence max.`,
             ref={discoverScrollRef}
             onScroll={e => { discoverScrollPos.current = e.currentTarget.scrollTop; }}
           >
+            {/* ── Scrollable logo — Discover only ── */}
+            <div style={{
+              display:"flex", flexDirection:"column", alignItems:"center",
+              padding:"100px 20px 100px", position:"relative",
+            }}>
+              <div className="ls-hdr-right" style={{position:"absolute", top:20, right:20}}>
+                {!isSignedIn ? (
+                  <>
+                    <button className="ls-signin-btn" onClick={()=>{setAuthMode("login");setShowAuth(true);}}>Sign in</button>
+                    <button className="ls-pro-btn" onClick={()=>setPro(true)}><Crown size={11} strokeWidth={2}/> Go Pro</button>
+                  </>
+                ) : (
+                  <>
+                    {!isPro && <button className="ls-pro-btn" onClick={()=>setPro(true)}><Crown size={11} strokeWidth={2}/> Go Pro</button>}
+                    <div className="ls-user-avatar" title={`Signed in as ${userEmail}`} onClick={handleSignOut}
+                      style={userPhoto ? {backgroundImage:`url(${userPhoto})`,backgroundSize:"cover",backgroundPosition:"center",color:"transparent"} : {}}>
+                      {userPhoto ? "" : userInitial}
+                    </div>
+                  </>
+                )}
+              </div>
+              <div className="ls-logo" style={{position:"static", transform:"none", animation:"logoIn .6s var(--ease) both"}}>
+                {isPro ? (
+                  <svg height="88" viewBox="0 0 1267.82 368.3" xmlns="http://www.w3.org/2000/svg" style={{width:"auto"}}>
+                    <defs><style>{`.lp1{fill:#931a1d}.lp2{fill:#f0e8d8;stroke:#f0e8d8;stroke-miterlimit:10}.lp3{fill:#d4941a}.ls2{fill:#f0e8d8}`}</style></defs>
+                    <g><g>
+                      <path className="lp3" d="M799.84,92.35c7.82,0,13.41,4.25,16.78,12.74,3.37,8.49,3.81,19.41,1.35,32.77-1.26,6.61-1.1,10.44.49,11.47h2.51c17.19-19.83,26.45-32.28,27.77-37.34,1.52-5.83-1.11-13.13-7.9-21.88-6.79-8.75-17.03-13.13-30.71-13.13-18.06,0-34.74,8.43-50.03,25.28-15.3,16.85-25.57,35.33-30.82,55.42-3.02,11.54-4.07,23.4-3.16,35.59.91,12.19,5.69,27.07,14.34,44.66,8.65,17.59,13.45,30.04,14.39,37.36.94,7.32.57,14.22-1.12,20.69-3.28,12.56-9.85,23.61-19.69,33.13-9.84,9.52-19.7,14.28-29.56,14.28-9.03,0-15.36-3.82-18.99-11.47-3.63-7.65-3.5-21.58.38-41.81,1.23-6.48,1.53-10.92.9-13.32-.63-2.4-2.44-3.6-5.41-3.6-.84,0-5.83,6.61-14.96,19.83-9.14,13.22-14.18,21.65-15.12,25.28-1.69,6.48,1.28,14.88,8.92,25.18,7.64,10.31,19.42,15.46,35.34,15.46,19.27,0,38.39-8.78,57.36-26.35,18.97-17.56,31.47-37.88,37.51-60.96,2.61-9.98,3.36-20.52,2.25-31.6-1.11-11.08-6.26-25.97-15.46-44.67-9.2-18.7-14.36-32.35-15.48-40.96-1.12-8.61-.7-16.67,1.27-24.18,2.71-10.36,7.69-19.26,14.94-26.71,7.25-7.44,14.55-11.17,21.91-11.17Z"/>
+                    </g></g>
+                    <path className="lp3" d="M356.87,35.66c-7.41.84-14.7,1.85-21.87,3.01V0l-12.14,2.66c-29.04,6.36-55.87,18.36-79.73,35.67-27.97,20.29-46.55,44.23-58.59,64.66-.18.17-.36.34-.53.5-.18-.17-.36-.34-.54-.5-12.04-20.43-30.62-44.37-58.59-64.66C101.01,21.02,74.18,9.02,45.14,2.66l-12.14-2.66v38.67c-7.17-1.16-14.46-2.17-21.87-3.01l-11.13-1.26v278.88l8.91.98c29.92,3.29,58.65,8.78,85.38,16.3,29.82,8.39,56.6,19.14,79.71,31.98,1.67.93,3.33,1.87,4.97,2.82l3.38,1.96,1.66.96,1.66-.96,3.38-1.96c1.64-.95,3.29-1.89,4.97-2.82,23.11-12.84,49.89-23.59,79.71-31.98,26.73-7.53,55.46-13.01,85.38-16.3l8.91-.98V34.4l-11.13,1.26Z"/>
+                  </svg>
+                ) : (
+                  <svg height="88" viewBox="0 0 1267.82 368.3" xmlns="http://www.w3.org/2000/svg" style={{width:"auto"}}>
+                    <defs><style>{`.ls1{fill:#d4941a}.ls2{fill:#f0e8d8}`}</style></defs>
+                    <g><g>
+                      <path className="ls1" d="M799.84,92.35c7.82,0,13.41,4.25,16.78,12.74,3.37,8.49,3.81,19.41,1.35,32.77-1.26,6.61-1.1,10.44.49,11.47h2.51c17.19-19.83,26.45-32.28,27.77-37.34,1.52-5.83-1.11-13.13-7.9-21.88-6.79-8.75-17.03-13.13-30.71-13.13-18.06,0-34.74,8.43-50.03,25.28-15.3,16.85-25.57,35.33-30.82,55.42-3.02,11.54-4.07,23.4-3.16,35.59.91,12.19,5.69,27.07,14.34,44.66,8.65,17.59,13.45,30.04,14.39,37.36.94,7.32.57,14.22-1.12,20.69-3.28,12.56-9.85,23.61-19.69,33.13-9.84,9.52-19.7,14.28-29.56,14.28-9.03,0-15.36-3.82-18.99-11.47-3.63-7.65-3.5-21.58.38-41.81,1.23-6.48,1.53-10.92.9-13.32-.63-2.4-2.44-3.6-5.41-3.6-.84,0-5.83,6.61-14.96,19.83-9.14,13.22-14.18,21.65-15.12,25.28-1.69,6.48,1.28,14.88,8.92,25.18,7.64,10.31,19.42,15.46,35.34,15.46,19.27,0,38.39-8.78,57.36-26.35,18.97-17.56,31.47-37.88,37.51-60.96,2.61-9.98,3.36-20.52,2.25-31.6-1.11-11.08-6.26-25.97-15.46-44.67-9.2-18.7-14.36-32.35-15.48-40.96-1.12-8.61-.7-16.67,1.27-24.18,2.71-10.36,7.69-19.26,14.94-26.71,7.25-7.44,14.55-11.17,21.91-11.17Z"/>
+                    </g></g>
+                    <path className="ls1" d="M356.87,35.66c-7.41.84-14.7,1.85-21.87,3.01V0l-12.14,2.66c-29.04,6.36-55.87,18.36-79.73,35.67-27.97,20.29-46.55,44.23-58.59,64.66-.18.17-.36.34-.53.5-.18-.17-.36-.34-.54-.5-12.04-20.43-30.62-44.37-58.59-64.66C101.01,21.02,74.18,9.02,45.14,2.66l-12.14-2.66v38.67c-7.17-1.16-14.46-2.17-21.87-3.01l-11.13-1.26v278.88l8.91.98c29.92,3.29,58.65,8.78,85.38,16.3,29.82,8.39,56.6,19.14,79.71,31.98,1.67.93,3.33,1.87,4.97,2.82l3.38,1.96,1.66.96,1.66-.96,3.38-1.96c1.64-.95,3.29-1.89,4.97-2.82,23.11-12.84,49.89-23.59,79.71-31.98,26.73-7.53,55.46-13.01,85.38-16.3l8.91-.98V34.4l-11.13,1.26Z"/>
+                  </svg>
+                )}
+                <div className="ls-logo-sub">Reading Companion</div>
+              </div>
+            </div>
 
             {/* ── TOP MOMENT — one thing worth saying ── */}
             <TopMoment
