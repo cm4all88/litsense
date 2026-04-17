@@ -223,7 +223,7 @@ const CSS = `
 
 /* ── HEADER — espresso glass ── */
 .ls-hdr{
-  height:68px;min-height:68px;padding:0 20px;
+  height:58px;min-height:58px;padding:0 20px;
   display:flex;align-items:center;justify-content:space-between;
   position:relative;
   background:rgba(18,16,14,.72);
@@ -237,15 +237,15 @@ const CSS = `
 }
 .ls-logo{
   position:absolute;left:50%;transform:translateX(-50%);
-  display:flex;flex-direction:column;align-items:center;gap:5px;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
   animation:logoIn .6s var(--ease) both;
   pointer-events:none;user-select:none;
 }
-.ls-logo svg{filter:drop-shadow(0 0 18px rgba(198,161,91,.16));transition:filter .4s;}
+.ls-logo svg{filter:drop-shadow(0 0 12px rgba(198,161,91,.14));transition:filter .4s;}
 .ls-logo-img{height:28px;width:auto;display:block;}
-.ls-logo-name{font-family:'Lora',serif;font-size:22px;font-weight:700;letter-spacing:-.5px;line-height:1;color:var(--text);}
+.ls-logo-name{font-family:'Lora',serif;font-size:16px;font-weight:700;letter-spacing:-.5px;line-height:1;color:var(--text);}
 .ls-logo-name em{color:var(--gold);font-style:italic;}
-.ls-logo-sub{font-size:7.5px;font-weight:700;letter-spacing:4.5px;text-transform:uppercase;color:rgba(198,161,91,.42);display:block;line-height:1;}
+.ls-logo-sub{font-size:7px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:rgba(198,161,91,.42);display:block;line-height:1;}
 .ls-hdr-right{display:flex;align-items:center;gap:8px;}
 .ls-hdr-left{display:flex;align-items:center;gap:6px;}
 .ls-back-btn{
@@ -261,7 +261,7 @@ const CSS = `
   padding:7px 15px;border-radius:var(--r-pill);
   border:1px solid rgba(255,248,236,.12);
   background:rgba(255,248,236,.06);color:var(--text2);
-  font-size:12px;font-weight:600;cursor:pointer;
+  font-size:10px;font-weight:600;cursor:pointer;
   transition:all .30s var(--ease);
   backdrop-filter:blur(8px);
 }
@@ -270,7 +270,7 @@ const CSS = `
   display:flex;align-items:center;gap:5px;
   padding:7px 15px;border-radius:var(--r-pill);
   background:var(--gold);color:#0e0c09;border:none;
-  font-size:12px;font-weight:700;cursor:pointer;
+  font-size:10px;font-weight:700;cursor:pointer;
   transition:all .30s var(--ease);
   box-shadow:0 2px 18px var(--glow);
 }
@@ -279,7 +279,7 @@ const CSS = `
   width:32px;height:32px;border-radius:50%;
   background:rgba(198,161,91,.10);border:1.5px solid rgba(198,161,91,.32);
   display:flex;align-items:center;justify-content:center;
-  font-size:12px;font-weight:700;color:var(--gold);cursor:pointer;
+  font-size:10px;font-weight:700;color:var(--gold);cursor:pointer;
   transition:all .28s;
 }
 .ls-user-avatar:hover{background:rgba(198,161,91,.18);}
@@ -309,7 +309,7 @@ const CSS = `
 
 /* ── LAYOUT ── */
 .ls-main{flex:1;overflow:hidden;display:flex;flex-direction:column;}
-.ls-scroll{flex:1;overflow-y:auto;overscroll-behavior:none;-webkit-overflow-scrolling:auto;}
+.ls-scroll{flex:1;overflow-y:auto;overscroll-behavior:none;-webkit-overflow-scrolling:touch;}
 
 /* ── CINEMATIC HERO ── */
 .ls-hero{
@@ -324,7 +324,7 @@ const CSS = `
 .ls-hero-eyebrow::before{content:'';width:24px;height:1.5px;background:var(--gold);border-radius:1px;}
 .ls-hero-title{
   font-family:'Lora',serif;
-  font-size:32px;font-weight:700;line-height:1.18;
+  font-size:23px;font-weight:700;line-height:1.18;
   color:var(--text);margin-bottom:14px;letter-spacing:-.5px;
 }
 .ls-hero-title em{color:var(--gold);font-style:italic;}
@@ -333,7 +333,7 @@ const CSS = `
   display:inline-flex;align-items:center;gap:9px;
   padding:14px 26px;border:none;border-radius:var(--r-pill);
   background:var(--gold);color:#060402;
-  font-family:'Inter',sans-serif;font-size:14px;font-weight:700;
+  font-family:'Inter',sans-serif;font-size:10px;font-weight:700;
   cursor:pointer;transition:all .25s var(--ease);margin-bottom:14px;
   box-shadow:0 4px 28px rgba(212,148,26,.45);
 }
@@ -364,15 +364,15 @@ const CSS = `
 .ls-proof-cover img{width:100%;height:100%;object-fit:cover;display:block;}
 .ls-proof-cover .ls-book-cover{width:100%;min-width:unset;height:100%;border-radius:0;box-shadow:none;}
 .ls-proof-body{flex:1;min-width:0;}
-.ls-proof-title{font-family:'Lora',serif;font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px;line-height:1.3;}
+.ls-proof-title{font-family:'Lora',serif;font-size:10px;font-weight:700;color:var(--text);margin-bottom:2px;line-height:1.3;}
 .ls-proof-author{font-size:10.5px;color:var(--muted);margin-bottom:11px;}
-.ls-proof-reason{font-size:12px;line-height:1.75;color:var(--text2);font-style:italic;padding:10px 13px;background:rgba(212,148,26,.08);border-left:2px solid var(--gold);border-radius:0 8px 8px 0;}
+.ls-proof-reason{font-size:10px;line-height:1.75;color:var(--text2);font-style:italic;padding:10px 13px;background:rgba(212,148,26,.08);border-left:2px solid var(--gold);border-radius:0 8px 8px 0;}
 .ls-proof-reason strong{color:var(--gold);font-style:normal;font-weight:600;}
 
 /* ── SECTION HEADERS ── */
 .ls-sec-hdr{display:flex;align-items:center;justify-content:space-between;padding:0 20px;margin-bottom:14px;}
 .ls-sec-hdr.spaced{margin-top:32px;}
-.ls-sec-title{font-family:'Lora',serif;font-size:16px;font-weight:700;color:var(--text);letter-spacing:-.2px;}
+.ls-sec-title{font-family:'Lora',serif;font-size:12px;font-weight:700;color:var(--text);letter-spacing:-.2px;}
 .ls-sec-sub{font-size:10px;font-weight:500;color:var(--muted);letter-spacing:.2px;}
 
 /* ── MOOD CHIPS — glass ── */
@@ -396,7 +396,7 @@ const CSS = `
   display:flex;align-items:center;justify-content:space-between;
   backdrop-filter:blur(8px);
 }
-.ls-mood-banner-text{font-size:12px;color:var(--gold);font-weight:500;}
+.ls-mood-banner-text{font-size:10px;color:var(--gold);font-weight:500;}
 .ls-mood-banner-clear{background:transparent;border:none;color:var(--gold);font-size:10.5px;font-weight:600;cursor:pointer;}
 
 /* ── GENRE PILLS — glass ── */
@@ -419,7 +419,7 @@ const CSS = `
   border:1px solid rgba(212,148,26,.28);
   background:rgba(212,148,26,.1);
   backdrop-filter:blur(10px);
-  color:var(--gold);font-size:14px;font-weight:600;cursor:pointer;transition:all .22s;
+  color:var(--gold);font-size:10px;font-weight:600;cursor:pointer;transition:all .22s;
 }
 .ls-filter-cta:hover{background:rgba(212,148,26,.18);transform:translateY(-1px);box-shadow:0 4px 20px var(--glow);}
 
@@ -448,13 +448,13 @@ const CSS = `
 .ls-book-info{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:space-between;}
 .ls-book-title{font-family:'Lora',serif;font-size:14.5px;font-weight:700;line-height:1.28;color:var(--text);letter-spacing:-.1px;}
 .ls-book-author{font-size:11.5px;color:var(--muted);margin-bottom:8px;}
-.ls-book-why{font-size:12px;line-height:1.65;color:var(--text2);}
+.ls-book-why{font-size:10px;line-height:1.65;color:var(--text2);}
 .ls-book-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px;}
 .ls-tag{font-size:10px;font-weight:600;padding:3px 8px;border-radius:var(--r-pill);background:rgba(255,255,255,.07);color:var(--muted);border:1px solid rgba(255,255,255,.07);}
 .ls-book-actions{display:flex;gap:7px;margin-top:10px;}
-.ls-save-btn{flex:1;padding:9px;border-radius:var(--r-pill);border:none;background:var(--gold);color:#060402;font-size:12px;font-weight:700;cursor:pointer;transition:all .22s var(--ease);box-shadow:0 2px 12px var(--glow);}
+.ls-save-btn{flex:1;padding:9px;border-radius:var(--r-pill);border:none;background:var(--gold);color:#060402;font-size:10px;font-weight:700;cursor:pointer;transition:all .22s var(--ease);box-shadow:0 2px 12px var(--glow);}
 .ls-save-btn:hover{background:var(--gold-r);transform:translateY(-1px);}
-.ls-dismiss-btn{padding:9px 13px;border-radius:var(--r-pill);border:1px solid rgba(255,255,255,.1);background:transparent;color:var(--muted);font-size:12px;font-weight:500;cursor:pointer;transition:all .18s;}
+.ls-dismiss-btn{padding:9px 13px;border-radius:var(--r-pill);border:1px solid rgba(255,255,255,.1);background:transparent;color:var(--muted);font-size:10px;font-weight:500;cursor:pointer;transition:all .18s;}
 .ls-dismiss-btn:hover{border-color:rgba(255,255,255,.2);color:var(--text2);}
 
 /* ── ROW TILES — Netflix horizontal scroll ── */
@@ -472,20 +472,20 @@ const CSS = `
 /* ── SHELF ── */
 .ls-shelf-scroll{flex:1;overflow-y:auto;padding-bottom:16px;}
 .ls-shelf-hdr{padding:28px 20px 20px;}
-.ls-shelf-hdr-title{font-family:'Lora',serif;font-size:24px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.ls-shelf-hdr-title{font-family:'Lora',serif;font-size:17px;font-weight:700;color:var(--text);margin-bottom:4px;}
 
 /* ── PROFILE ── */
 .ls-profile-scroll{flex:1;overflow-y:auto;padding-bottom:80px;}
 .ls-profile-hero{padding:28px 20px 0;display:flex;flex-direction:column;align-items:center;text-align:center;}
-.ls-profile-avatar{width:80px;height:80px;border-radius:50%;background:rgba(212,148,26,.2);border:2px solid rgba(212,148,26,.4);display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:700;color:var(--gold);overflow:hidden;flex-shrink:0;cursor:pointer;position:relative;}
-.ls-profile-name{font-family:'Lora',serif;font-size:22px;font-weight:700;color:var(--text);margin-bottom:4px;}
-.ls-profile-email{font-size:12px;color:var(--muted);margin-bottom:12px;}
+.ls-profile-avatar{width:80px;height:80px;border-radius:50%;background:rgba(212,148,26,.2);border:2px solid rgba(212,148,26,.4);display:flex;align-items:center;justify-content:center;font-size:23px;font-weight:700;color:var(--gold);overflow:hidden;flex-shrink:0;cursor:pointer;position:relative;}
+.ls-profile-name{font-family:'Lora',serif;font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.ls-profile-email{font-size:10px;color:var(--muted);margin-bottom:12px;}
 .ls-profile-archetype{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:var(--r-pill);background:rgba(212,148,26,.12);border:1px solid rgba(212,148,26,.3);color:var(--gold);font-size:10.5px;font-weight:700;letter-spacing:.5px;margin-bottom:16px;}
-.ls-profile-bio{width:100%;background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,.1);color:var(--text2);font-size:14px;line-height:1.6;padding:6px 0;outline:none;font-family:'Inter',sans-serif;text-align:center;resize:none;box-sizing:border-box;}
+.ls-profile-bio{width:100%;background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,.1);color:var(--text2);font-size:10px;line-height:1.6;padding:6px 0;outline:none;font-family:'Inter',sans-serif;text-align:center;resize:none;box-sizing:border-box;}
 .ls-profile-bio::placeholder{color:var(--muted);}
 .ls-profile-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(255,255,255,.06);border-radius:var(--r-lg);overflow:hidden;margin:20px 16px 0;}
 .ls-profile-stat{background:rgba(255,255,255,.03);padding:16px 8px;text-align:center;}
-.ls-profile-stat-n{font-family:'Lora',serif;font-size:24px;font-weight:700;color:var(--text);line-height:1;}
+.ls-profile-stat-n{font-family:'Lora',serif;font-size:17px;font-weight:700;color:var(--text);line-height:1;}
 .ls-profile-stat-l{font-size:10px;color:var(--muted);margin-top:4px;letter-spacing:.3px;}
 .ls-profile-section{padding:24px 20px 0;}
 .ls-profile-section-title{font-size:10.5px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:14px;}
@@ -498,32 +498,32 @@ const CSS = `
 .ls-profile-reaction-info{flex:1;min-width:0;}
 .ls-profile-reaction-title{font-size:13.5px;font-weight:600;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .ls-profile-reaction-label{font-size:10px;color:var(--muted);margin-top:2px;}
-.ls-profile-genre{display:inline-flex;padding:6px 14px;border-radius:var(--r-pill);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);font-size:12px;color:var(--text2);margin:0 6px 8px 0;}
+.ls-profile-genre{display:inline-flex;padding:6px 14px;border-radius:var(--r-pill);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);font-size:10px;color:var(--text2);margin:0 6px 8px 0;}
 .ls-profile-empty{text-align:center;padding:32px 24px;color:var(--muted);font-size:13.5px;line-height:1.7;}
 
 /* ── MARKETPLACE ── */
 .ls-market{flex:1;overflow-y:auto;padding-bottom:80px;}
 .ls-market-hdr{padding:24px 20px 16px;}
-.ls-market-title{font-family:'Lora',serif;font-size:24px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.ls-market-title{font-family:'Lora',serif;font-size:17px;font-weight:700;color:var(--text);margin-bottom:4px;}
 .ls-market-sub{font-size:13.5px;color:var(--muted);line-height:1.6;margin-bottom:16px;}
 .ls-market-tabs{display:flex;gap:8px;padding:0 20px 16px;}
-.ls-market-tab{flex:1;padding:8px;border-radius:var(--r-md);border:1px solid rgba(255,255,255,.10);background:transparent;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;transition:all .18s;}
+.ls-market-tab{flex:1;padding:8px;border-radius:var(--r-md);border:1px solid rgba(255,255,255,.10);background:transparent;color:var(--muted);font-size:10px;font-weight:600;cursor:pointer;transition:all .18s;}
 .ls-market-tab.on{background:rgba(212,148,26,.15);border-color:rgba(212,148,26,.4);color:var(--gold);}
 .ls-listing-card{margin:0 16px 12px;padding:16px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08);border-radius:var(--r-lg);display:flex;gap:14px;cursor:pointer;transition:all .2s;}
 .ls-listing-card:hover{background:rgba(255,255,255,.07);border-color:rgba(212,148,26,.2);}
 .ls-listing-cover{width:56px;min-width:56px;height:80px;border-radius:8px;overflow:hidden;flex-shrink:0;}
 .ls-listing-body{flex:1;min-width:0;}
-.ls-listing-title{font-family:'Lora',serif;font-size:14px;font-weight:700;color:var(--text);line-height:1.3;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ls-listing-title{font-family:'Lora',serif;font-size:10px;font-weight:700;color:var(--text);line-height:1.3;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .ls-listing-author{font-size:10.5px;color:var(--muted);margin-bottom:8px;}
 .ls-listing-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
 .ls-listing-price{font-size:14.5px;font-weight:700;color:var(--gold);}
 .ls-listing-condition{font-size:10px;font-weight:600;padding:2px 8px;border-radius:var(--r-pill);background:rgba(255,255,255,.07);color:var(--text2);text-transform:capitalize;}
 .ls-listing-seller{font-size:10px;color:var(--muted);}
-.ls-list-btn{width:calc(100% - 32px);margin:0 16px 20px;padding:13px;border-radius:var(--r-lg);border:1px solid rgba(212,148,26,.4);background:rgba(212,148,26,.10);color:var(--gold);font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.ls-list-btn{width:calc(100% - 32px);margin:0 16px 20px;padding:13px;border-radius:var(--r-lg);border:1px solid rgba(212,148,26,.4);background:rgba(212,148,26,.10);color:var(--gold);font-size:10px;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;}
 .ls-list-btn:hover{background:rgba(212,148,26,.2);}
 .ls-market-empty{text-align:center;padding:60px 32px;color:var(--muted);}
-.ls-market-empty-icon{font-size:40px;margin-bottom:16px;opacity:.4;}
-.ls-market-empty-title{font-family:'Lora',serif;font-size:18px;font-weight:700;color:var(--text2);margin-bottom:8px;}
+.ls-market-empty-icon{font-size:29px;margin-bottom:16px;opacity:.4;}
+.ls-market-empty-title{font-family:'Lora',serif;font-size:13px;font-weight:700;color:var(--text2);margin-bottom:8px;}
 .ls-market-empty-body{font-size:13.5px;line-height:1.7;color:var(--muted);}
 .ls-market-new-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:var(--r-pill);background:rgba(212,148,26,.12);border:1px solid rgba(212,148,26,.3);color:var(--gold);font-size:10px;font-weight:700;letter-spacing:.5px;margin-bottom:12px;}
 
@@ -532,50 +532,50 @@ const CSS = `
 .ls-list-modal-bg{position:absolute;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(12px);}
 .ls-list-modal-sheet{position:relative;width:100%;max-width:480px;background:rgba(20,16,10,.96);border-radius:28px 28px 0 0;padding:0 22px 52px;max-height:90dvh;overflow-y:auto;animation:slideUp .32s cubic-bezier(.32,.72,0,1);border:1px solid rgba(255,255,255,.1);border-bottom:none;}
 .ls-list-modal-handle{width:40px;height:4px;background:rgba(255,255,255,.14);border-radius:2px;margin:16px auto 22px;}
-.ls-list-modal-title{font-family:'Lora',serif;font-size:20px;font-weight:700;color:var(--text);margin-bottom:20px;}
+.ls-list-modal-title{font-family:'Lora',serif;font-size:14px;font-weight:700;color:var(--text);margin-bottom:20px;}
 .ls-list-field{margin-bottom:16px;}
 .ls-list-label{font-size:10.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
-.ls-list-input{width:100%;padding:12px 14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:var(--r-md);color:var(--text);font-size:14px;font-family:'Inter',sans-serif;box-sizing:border-box;outline:none;}
+.ls-list-input{width:100%;padding:12px 14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:var(--r-md);color:var(--text);font-size:10px;font-family:'Inter',sans-serif;box-sizing:border-box;outline:none;}
 .ls-list-input:focus{border-color:var(--gold);}
 .ls-list-input::placeholder{color:var(--muted);}
 .ls-condition-btns{display:flex;gap:6px;flex-wrap:wrap;}
 .ls-condition-btn{padding:6px 12px;border-radius:var(--r-pill);border:1px solid rgba(255,255,255,.12);background:transparent;color:var(--text2);font-size:10.5px;font-weight:600;cursor:pointer;transition:all .15s;}
 .ls-condition-btn.on{background:rgba(212,148,26,.15);border-color:rgba(212,148,26,.4);color:var(--gold);}
-.ls-list-submit{width:100%;padding:14px;border-radius:var(--r-lg);border:none;background:var(--gold);color:#060402;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px;transition:all .2s;}
+.ls-list-submit{width:100%;padding:14px;border-radius:var(--r-lg);border:none;background:var(--gold);color:#060402;font-size:10px;font-weight:700;cursor:pointer;margin-top:8px;transition:all .2s;}
 .ls-list-submit:hover{background:var(--gold-r);}
 .ls-list-submit:disabled{opacity:.4;cursor:not-allowed;}
 
 /* ── DISCUSSION ── */
 .ls-disc{flex:1;overflow-y:auto;padding-bottom:80px;}
 .ls-disc-hdr{padding:20px 20px 12px;border-bottom:1px solid rgba(255,255,255,.06);}
-.ls-disc-book{font-family:'Lora',serif;font-size:16px;font-weight:700;color:var(--text);}
+.ls-disc-book{font-family:'Lora',serif;font-size:12px;font-weight:700;color:var(--text);}
 .ls-disc-count{font-size:10.5px;color:var(--muted);margin-top:2px;}
 .ls-disc-post{padding:14px 20px;border-bottom:1px solid rgba(255,255,255,.05);}
 .ls-disc-post-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
 .ls-disc-avatar{width:28px;height:28px;border-radius:50%;background:rgba(212,148,26,.2);border:1px solid rgba(212,148,26,.3);display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;color:var(--gold);flex-shrink:0;}
-.ls-disc-username{font-size:12px;font-weight:600;color:var(--text2);}
+.ls-disc-username{font-size:10px;font-weight:600;color:var(--text2);}
 .ls-disc-time{font-size:10px;color:var(--muted);}
-.ls-disc-content{font-size:14px;color:var(--text);line-height:1.65;}
+.ls-disc-content{font-size:10px;color:var(--text);line-height:1.65;}
 .ls-disc-actions{display:flex;gap:16px;margin-top:10px;}
 .ls-disc-action{background:none;border:none;color:var(--muted);font-size:10.5px;cursor:pointer;display:flex;align-items:center;gap:4px;padding:0;transition:color .15s;}
 .ls-disc-action:hover{color:var(--gold);}
 .ls-disc-input-row{position:sticky;bottom:0;padding:12px 16px;background:rgba(14,11,8,.92);backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,.07);display:flex;gap:10px;align-items:flex-end;}
-.ls-disc-textarea{flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.10);border-radius:var(--r-lg);color:var(--text);font-size:14px;padding:10px 14px;resize:none;outline:none;font-family:'Inter',sans-serif;line-height:1.5;max-height:120px;}
+.ls-disc-textarea{flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.10);border-radius:var(--r-lg);color:var(--text);font-size:10px;padding:10px 14px;resize:none;outline:none;font-family:'Inter',sans-serif;line-height:1.5;max-height:120px;}
 .ls-disc-textarea:focus{border-color:var(--gold);}
 .ls-disc-send{width:38px;height:38px;border-radius:50%;background:var(--gold);border:none;color:#060402;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.ls-disc-empty{text-align:center;padding:48px 24px;color:var(--muted);font-size:14px;line-height:1.7;}
+.ls-disc-empty{text-align:center;padding:48px 24px;color:var(--muted);font-size:10px;line-height:1.7;}
 
 .ls-shelf-hdr-sub{font-size:13.5px;color:var(--text2);}
 .ls-shelf-gate{display:flex;flex-direction:column;align-items:center;text-align:center;padding:52px 32px;}
 .ls-shelf-gate-icon{color:var(--muted);margin-bottom:18px;opacity:.4;}
 .ls-shelf-gate-title{font-family:'Lora',serif;font-size:21.5px;font-weight:700;color:var(--text);margin-bottom:10px;}
-.ls-shelf-gate-body{font-size:14px;color:var(--text2);max-width:240px;line-height:1.72;}
+.ls-shelf-gate-body{font-size:10px;color:var(--text2);max-width:240px;line-height:1.72;}
 .ls-status-tabs{display:flex;gap:6px;padding:0 20px;margin-bottom:20px;}
-.ls-status-tab{flex:1;padding:9px 4px;border-radius:var(--r-md);border:none;background:rgba(255,255,255,.05);color:var(--muted);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer;text-align:center;transition:all .2s;}
+.ls-status-tab{flex:1;padding:9px 4px;border-radius:var(--r-md);border:none;background:rgba(255,255,255,.05);color:var(--muted);font-family:'Inter',sans-serif;font-size:10px;font-weight:600;cursor:pointer;text-align:center;transition:all .2s;}
 .ls-status-tab.on{background:rgba(212,148,26,.15);color:var(--gold);border:1px solid rgba(212,148,26,.25);}
 .ls-input-row{display:flex;gap:8px;padding:0 20px;margin-bottom:16px;}
 .ls-input-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
-.ls-input{flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(8px);border-radius:var(--r-md);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;padding:11px 14px;outline:none;transition:border-color .2s;}
+.ls-input{flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(8px);border-radius:var(--r-md);color:var(--text);font-family:'Inter',sans-serif;font-size:10px;padding:11px 14px;outline:none;transition:border-color .2s;}
 .ls-input:focus{border-color:var(--gold);}
 .ls-input::placeholder{color:var(--muted);}
 .ls-input-btn{padding:11px 16px;border-radius:var(--r-md);border:none;background:var(--gold);color:#060402;font-size:13.5px;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap;}
@@ -586,7 +586,7 @@ const CSS = `
 .ls-book-row-title{font-family:'Lora',serif;font-size:13.5px;font-weight:600;color:var(--text);line-height:1.3;}
 .ls-book-row-author{font-size:10.5px;color:var(--muted);}
 .ls-star-row{display:flex;gap:3px;margin-top:4px;}
-.ls-star{font-size:14px;color:rgba(255,255,255,.15);cursor:pointer;transition:color .12s;}
+.ls-star{font-size:10px;color:rgba(255,255,255,.15);cursor:pointer;transition:color .12s;}
 .ls-star.on{color:var(--gold);}
 .ls-remove-btn{background:transparent;border:none;color:rgba(255,255,255,.18);cursor:pointer;padding:4px 6px;transition:color .15s;display:flex;align-items:center;}
 .ls-remove-btn:hover{color:var(--rust);}
@@ -611,8 +611,8 @@ const CSS = `
 /* ── LIMIT GATE ── */
 .ls-limit{display:flex;flex-direction:column;align-items:center;text-align:center;padding:44px 24px;}
 .ls-limit-icon{color:var(--muted);margin-bottom:14px;opacity:.5;}
-.ls-limit-title{font-family:'Lora',serif;font-size:22px;font-weight:700;color:var(--text);line-height:1.25;margin-bottom:8px;}
-.ls-limit-body{font-size:14px;color:var(--text2);max-width:240px;line-height:1.72;margin-bottom:6px;}
+.ls-limit-title{font-family:'Lora',serif;font-size:16px;font-weight:700;color:var(--text);line-height:1.25;margin-bottom:8px;}
+.ls-limit-body{font-size:10px;color:var(--text2);max-width:240px;line-height:1.72;margin-bottom:6px;}
 .ls-limit-note{font-size:11.5px;color:var(--muted);margin-top:4px;}
 .ls-limit-cta{margin-top:8px;padding:14px 32px;border-radius:var(--r-pill);border:none;background:var(--gold);color:#060402;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:700;cursor:pointer;box-shadow:0 4px 24px rgba(212,148,26,.4);transition:all .25s var(--ease);}
 .ls-limit-cta:hover{background:var(--gold-r);transform:translateY(-2px);}
@@ -620,18 +620,18 @@ const CSS = `
 
 /* ── WELCOME ── */
 .ls-welcome{display:flex;flex-direction:column;align-items:center;text-align:center;padding:44px 24px 32px;}
-.ls-welcome-title{font-family:'Lora',serif;font-size:28px;font-weight:700;color:var(--text);line-height:1.2;margin-bottom:10px;}
+.ls-welcome-title{font-family:'Lora',serif;font-size:20px;font-weight:700;color:var(--text);line-height:1.2;margin-bottom:10px;}
 .ls-welcome-title em{color:var(--gold);font-style:italic;}
-.ls-welcome-sub{font-size:14px;color:var(--text2);max-width:250px;line-height:1.72;margin-bottom:8px;}
+.ls-welcome-sub{font-size:10px;color:var(--text2);max-width:250px;line-height:1.72;margin-bottom:8px;}
 
 /* ── ASK / CHAT ── */
 .ls-ask{flex:1;overflow:hidden;display:flex;flex-direction:column;}
 .ls-chat{flex:1;overflow-y:auto;padding:16px 16px 8px;display:flex;flex-direction:column;gap:14px;}
 .ls-msg{display:flex;gap:10px;align-items:flex-start;animation:fadeIn .22s ease;}
 .ls-av{width:30px;height:30px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
-.ls-av.ai{background:rgba(212,148,26,.12);border:1px solid rgba(212,148,26,.22);color:var(--gold);font-size:14px;}
+.ls-av.ai{background:rgba(212,148,26,.12);border:1px solid rgba(212,148,26,.22);color:var(--gold);font-size:10px;}
 .ls-av.user{background:rgba(255,255,255,.08);color:var(--text2);font-size:10.5px;font-weight:700;}
-.ls-bubble{padding:12px 16px;border-radius:16px;font-size:14px;line-height:1.75;max-width:calc(100% - 44px);}
+.ls-bubble{padding:12px 16px;border-radius:16px;font-size:10px;line-height:1.75;max-width:calc(100% - 44px);}
 .ls-bubble.ai{background:rgba(255,255,255,.06);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.09);color:var(--text2);border-radius:4px 16px 16px 16px;}
 .ls-bubble.ai strong{color:var(--text);font-weight:600;}
 .ls-bubble.ai h4{font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;color:var(--text2);margin:12px 0 5px;padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,.07);}
@@ -642,26 +642,26 @@ const CSS = `
 .ls-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:ldot 1.2s ease-in-out infinite;}
 .ls-dot:nth-child(2){animation-delay:.2s;}.ls-dot:nth-child(3){animation-delay:.4s;}
 @keyframes ldot{0%,60%,100%{transform:translateY(0);opacity:.3}30%{transform:translateY(-6px);opacity:1}}
-.ls-retry-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 11px;border-radius:6px;border:1px solid rgba(184,64,40,.3);background:transparent;color:var(--rust);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;align-self:flex-start;}
+.ls-retry-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 11px;border-radius:6px;border:1px solid rgba(184,64,40,.3);background:transparent;color:var(--rust);font-size:10px;font-weight:600;cursor:pointer;transition:all .15s;align-self:flex-start;}
 .ls-prompt-btn{width:100%;padding:13px 16px;border-radius:var(--r-md);border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.06);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);color:var(--text2);font-size:13.5px;font-weight:500;font-family:'Inter',sans-serif;text-align:left;cursor:pointer;transition:all .22s var(--ease);line-height:1.4;}
 .ls-prompt-btn:hover{background:rgba(212,148,26,.10);border-color:rgba(212,148,26,.35);color:var(--gold);transform:translateX(3px);}
 .ls-prompt-btn:active{transform:scale(.98);}
 /* ── ASK ENTRY — Phase 19 ── */
 .ls-ask-entry{flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 32px 40px;animation:fadeIn .4s var(--ease) both;}
-.ls-ask-entry-headline{font-family:'Lora',serif;font-size:26px;font-weight:700;color:var(--text);line-height:1.22;margin-bottom:6px;letter-spacing:-.3px;}
+.ls-ask-entry-headline{font-family:'Lora',serif;font-size:19px;font-weight:700;color:var(--text);line-height:1.22;margin-bottom:6px;letter-spacing:-.3px;}
 .ls-ask-entry-headline em{color:var(--gold);font-style:italic;}
-.ls-ask-entry-sub{font-size:14px;color:rgba(240,232,216,.48);line-height:1.65;margin-bottom:44px;}
+.ls-ask-entry-sub{font-size:10px;color:rgba(240,232,216,.48);line-height:1.65;margin-bottom:44px;}
 .ls-ask-nudge-list{display:flex;flex-direction:column;gap:24px;}
 .ls-ask-nudge{background:none;border:none;padding:0;cursor:pointer;text-align:left;display:flex;align-items:center;gap:14px;transition:all .25s var(--ease);-webkit-tap-highlight-color:transparent;}
 .ls-ask-nudge:hover .ls-ask-nudge-text{color:rgba(240,232,216,.9);transform:translateX(5px);}
 .ls-ask-nudge:hover .ls-ask-nudge-dot{background:var(--gold);box-shadow:0 0 10px rgba(198,161,91,.38);}
 .ls-ask-nudge:active .ls-ask-nudge-text{opacity:.65;}
 .ls-ask-nudge-dot{width:4px;height:4px;border-radius:50%;background:rgba(198,161,91,.32);flex-shrink:0;transition:all .25s var(--ease);margin-top:1px;}
-.ls-ask-nudge-text{font-family:'Lora',serif;font-style:italic;font-size:18px;font-weight:400;color:rgba(240,232,216,.52);line-height:1.3;transition:color .25s var(--ease),transform .25s var(--ease);letter-spacing:-.1px;}
+.ls-ask-nudge-text{font-family:'Lora',serif;font-style:italic;font-size:13px;font-weight:400;color:rgba(240,232,216,.52);line-height:1.3;transition:color .25s var(--ease),transform .25s var(--ease);letter-spacing:-.1px;}
 
 /* ── CHAT INPUT — glass ── */
 .ls-input-row-chat{display:flex;gap:9px;padding:10px 16px;border-top:1px solid rgba(255,255,255,.07);background:rgba(18,14,10,.75);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);flex-shrink:0;}
-textarea.ls-chat-input{flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.11);backdrop-filter:blur(8px);border-radius:14px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;padding:11px 14px;resize:none;outline:none;line-height:1.5;min-height:46px;max-height:110px;transition:border-color .2s;}
+textarea.ls-chat-input{flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.11);backdrop-filter:blur(8px);border-radius:14px;color:var(--text);font-family:'Inter',sans-serif;font-size:10px;padding:11px 14px;resize:none;outline:none;line-height:1.5;min-height:46px;max-height:110px;transition:border-color .2s;}
 textarea.ls-chat-input:focus{border-color:var(--gold);}
 textarea.ls-chat-input::placeholder{color:var(--muted);}
 .ls-send-btn{width:46px;height:46px;border-radius:14px;border:none;flex-shrink:0;background:var(--gold);color:#060402;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .22s var(--spring);box-shadow:0 3px 16px rgba(212,148,26,.42);}
@@ -682,16 +682,16 @@ textarea.ls-chat-input::placeholder{color:var(--muted);}
   animation:fadeIn .4s ease;
 }
 .ls-welcome-logo{margin-bottom:32px;}
-.ls-welcome-title{font-family:'Lora',serif;font-size:28px;font-weight:700;color:var(--text);line-height:1.3;margin-bottom:16px;}
+.ls-welcome-title{font-family:'Lora',serif;font-size:20px;font-weight:700;color:var(--text);line-height:1.3;margin-bottom:16px;}
 .ls-welcome-title em{color:var(--gold);font-style:italic;}
 .ls-welcome-body{font-size:14.5px;color:var(--text2);line-height:1.8;max-width:320px;margin:0 auto 32px;}
 .ls-welcome-features{display:flex;flex-direction:column;gap:14px;width:100%;max-width:320px;margin:0 auto 36px;text-align:left;}
 .ls-welcome-feature{display:flex;align-items:flex-start;gap:12px;}
 .ls-welcome-feature-icon{width:32px;height:32px;border-radius:50%;background:rgba(212,148,26,.12);border:1px solid rgba(212,148,26,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
 .ls-welcome-feature-text{flex:1;}
-.ls-welcome-feature-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px;}
-.ls-welcome-feature-desc{font-size:12px;color:var(--muted);line-height:1.5;}
-.ls-welcome-cta{width:100%;max-width:320px;padding:16px;border-radius:var(--r-lg);border:none;background:var(--gold);color:#060402;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 6px 28px rgba(212,148,26,.4);transition:all .2s;}
+.ls-welcome-feature-title{font-size:10px;font-weight:700;color:var(--text);margin-bottom:2px;}
+.ls-welcome-feature-desc{font-size:10px;color:var(--muted);line-height:1.5;}
+.ls-welcome-cta{width:100%;max-width:320px;padding:16px;border-radius:var(--r-lg);border:none;background:var(--gold);color:#060402;font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 6px 28px rgba(212,148,26,.4);transition:all .2s;}
 .ls-welcome-cta:hover{background:var(--gold-r);transform:translateY(-1px);}
 .ls-welcome-skip{margin-top:14px;background:none;border:none;color:var(--muted);font-size:13.5px;cursor:pointer;}
 
@@ -700,20 +700,20 @@ textarea.ls-chat-input::placeholder{color:var(--muted);}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .ls-modal-handle{width:40px;height:4px;border-radius:2px;background:rgba(255,255,255,.14);margin:14px auto 24px;}
 .ls-modal-eyebrow{font-size:9.5px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);margin-bottom:7px;opacity:.9;}
-.ls-modal-title{font-family:'Lora',serif;font-size:28px;font-weight:700;color:var(--text);margin-bottom:7px;line-height:1.2;}
+.ls-modal-title{font-family:'Lora',serif;font-size:20px;font-weight:700;color:var(--text);margin-bottom:7px;line-height:1.2;}
 .ls-modal-title em{color:var(--gold);font-style:italic;}
-.ls-modal-sub{font-size:14px;color:var(--text2);line-height:1.68;margin-bottom:22px;}
+.ls-modal-sub{font-size:10px;color:var(--text2);line-height:1.68;margin-bottom:22px;}
 .ls-pro-features{display:flex;flex-direction:column;gap:14px;margin-bottom:26px;}
 .ls-pro-feature{display:flex;align-items:flex-start;gap:13px;}
 .ls-pro-feat-icon{width:34px;height:34px;border-radius:var(--r-md);background:rgba(212,148,26,.12);border:1px solid rgba(212,148,26,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--gold);}
 .ls-pro-feat-text{flex:1;}
-.ls-pro-feat-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px;}
-.ls-pro-feat-desc{font-size:12px;color:var(--muted);line-height:1.62;}
+.ls-pro-feat-title{font-size:10px;font-weight:600;color:var(--text);margin-bottom:2px;}
+.ls-pro-feat-desc{font-size:10px;color:var(--muted);line-height:1.62;}
 .ls-modal-price-row{display:flex;align-items:baseline;gap:7px;margin-bottom:18px;}
-.ls-modal-price{font-family:'Lora',serif;font-size:38px;font-weight:700;color:var(--text);}
-.ls-modal-price-period{font-size:14px;color:var(--muted);}
-.ls-modal-price-note{font-size:12px;color:var(--sage);font-weight:600;}
-.ls-modal-cta{width:100%;padding:17px;border-radius:var(--r-lg);border:none;background:var(--gold);color:#060402;font-family:'Inter',sans-serif;font-size:16px;font-weight:700;cursor:pointer;margin-bottom:11px;box-shadow:0 6px 28px rgba(212,148,26,.45);transition:all .25s var(--ease);}
+.ls-modal-price{font-family:'Lora',serif;font-size:27px;font-weight:700;color:var(--text);}
+.ls-modal-price-period{font-size:10px;color:var(--muted);}
+.ls-modal-price-note{font-size:10px;color:var(--sage);font-weight:600;}
+.ls-modal-cta{width:100%;padding:17px;border-radius:var(--r-lg);border:none;background:var(--gold);color:#060402;font-family:'Inter',sans-serif;font-size:12px;font-weight:700;cursor:pointer;margin-bottom:11px;box-shadow:0 6px 28px rgba(212,148,26,.45);transition:all .25s var(--ease);}
 .ls-modal-cta:hover{background:var(--gold-r);transform:translateY(-2px);}
 .ls-modal-cta:disabled{opacity:.5;cursor:not-allowed;transform:none;}
 
@@ -725,7 +725,7 @@ textarea.ls-chat-input::placeholder{color:var(--muted);}
   background:rgba(255,255,255,.07);
   border:1px solid rgba(255,255,255,.12);
   border-radius:var(--r-md);
-  color:var(--text);font-size:14px;
+  color:var(--text);font-size:10px;
   font-family:'Inter',sans-serif;
   box-sizing:border-box;outline:none;
 }
@@ -737,9 +737,9 @@ textarea.ls-chat-input::placeholder{color:var(--muted);}
   border-radius:var(--r-md);
   margin-bottom:16px;
 }
-.ls-stripe-error{font-size:12px;color:#e06060;margin-bottom:12px;}
+.ls-stripe-error{font-size:10px;color:#e06060;margin-bottom:12px;}
 
-.ls-modal-cancel{width:100%;padding:14px;border-radius:var(--r-md);border:1px solid rgba(255,255,255,.1);background:transparent;color:var(--muted);font-size:14px;cursor:pointer;transition:all .15s;}
+.ls-modal-cancel{width:100%;padding:14px;border-radius:var(--r-md);border:1px solid rgba(255,255,255,.1);background:transparent;color:var(--muted);font-size:10px;cursor:pointer;transition:all .15s;}
 .ls-modal-cancel:hover{color:var(--text2);}
 
 /* ── AUTH MODAL — glass ── */
@@ -747,7 +747,7 @@ textarea.ls-chat-input::placeholder{color:var(--muted);}
 .ls-auth-modal{background:rgba(24,19,14,.88);backdrop-filter:blur(32px);border-radius:28px 28px 0 0;padding:8px 22px 50px;width:100%;max-width:480px;animation:slideUp .32s cubic-bezier(.32,.72,0,1);box-shadow:0 -8px 60px rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.1);border-bottom:none;}
 .ls-auth-handle{width:40px;height:4px;border-radius:2px;background:rgba(255,255,255,.14);margin:14px auto 24px;}
 .ls-auth-eyebrow{font-size:9.5px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);margin-bottom:7px;}
-.ls-auth-title{font-family:'Lora',serif;font-size:24px;font-weight:700;color:var(--text);margin-bottom:5px;line-height:1.25;}
+.ls-auth-title{font-family:'Lora',serif;font-size:17px;font-weight:700;color:var(--text);margin-bottom:5px;line-height:1.25;}
 .ls-auth-title em{color:var(--gold);font-style:italic;}
 .ls-auth-sub{font-size:13.5px;color:var(--text2);line-height:1.65;margin-bottom:22px;}
 .ls-auth-field{display:flex;flex-direction:column;gap:6px;margin-bottom:13px;}
@@ -756,7 +756,7 @@ textarea.ls-chat-input::placeholder{color:var(--muted);}
 .ls-auth-input:focus{border-color:var(--gold);}
 .ls-auth-input::placeholder{color:var(--muted);}
 .ls-auth-error{font-size:13.5px;color:var(--rust);margin-bottom:13px;padding:10px 13px;background:rgba(184,64,40,.08);border-radius:var(--r-sm);border:1px solid rgba(184,64,40,.22);}
-.ls-auth-cta{width:100%;padding:16px;border-radius:var(--r-lg);border:none;background:var(--gold);color:#060402;font-family:'Inter',sans-serif;font-size:16px;font-weight:700;cursor:pointer;margin-bottom:13px;box-shadow:0 6px 28px rgba(212,148,26,.45);transition:all .25s var(--ease);margin-top:4px;}
+.ls-auth-cta{width:100%;padding:16px;border-radius:var(--r-lg);border:none;background:var(--gold);color:#060402;font-family:'Inter',sans-serif;font-size:12px;font-weight:700;cursor:pointer;margin-bottom:13px;box-shadow:0 6px 28px rgba(212,148,26,.45);transition:all .25s var(--ease);margin-top:4px;}
 .ls-auth-cta:hover{background:var(--gold-r);transform:translateY(-2px);}
 .ls-auth-switch{text-align:center;font-size:13.5px;color:var(--text2);margin-bottom:11px;}
 .ls-auth-switch button{background:none;border:none;color:var(--gold);font-weight:600;cursor:pointer;padding:0;}
@@ -769,7 +769,7 @@ textarea.ls-chat-input::placeholder{color:var(--muted);}
 .ls-tile-modal{background:rgba(24,19,14,.88);backdrop-filter:blur(32px);border-radius:28px 28px 0 0;padding:8px 22px 52px;width:100%;max-width:480px;animation:slideUp .32s cubic-bezier(.32,.72,0,1);box-shadow:0 -8px 60px rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.1);border-bottom:none;max-height:92dvh;overflow-y:auto;}
 .ls-tile-modal-handle{width:40px;height:4px;border-radius:2px;background:rgba(255,255,255,.14);margin:14px auto 22px;}
 .ls-tile-modal-cover{width:92px;height:134px;border-radius:13px;overflow:hidden;margin:0 auto 18px;box-shadow:0 12px 40px rgba(0,0,0,.65);}
-.ls-tile-modal-title{font-family:'Lora',serif;font-size:22px;font-weight:700;color:var(--text);text-align:center;margin-bottom:4px;line-height:1.22;}
+.ls-tile-modal-title{font-family:'Lora',serif;font-size:16px;font-weight:700;color:var(--text);text-align:center;margin-bottom:4px;line-height:1.22;}
 .ls-tile-modal-author{font-size:13.5px;color:var(--muted);text-align:center;margin-bottom:22px;}
 .ls-tile-modal-cta{width:100%;padding:14px;border-radius:var(--r-lg);border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.07);backdrop-filter:blur(8px);color:var(--text2);font-family:'Inter',sans-serif;font-size:13.5px;font-weight:600;cursor:pointer;margin-bottom:10px;transition:all .2s;display:block;text-align:center;box-sizing:border-box;}
 .ls-tile-modal-cta:hover{background:rgba(255,255,255,.12);color:var(--text);}
@@ -778,7 +778,7 @@ textarea.ls-chat-input::placeholder{color:var(--muted);}
 
 /* ── WHY BLOCK ── */
 .ls-why-block{padding:12px 14px;background:rgba(255,255,255,.05);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.09);border-radius:var(--r-md);margin-bottom:14px;}
-.ls-why-label{display:flex;align-items:center;gap:7px;font-size:8px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);opacity:.82;margin-bottom:7px;}
+.ls-why-label{display:flex;align-items:center;gap:7px;font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);opacity:.82;margin-bottom:7px;}
 .ls-why-label::before{content:'';width:14px;height:1px;background:rgba(212,148,26,.5);border-radius:1px;flex-shrink:0;}
 .ls-why-reason{font-size:12.5px;line-height:1.72;color:rgba(240,232,216,.9);font-style:italic;}
 .ls-why-reason strong{color:var(--gold);font-style:normal;font-weight:600;}
@@ -941,7 +941,7 @@ textarea.ls-chat-input::placeholder{color:var(--muted);}
   flex:1;background:rgba(255,255,255,.07);
   border:1px solid rgba(255,255,255,.10);
   border-radius:var(--r-pill);
-  color:var(--text);font-family:'Inter',sans-serif;font-size:14px;
+  color:var(--text);font-family:'Inter',sans-serif;font-size:10px;
   padding:10px 16px;outline:none;transition:border-color .2s;
 }
 .ls-quick-input:focus{border-color:var(--gold);}
@@ -3298,7 +3298,7 @@ function RecommendationWheel({ books, savedBooks, onSave, onDismiss, onAsk, onTa
       {/* Eyebrow */}
       <div style={{
         textAlign:"center", paddingTop:20,
-        fontSize:12, fontWeight:700, letterSpacing:"2.8px",
+        fontSize:10, fontWeight:700, letterSpacing:"2.8px",
         textTransform:"uppercase", color:"rgba(212,148,26,.45)",
       }}>Your top pick right now</div>
 
@@ -3370,7 +3370,7 @@ function RecommendationWheel({ books, savedBooks, onSave, onDismiss, onAsk, onTa
                 <div style={{
                   position:"absolute", top:5, right:5, zIndex:3,
                   background:"rgba(10,8,6,.72)", backdropFilter:"blur(3px)",
-                  color:"var(--gold)", fontSize:11, fontWeight:700,
+                  color:"var(--gold)", fontSize:10, fontWeight:700,
                   padding:"1px 5px", borderRadius:99,
                   border:"1px solid rgba(212,148,26,.15)",
                   opacity: Math.max(0.25, 1 - Math.abs(index - pos) * 0.42),
@@ -3402,7 +3402,7 @@ function RecommendationWheel({ books, savedBooks, onSave, onDismiss, onAsk, onTa
           {/* Score badge */}
           <div style={{
             display:"inline-flex", alignItems:"center",
-            fontSize:13, fontWeight:700, letterSpacing:".3px",
+            fontSize:10, fontWeight:700, letterSpacing:".3px",
             color:"var(--gold)",
             background:"rgba(212,148,26,.09)", border:"1px solid rgba(212,148,26,.18)",
             padding:"2px 10px", borderRadius:99, marginBottom:9,
@@ -3410,13 +3410,13 @@ function RecommendationWheel({ books, savedBooks, onSave, onDismiss, onAsk, onTa
 
           {/* Title */}
           <div style={{
-            fontFamily:"'Lora',serif", fontSize:26, fontWeight:700,
+            fontFamily:"'Lora',serif", fontSize:19, fontWeight:700,
             color:"var(--text)", lineHeight:1.22, marginBottom:4, letterSpacing:"-.2px",
           }}>{activeBook.title}</div>
 
           {/* Author */}
           <div style={{
-            fontSize:18, color:"var(--muted)", fontStyle:"italic", marginBottom:10,
+            fontSize:13, color:"var(--muted)", fontStyle:"italic", marginBottom:10,
           }}>{activeBook.author}</div>
 
           {/* Why this could be your next favorite */}
@@ -3425,7 +3425,7 @@ function RecommendationWheel({ books, savedBooks, onSave, onDismiss, onAsk, onTa
             marginBottom:18, textAlign:"left",
           }}>
             <div style={{
-              fontSize:12, fontWeight:700, letterSpacing:"2px",
+              fontSize:10, fontWeight:700, letterSpacing:"2px",
               textTransform:"uppercase", color:"var(--gold)", opacity:.88,
               marginBottom:9, display:"flex", alignItems:"center", gap:7,
             }}>
@@ -3433,7 +3433,7 @@ function RecommendationWheel({ books, savedBooks, onSave, onDismiss, onAsk, onTa
               Why this could be your next favorite
             </div>
             <div style={{
-              fontSize:15, color:"rgba(240,232,216,.88)",
+              fontSize:11, color:"rgba(240,232,216,.88)",
               lineHeight:1.65, fontStyle:"italic",
               display:"-webkit-box", WebkitLineClamp:4,
               WebkitBoxOrient:"vertical", overflow:"hidden",
@@ -3451,7 +3451,7 @@ function RecommendationWheel({ books, savedBooks, onSave, onDismiss, onAsk, onTa
                     padding:"9px 24px", borderRadius:99, border:"none",
                     background: saved ? "rgba(212,148,26,.1)" : "var(--gold)",
                     color: saved ? "var(--gold)" : "#0a0806",
-                    fontSize:20, fontWeight:700,
+                    fontSize:14, fontWeight:700,
                     cursor: saved ? "default" : "pointer",
                     transition:"all .2s",
                     ...(saved
@@ -3466,7 +3466,7 @@ function RecommendationWheel({ books, savedBooks, onSave, onDismiss, onAsk, onTa
               style={{
                 padding:"9px 16px", borderRadius:99,
                 border:"1px solid rgba(255,255,255,.12)", background:"transparent",
-                color:"var(--muted)", fontSize:19, fontWeight:500,
+                color:"var(--muted)", fontSize:14, fontWeight:500,
                 cursor:"pointer", transition:"all .15s",
               }}
             >Not for me</button>
@@ -3673,7 +3673,7 @@ function ForYouItem({ book, userState, savedBooks, onSave, onDismiss, onAsk, onR
       {/* Score badge — top right */}
       <div style={{
         position:"absolute", top:16, right:16, zIndex:3,
-        fontSize:15, fontWeight:700, color:"var(--gold)",
+        fontSize:11, fontWeight:700, color:"var(--gold)",
         background:"rgba(10,8,6,.75)", backdropFilter:"blur(8px)",
         WebkitBackdropFilter:"blur(8px)",
         padding:"3px 10px", borderRadius:99,
@@ -3684,18 +3684,18 @@ function ForYouItem({ book, userState, savedBooks, onSave, onDismiss, onAsk, onR
       <div style={{ position:"relative", zIndex:2, padding:"0 22px 32px" }}>
 
         <div style={{
-          fontFamily:"'Lora',serif", fontSize:39, fontWeight:700,
+          fontFamily:"'Lora',serif", fontSize:28, fontWeight:700,
           color:"#fff", lineHeight:1.15, marginBottom:4, letterSpacing:"-.4px",
           textShadow:"0 2px 20px rgba(0,0,0,.5)",
         }}>{book.title}</div>
 
         <div style={{
-          fontSize:21, color:"rgba(255,255,255,.65)",
+          fontSize:15, color:"rgba(255,255,255,.65)",
           fontStyle:"italic", marginBottom:16,
         }}>{book.author}</div>
 
         <div style={{
-          fontSize:22, fontWeight:600, color:"rgba(255,255,255,.95)",
+          fontSize:16, fontWeight:600, color:"rgba(255,255,255,.95)",
           lineHeight:1.45, marginBottom:14,
           textShadow:"0 1px 12px rgba(0,0,0,.4)",
         }}>{hook}</div>
@@ -3703,14 +3703,14 @@ function ForYouItem({ book, userState, savedBooks, onSave, onDismiss, onAsk, onR
         {showPitch ? (
           <div
             style={{
-              fontSize:20, color:"rgba(255,255,255,.82)",
+              fontSize:14, color:"rgba(255,255,255,.82)",
               lineHeight:1.7, marginBottom:18, fontStyle:"italic",
               textShadow:"0 1px 8px rgba(0,0,0,.4)",
             }}
             onClick={() => setShowPitch(false)}
           >
             {pitch}
-            <span style={{display:"block",marginTop:8,fontSize:16,color:"rgba(212,148,26,.7)",fontStyle:"normal"}}>Tap to collapse</span>
+            <span style={{display:"block",marginTop:8,fontSize:12,color:"rgba(212,148,26,.7)",fontStyle:"normal"}}>Tap to collapse</span>
           </div>
         ) : (
           <button
@@ -3718,7 +3718,7 @@ function ForYouItem({ book, userState, savedBooks, onSave, onDismiss, onAsk, onR
             style={{
               display:"flex", alignItems:"center", gap:6,
               background:"none", border:"none",
-              color:"rgba(212,148,26,.85)", fontSize:19, fontWeight:600,
+              color:"rgba(212,148,26,.85)", fontSize:14, fontWeight:600,
               cursor:"pointer", padding:0, marginBottom:18,
             }}
           >
@@ -3734,7 +3734,7 @@ function ForYouItem({ book, userState, savedBooks, onSave, onDismiss, onAsk, onR
               flex:2, padding:"13px 0", borderRadius:12, border:"none",
               background: isSaved ? "rgba(212,148,26,.15)" : "var(--gold)",
               color: isSaved ? "var(--gold)" : "#060402",
-              fontSize:21, fontWeight:700,
+              fontSize:15, fontWeight:700,
               cursor: isSaved ? "default" : "pointer",
               transition:"all .18s",
               boxShadow: isSaved ? "none" : "0 4px 20px rgba(212,148,26,.4)",
@@ -3748,7 +3748,7 @@ function ForYouItem({ book, userState, savedBooks, onSave, onDismiss, onAsk, onR
               flex:1, padding:"13px 0", borderRadius:12,
               border:"1px solid rgba(255,255,255,.22)", background:"rgba(0,0,0,.3)",
               backdropFilter:"blur(8px)", WebkitBackdropFilter:"blur(8px)",
-              color:"rgba(255,255,255,.7)", fontSize:20, fontWeight:500,
+              color:"rgba(255,255,255,.7)", fontSize:14, fontWeight:500,
               cursor:"pointer",
             }}
           >Not for me</button>
@@ -3759,7 +3759,7 @@ function ForYouItem({ book, userState, savedBooks, onSave, onDismiss, onAsk, onR
           style={{
             display:"block", width:"100%", marginTop:12, padding:"6px 0",
             background:"none", border:"none",
-            color:"rgba(255,255,255,.35)", fontSize:17,
+            color:"rgba(255,255,255,.35)", fontSize:12,
             cursor:"pointer", textAlign:"center",
           }}
         >Ask about this book →</button>
@@ -3965,7 +3965,7 @@ function BookSearch({ onSelect, placeholder = "Search for a book...", mode = "ra
             placeholder={placeholder}
           />
           {loading && (
-            <div style={{position:"absolute",right:10,top:"50%",transform:"translateY(-50%)",fontSize:16,color:"var(--muted)"}}>
+            <div style={{position:"absolute",right:10,top:"50%",transform:"translateY(-50%)",fontSize:12,color:"var(--muted)"}}>
               Searching…
             </div>
           )}
@@ -3986,7 +3986,7 @@ function BookSearch({ onSelect, placeholder = "Search for a book...", mode = "ra
               padding:"7px 12px",
               background:"rgba(212,148,26,.07)",
               borderBottom:"1px solid rgba(255,255,255,.06)",
-              fontSize:16, color:"var(--muted)",
+              fontSize:12, color:"var(--muted)",
             }}>
               Showing results for{" "}
               <span style={{color:"var(--gold)",fontWeight:600,fontStyle:"italic"}}>{didYouMean}</span>
@@ -4016,10 +4016,10 @@ function BookSearch({ onSelect, placeholder = "Search for a book...", mode = "ra
                     : <div style={{width:"100%",height:"100%",background:"var(--lift)"}}/>}
                 </div>
                 <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontFamily:"'Lora',serif",fontSize:19,fontWeight:600,color:"var(--text)",lineHeight:1.25,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{doc.title}</div>
-                  <div style={{fontSize:16,color:"var(--muted)",fontStyle:"italic",marginTop:1}}>{doc.author_name?.[0] || "Unknown"}{doc.first_publish_year ? ` · ${doc.first_publish_year}` : ""}</div>
+                  <div style={{fontFamily:"'Lora',serif",fontSize:14,fontWeight:600,color:"var(--text)",lineHeight:1.25,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{doc.title}</div>
+                  <div style={{fontSize:12,color:"var(--muted)",fontStyle:"italic",marginTop:1}}>{doc.author_name?.[0] || "Unknown"}{doc.first_publish_year ? ` · ${doc.first_publish_year}` : ""}</div>
                 </div>
-                <div style={{fontSize:15,color: isTopMatch ? "var(--gold)" : "var(--muted)",fontWeight:600,flexShrink:0}}>{mode==="want"?"+ Add":"Rate →"}</div>
+                <div style={{fontSize:11,color: isTopMatch ? "var(--gold)" : "var(--muted)",fontWeight:600,flexShrink:0}}>{mode==="want"?"+ Add":"Rate →"}</div>
               </div>
             );
           })}
@@ -4033,20 +4033,20 @@ function BookSearch({ onSelect, placeholder = "Search for a book...", mode = "ra
           background:"var(--card2)",borderRadius:10,
           border:"1px solid rgba(212,148,26,.2)",
         }}>
-          <div style={{fontFamily:"'Lora',serif",fontSize:20,fontWeight:600,color:"var(--text)",marginBottom:1}}>{pending.title}</div>
-          <div style={{fontSize:16,color:"var(--muted)",fontStyle:"italic",marginBottom:10}}>{pending.author}</div>
-          <div style={{fontSize:17,color:"var(--text2)",marginBottom:8}}>How would you rate it?</div>
+          <div style={{fontFamily:"'Lora',serif",fontSize:14,fontWeight:600,color:"var(--text)",marginBottom:1}}>{pending.title}</div>
+          <div style={{fontSize:12,color:"var(--muted)",fontStyle:"italic",marginBottom:10}}>{pending.author}</div>
+          <div style={{fontSize:12,color:"var(--text2)",marginBottom:8}}>How would you rate it?</div>
           <div style={{display:"flex",gap:4,alignItems:"center",marginBottom:10}}>
             {[1,2,3,4,5].map(s=>(
               <span key={s} onClick={()=>confirmRate(s)}
-                style={{fontSize:39,cursor:"pointer",color:"var(--gold)",transition:"transform .1s"}}
+                style={{fontSize:28,cursor:"pointer",color:"var(--gold)",transition:"transform .1s"}}
                 onMouseEnter={e=>e.target.style.transform="scale(1.25)"}
                 onMouseLeave={e=>e.target.style.transform="scale(1)"}
               >★</span>
             ))}
           </div>
           <button onClick={()=>setPending(null)}
-            style={{fontSize:16,color:"var(--muted)",background:"none",border:"none",cursor:"pointer",padding:0}}>
+            style={{fontSize:12,color:"var(--muted)",background:"none",border:"none",cursor:"pointer",padding:0}}>
             Cancel
           </button>
         </div>
@@ -4130,27 +4130,27 @@ Reason: verbatim phrase max 8 words, or empty string. Author: extract only if cl
 
   if (phase==="confirming"&&books.length>0) return (
     <div style={{margin:"0 0 20px",padding:"16px",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.09)",borderRadius:"var(--r-lg)"}}>
-      <div style={{fontSize:16,fontWeight:700,letterSpacing:"2px",textTransform:"uppercase",color:"var(--gold)",marginBottom:14}}>Found {books.length} book{books.length!==1?"s":""}</div>
+      <div style={{fontSize:12,fontWeight:700,letterSpacing:"2px",textTransform:"uppercase",color:"var(--gold)",marginBottom:14}}>Found {books.length} book{books.length!==1?"s":""}</div>
       <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:16}}>
         {books.map(b=>{ const meta=VSI_META[b.reaction]||VSI_META.liked; return (
           <div key={b.id} style={{display:"flex",alignItems:"flex-start",gap:10,padding:"10px 12px",background:"rgba(255,255,255,.04)",borderRadius:"var(--r-md)",border:"1px solid rgba(255,255,255,.07)"}}>
             <div style={{flex:1,minWidth:0}}>
-              <div style={{fontFamily:"'Lora',serif",fontSize:20,fontWeight:700,color:"var(--text)",lineHeight:1.25,marginBottom:2}}>{b.title}</div>
-              {b.author&&<div style={{fontSize:16,color:"var(--muted)",marginBottom:5}}>{b.author}</div>}
+              <div style={{fontFamily:"'Lora',serif",fontSize:14,fontWeight:700,color:"var(--text)",lineHeight:1.25,marginBottom:2}}>{b.title}</div>
+              {b.author&&<div style={{fontSize:12,color:"var(--muted)",marginBottom:5}}>{b.author}</div>}
               <div style={{display:"flex",alignItems:"center",gap:7,flexWrap:"wrap"}}>
-                <button onClick={()=>cycleReaction(b.id)} style={{padding:"3px 9px",borderRadius:99,border:"none",background:meta.bg,color:meta.color,fontSize:16,fontWeight:600,cursor:"pointer"}}>
+                <button onClick={()=>cycleReaction(b.id)} style={{padding:"3px 9px",borderRadius:99,border:"none",background:meta.bg,color:meta.color,fontSize:12,fontWeight:600,cursor:"pointer"}}>
                   {meta.label} ↻
                 </button>
-                {b.reason&&<span style={{fontSize:16,color:"var(--muted)",fontStyle:"italic"}}>{b.reason}</span>}
+                {b.reason&&<span style={{fontSize:12,color:"var(--muted)",fontStyle:"italic"}}>{b.reason}</span>}
               </div>
             </div>
-            <button onClick={()=>removeBook(b.id)} style={{background:"none",border:"none",color:"var(--muted)",cursor:"pointer",padding:"2px 4px",flexShrink:0,fontSize:24,lineHeight:1}}>×</button>
+            <button onClick={()=>removeBook(b.id)} style={{background:"none",border:"none",color:"var(--muted)",cursor:"pointer",padding:"2px 4px",flexShrink:0,fontSize:17,lineHeight:1}}>×</button>
           </div>
         );})}
       </div>
       <div style={{display:"flex",gap:8}}>
-        <button onClick={confirmAdd} style={{flex:1,padding:"11px",borderRadius:"var(--r-lg)",border:"none",background:"var(--gold)",color:"#060402",fontSize:20,fontWeight:700,cursor:"pointer"}}>Add {books.length} book{books.length!==1?"s":""} to shelf</button>
-        <button onClick={()=>{setPhase("idle");setBooks([]);}} style={{padding:"11px 14px",borderRadius:"var(--r-lg)",border:"1px solid rgba(255,255,255,.1)",background:"transparent",color:"var(--muted)",fontSize:20,cursor:"pointer"}}>Cancel</button>
+        <button onClick={confirmAdd} style={{flex:1,padding:"11px",borderRadius:"var(--r-lg)",border:"none",background:"var(--gold)",color:"#060402",fontSize:14,fontWeight:700,cursor:"pointer"}}>Add {books.length} book{books.length!==1?"s":""} to shelf</button>
+        <button onClick={()=>{setPhase("idle");setBooks([]);}} style={{padding:"11px 14px",borderRadius:"var(--r-lg)",border:"1px solid rgba(255,255,255,.1)",background:"transparent",color:"var(--muted)",fontSize:14,cursor:"pointer"}}>Cancel</button>
       </div>
     </div>
   );
@@ -4160,8 +4160,8 @@ Reason: verbatim phrase max 8 words, or empty string. Author: extract only if cl
       <div style={{width:52,height:52,borderRadius:"50%",background:"rgba(212,148,26,.18)",border:"2px solid rgba(212,148,26,.5)",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 12px",animation:"micPulse 1.2s ease-in-out infinite"}}>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
       </div>
-      <div style={{fontSize:20,color:"var(--text2)",lineHeight:1.6,marginBottom:16}}>Listening…<br/><span style={{fontSize:18,color:"var(--muted)"}}>Tell me what you've read and what you thought of each one.</span></div>
-      <button onClick={stopListening} style={{padding:"9px 22px",borderRadius:"var(--r-pill)",border:"1px solid rgba(212,148,26,.4)",background:"transparent",color:"var(--gold)",fontSize:18,fontWeight:600,cursor:"pointer"}}>Done</button>
+      <div style={{fontSize:14,color:"var(--text2)",lineHeight:1.6,marginBottom:16}}>Listening…<br/><span style={{fontSize:13,color:"var(--muted)"}}>Tell me what you've read and what you thought of each one.</span></div>
+      <button onClick={stopListening} style={{padding:"9px 22px",borderRadius:"var(--r-pill)",border:"1px solid rgba(212,148,26,.4)",background:"transparent",color:"var(--gold)",fontSize:13,fontWeight:600,cursor:"pointer"}}>Done</button>
     </div>
   );
 
@@ -4170,7 +4170,7 @@ Reason: verbatim phrase max 8 words, or empty string. Author: extract only if cl
       <div style={{display:"flex",gap:5,justifyContent:"center",marginBottom:10}}>
         {[0,1,2].map(i=><div key={i} className="ls-dot" style={{animationDelay:`${i*0.18}s`}}/>)}
       </div>
-      <div style={{fontSize:18,color:"var(--muted)"}}>Reading your response…</div>
+      <div style={{fontSize:13,color:"var(--muted)"}}>Reading your response…</div>
     </div>
   );
 
@@ -4184,10 +4184,10 @@ Reason: verbatim phrase max 8 words, or empty string. Author: extract only if cl
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
         </div>
         <div style={{flex:1}}>
-          <div style={{fontSize:20,fontWeight:600,color:"var(--text)",marginBottom:2}}>Tell me what you've read</div>
-          <div style={{fontSize:17,color:"var(--muted)",lineHeight:1.45}}>Speak naturally — titles, what you liked, what you didn't finish.</div>
+          <div style={{fontSize:14,fontWeight:600,color:"var(--text)",marginBottom:2}}>Tell me what you've read</div>
+          <div style={{fontSize:12,color:"var(--muted)",lineHeight:1.45}}>Speak naturally — titles, what you liked, what you didn't finish.</div>
         </div>
-        {errMsg&&<div style={{fontSize:16,color:"#e07060",textAlign:"right",maxWidth:130,lineHeight:1.4}}>{errMsg}</div>}
+        {errMsg&&<div style={{fontSize:12,color:"#e07060",textAlign:"right",maxWidth:130,lineHeight:1.4}}>{errMsg}</div>}
       </button>
     </div>
   );
@@ -4332,9 +4332,9 @@ author: extract only if clearly visible on spine, else empty string.`,
     const included = books.filter(b => b.included);
     return (
       <div style={{ margin:"0 0 20px", padding:"16px", background:"rgba(255,255,255,.04)", border:"1px solid rgba(255,255,255,.09)", borderRadius:"var(--r-lg)" }}>
-        <div style={{ fontSize:16, fontWeight:700, letterSpacing:"2px", textTransform:"uppercase", color:"var(--gold)", marginBottom:4 }}>One last thing</div>
-        <div style={{ fontFamily:"'Lora',serif", fontSize:26, fontWeight:700, color:"var(--text)", marginBottom:4 }}>Which of these did you enjoy?</div>
-        <div style={{ fontSize:18, color:"var(--muted)", marginBottom:16 }}>Tap once for liked · twice for loved · again to clear</div>
+        <div style={{ fontSize:12, fontWeight:700, letterSpacing:"2px", textTransform:"uppercase", color:"var(--gold)", marginBottom:4 }}>One last thing</div>
+        <div style={{ fontFamily:"'Lora',serif", fontSize:19, fontWeight:700, color:"var(--text)", marginBottom:4 }}>Which of these did you enjoy?</div>
+        <div style={{ fontSize:13, color:"var(--muted)", marginBottom:16 }}>Tap once for liked · twice for loved · again to clear</div>
         <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(80px, 1fr))", gap:10, marginBottom:18 }}>
           {included.map(b => {
             const feel = enjoyed[b.id];
@@ -4343,21 +4343,21 @@ author: extract only if clearly visible on spine, else empty string.`,
                 <div style={{ position:"relative", width:"100%", aspectRatio:"2/3", borderRadius:8, overflow:"hidden", marginBottom:5, boxShadow:"0 4px 16px rgba(0,0,0,.45)", border: feel ? `2px solid ${feel==="loved"?"var(--gold)":"rgba(255,255,255,.3)"}` : "2px solid transparent", transition:"border-color .15s" }}>
                   <BookCover isbn={b.isbn} title={b.title} author={b.author} color={b.color} className="fill"/>
                   {feel && (
-                    <div style={{ position:"absolute", top:4, right:4, width:20, height:20, borderRadius:"50%", background: feel==="loved" ? "var(--gold)" : "rgba(255,255,255,.85)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, fontWeight:700, color:"#060402" }}>
+                    <div style={{ position:"absolute", top:4, right:4, width:20, height:20, borderRadius:"50%", background: feel==="loved" ? "var(--gold)" : "rgba(255,255,255,.85)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:700, color:"#060402" }}>
                       {feel==="loved" ? "★" : "✓"}
                     </div>
                   )}
                 </div>
-                <div style={{ fontSize:15, color: feel ? "var(--text)" : "var(--muted)", lineHeight:1.3, overflow:"hidden", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical" }}>{b.title}</div>
+                <div style={{ fontSize:11, color: feel ? "var(--text)" : "var(--muted)", lineHeight:1.3, overflow:"hidden", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical" }}>{b.title}</div>
               </div>
             );
           })}
         </div>
         <div style={{ display:"flex", gap:8 }}>
-          <button onClick={confirmAll} style={{ flex:1, padding:"11px", borderRadius:"var(--r-lg)", border:"none", background:"var(--gold)", color:"#060402", fontSize:20, fontWeight:700, cursor:"pointer" }}>
+          <button onClick={confirmAll} style={{ flex:1, padding:"11px", borderRadius:"var(--r-lg)", border:"none", background:"var(--gold)", color:"#060402", fontSize:14, fontWeight:700, cursor:"pointer" }}>
             Add {included.length} book{included.length!==1?"s":""} to shelf
           </button>
-          <button onClick={() => setPhase("review")} style={{ padding:"11px 14px", borderRadius:"var(--r-lg)", border:"1px solid rgba(255,255,255,.1)", background:"transparent", color:"var(--muted)", fontSize:20, cursor:"pointer" }}>Back</button>
+          <button onClick={() => setPhase("review")} style={{ padding:"11px 14px", borderRadius:"var(--r-lg)", border:"1px solid rgba(255,255,255,.1)", background:"transparent", color:"var(--muted)", fontSize:14, cursor:"pointer" }}>Back</button>
         </div>
       </div>
     );
@@ -4379,16 +4379,16 @@ author: extract only if clearly visible on spine, else empty string.`,
           <input
             value={b.title}
             onChange={e => editTitle(b.id, e.target.value)}
-            style={{ width:"100%", background:"transparent", border:"none", outline:"none", fontFamily:"'Lora',serif", fontSize:19, fontWeight:700, color:"var(--text)", padding:0, lineHeight:1.25, marginBottom:2 }}
+            style={{ width:"100%", background:"transparent", border:"none", outline:"none", fontFamily:"'Lora',serif", fontSize:14, fontWeight:700, color:"var(--text)", padding:0, lineHeight:1.25, marginBottom:2 }}
           />
-          {b.author && <div style={{ fontSize:16, color:"var(--muted)" }}>{b.author}</div>}
-          {b.note && <div style={{ fontSize:15, color:"#d4941a88", marginTop:2 }}>{b.note}</div>}
+          {b.author && <div style={{ fontSize:12, color:"var(--muted)" }}>{b.author}</div>}
+          {b.note && <div style={{ fontSize:11, color:"#d4941a88", marginTop:2 }}>{b.note}</div>}
         </div>
         <div style={{ display:"flex", gap:5, flexShrink:0 }}>
-          <button onClick={() => toggleInclude(b.id)} style={{ width:26, height:26, borderRadius:"50%", border:`1.5px solid ${b.included?"var(--gold)":"rgba(255,255,255,.15)"}`, background: b.included ? "var(--gold)" : "transparent", color: b.included ? "#060402" : "var(--muted)", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", fontSize:18, fontWeight:700 }}>
+          <button onClick={() => toggleInclude(b.id)} style={{ width:26, height:26, borderRadius:"50%", border:`1.5px solid ${b.included?"var(--gold)":"rgba(255,255,255,.15)"}`, background: b.included ? "var(--gold)" : "transparent", color: b.included ? "#060402" : "var(--muted)", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", fontSize:13, fontWeight:700 }}>
             {b.included ? "✓" : "+"}
           </button>
-          <button onClick={() => removeBook(b.id)} style={{ width:26, height:26, borderRadius:"50%", border:"1px solid rgba(255,255,255,.1)", background:"transparent", color:"var(--muted)", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", fontSize:21 }}>×</button>
+          <button onClick={() => removeBook(b.id)} style={{ width:26, height:26, borderRadius:"50%", border:"1px solid rgba(255,255,255,.1)", background:"transparent", color:"var(--muted)", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", fontSize:15 }}>×</button>
         </div>
       </div>
     );
@@ -4399,30 +4399,30 @@ author: extract only if clearly visible on spine, else empty string.`,
 
         {confident.length > 0 && (
           <div style={{ marginBottom:14 }}>
-            <div style={{ fontSize:15, fontWeight:700, letterSpacing:"1.5px", textTransform:"uppercase", color:"var(--gold)", marginBottom:8 }}>Confident — {confident.length} found</div>
+            <div style={{ fontSize:11, fontWeight:700, letterSpacing:"1.5px", textTransform:"uppercase", color:"var(--gold)", marginBottom:8 }}>Confident — {confident.length} found</div>
             <div style={{ display:"flex", flexDirection:"column", gap:6 }}>{confident.map(b => <BookReviewCard key={b.id} b={b}/>)}</div>
           </div>
         )}
 
         {needsReview.length > 0 && (
           <div style={{ marginBottom:14 }}>
-            <div style={{ fontSize:15, fontWeight:700, letterSpacing:"1.5px", textTransform:"uppercase", color:"var(--muted)", marginBottom:8 }}>Double-check these</div>
+            <div style={{ fontSize:11, fontWeight:700, letterSpacing:"1.5px", textTransform:"uppercase", color:"var(--muted)", marginBottom:8 }}>Double-check these</div>
             <div style={{ display:"flex", flexDirection:"column", gap:6 }}>{needsReview.map(b => <BookReviewCard key={b.id} b={b}/>)}</div>
           </div>
         )}
 
         {unknown.length > 0 && (
           <div style={{ marginBottom:14 }}>
-            <div style={{ fontSize:15, fontWeight:700, letterSpacing:"1.5px", textTransform:"uppercase", color:"rgba(255,255,255,.25)", marginBottom:8 }}>Unclear</div>
+            <div style={{ fontSize:11, fontWeight:700, letterSpacing:"1.5px", textTransform:"uppercase", color:"rgba(255,255,255,.25)", marginBottom:8 }}>Unclear</div>
             <div style={{ display:"flex", flexDirection:"column", gap:6 }}>{unknown.map(b => <BookReviewCard key={b.id} b={b}/>)}</div>
           </div>
         )}
 
         <div style={{ display:"flex", gap:8, marginTop:4 }}>
-          <button onClick={proceedToEnjoy} disabled={includedCount === 0} style={{ flex:1, padding:"11px", borderRadius:"var(--r-lg)", border:"none", background: includedCount > 0 ? "var(--gold)" : "rgba(255,255,255,.08)", color: includedCount > 0 ? "#060402" : "var(--muted)", fontSize:20, fontWeight:700, cursor: includedCount > 0 ? "pointer" : "default" }}>
+          <button onClick={proceedToEnjoy} disabled={includedCount === 0} style={{ flex:1, padding:"11px", borderRadius:"var(--r-lg)", border:"none", background: includedCount > 0 ? "var(--gold)" : "rgba(255,255,255,.08)", color: includedCount > 0 ? "#060402" : "var(--muted)", fontSize:14, fontWeight:700, cursor: includedCount > 0 ? "pointer" : "default" }}>
             Continue with {includedCount} book{includedCount!==1?"s":""}
           </button>
-          <button onClick={() => { setPhase("idle"); setBooks([]); setPreview(null); }} style={{ padding:"11px 14px", borderRadius:"var(--r-lg)", border:"1px solid rgba(255,255,255,.1)", background:"transparent", color:"var(--muted)", fontSize:20, cursor:"pointer" }}>Cancel</button>
+          <button onClick={() => { setPhase("idle"); setBooks([]); setPreview(null); }} style={{ padding:"11px 14px", borderRadius:"var(--r-lg)", border:"1px solid rgba(255,255,255,.1)", background:"transparent", color:"var(--muted)", fontSize:14, cursor:"pointer" }}>Cancel</button>
         </div>
       </div>
     );
@@ -4435,7 +4435,7 @@ author: extract only if clearly visible on spine, else empty string.`,
         {preview && <img src={preview} alt="" style={{ width:"100%", height:160, objectFit:"cover", opacity:.4 }}/>}
         <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:10 }}>
           <div style={{ display:"flex", gap:5 }}>{[0,1,2].map(i=><div key={i} className="ls-dot" style={{ animationDelay:`${i*0.18}s` }}/>)}</div>
-          <div style={{ fontSize:18, color:"var(--text2)", fontWeight:500 }}>Reading your shelf…</div>
+          <div style={{ fontSize:13, color:"var(--text2)", fontWeight:500 }}>Reading your shelf…</div>
         </div>
       </div>
     );
@@ -4455,10 +4455,10 @@ author: extract only if clearly visible on spine, else empty string.`,
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--text2)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
         </div>
         <div style={{ flex:1 }}>
-          <div style={{ fontSize:20, fontWeight:600, color:"var(--text)", marginBottom:2 }}>Scan your bookshelf</div>
-          <div style={{ fontSize:17, color:"var(--muted)", lineHeight:1.45 }}>Take a photo — we'll find the books automatically.</div>
+          <div style={{ fontSize:14, fontWeight:600, color:"var(--text)", marginBottom:2 }}>Scan your bookshelf</div>
+          <div style={{ fontSize:12, color:"var(--muted)", lineHeight:1.45 }}>Take a photo — we'll find the books automatically.</div>
         </div>
-        {errMsg && <div style={{ fontSize:16, color:"#e07060", textAlign:"right", maxWidth:120, lineHeight:1.4 }}>{errMsg}</div>}
+        {errMsg && <div style={{ fontSize:12, color:"#e07060", textAlign:"right", maxWidth:120, lineHeight:1.4 }}>{errMsg}</div>}
       </button>
     </div>
   );
@@ -4477,24 +4477,24 @@ function LinkCard({ card, onDismiss, onReact, onConsider }) {
   if (card.phase === "loading") return (
     <div style={{ margin:"0 16px 8px", padding:"12px 14px", background:"rgba(255,255,255,.05)", border:"1px solid rgba(255,255,255,.09)", borderRadius:"var(--r-lg)", display:"flex", alignItems:"center", gap:10 }}>
       <div style={{ display:"flex", gap:4 }}>{[0,1,2].map(i=><div key={i} className="ls-dot" style={{ width:5, height:5, animationDelay:`${i*0.18}s` }}/>)}</div>
-      <div style={{ fontSize:18, color:"var(--muted)" }}>Looking up that book…</div>
-      <button onClick={onDismiss} style={{ marginLeft:"auto", background:"none", border:"none", color:"var(--muted)", cursor:"pointer", fontSize:24, lineHeight:1 }}>×</button>
+      <div style={{ fontSize:13, color:"var(--muted)" }}>Looking up that book…</div>
+      <button onClick={onDismiss} style={{ marginLeft:"auto", background:"none", border:"none", color:"var(--muted)", cursor:"pointer", fontSize:17, lineHeight:1 }}>×</button>
     </div>
   );
 
   if (card.phase === "reacting") return (
     <div style={{ margin:"0 16px 8px", padding:"12px 14px", background:"rgba(255,255,255,.05)", border:"1px solid rgba(255,255,255,.09)", borderRadius:"var(--r-lg)" }}>
-      <div style={{ fontFamily:"'Lora',serif", fontSize:20, fontWeight:700, color:"var(--text)", marginBottom:2 }}>{card.book?.title}</div>
-      {card.book?.author && <div style={{ fontSize:16, color:"var(--muted)", marginBottom:10 }}>{card.book.author}</div>}
-      <div style={{ fontSize:17, color:"var(--text2)", marginBottom:9 }}>How was it?</div>
+      <div style={{ fontFamily:"'Lora',serif", fontSize:14, fontWeight:700, color:"var(--text)", marginBottom:2 }}>{card.book?.title}</div>
+      {card.book?.author && <div style={{ fontSize:12, color:"var(--muted)", marginBottom:10 }}>{card.book.author}</div>}
+      <div style={{ fontSize:12, color:"var(--text2)", marginBottom:9 }}>How was it?</div>
       <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
         {LC_REACTIONS.map(r => (
-          <button key={r.key} onClick={() => onReact(r.key)} style={{ padding:"5px 11px", borderRadius:99, border:"none", background:r.bg, color:r.color, fontSize:17, fontWeight:600, cursor:"pointer" }}>
+          <button key={r.key} onClick={() => onReact(r.key)} style={{ padding:"5px 11px", borderRadius:99, border:"none", background:r.bg, color:r.color, fontSize:12, fontWeight:600, cursor:"pointer" }}>
             {r.label}
           </button>
         ))}
       </div>
-      <button onClick={onDismiss} style={{ marginTop:8, background:"none", border:"none", color:"var(--muted)", fontSize:16, cursor:"pointer", padding:0 }}>Dismiss</button>
+      <button onClick={onDismiss} style={{ marginTop:8, background:"none", border:"none", color:"var(--muted)", fontSize:12, cursor:"pointer", padding:0 }}>Dismiss</button>
     </div>
   );
 
@@ -4507,16 +4507,16 @@ function LinkCard({ card, onDismiss, onReact, onConsider }) {
           <BookCover isbn={book?.isbn||""} title={book?.title||""} author={book?.author||""} color={["#1e1408","#0e0c06"]} className="fill"/>
         </div>
         <div style={{ flex:1, minWidth:0 }}>
-          <div style={{ fontFamily:"'Lora',serif", fontSize:20, fontWeight:700, color:"var(--text)", lineHeight:1.25, marginBottom:2, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{book?.title || "Unknown book"}</div>
-          {book?.author && <div style={{ fontSize:16, color:"var(--muted)", marginBottom:4 }}>{book.author}</div>}
-          {book?.description && <div style={{ fontSize:17, color:"var(--text2)", lineHeight:1.45 }}>{book.description}</div>}
+          <div style={{ fontFamily:"'Lora',serif", fontSize:14, fontWeight:700, color:"var(--text)", lineHeight:1.25, marginBottom:2, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{book?.title || "Unknown book"}</div>
+          {book?.author && <div style={{ fontSize:12, color:"var(--muted)", marginBottom:4 }}>{book.author}</div>}
+          {book?.description && <div style={{ fontSize:12, color:"var(--text2)", lineHeight:1.45 }}>{book.description}</div>}
         </div>
-        <button onClick={onDismiss} style={{ alignSelf:"flex-start", background:"none", border:"none", color:"var(--muted)", cursor:"pointer", fontSize:24, lineHeight:1, flexShrink:0 }}>×</button>
+        <button onClick={onDismiss} style={{ alignSelf:"flex-start", background:"none", border:"none", color:"var(--muted)", cursor:"pointer", fontSize:17, lineHeight:1, flexShrink:0 }}>×</button>
       </div>
-      <div style={{ fontSize:18, color:"var(--text2)", marginBottom:8, fontWeight:500 }}>Did you read this or are you considering it?</div>
+      <div style={{ fontSize:13, color:"var(--text2)", marginBottom:8, fontWeight:500 }}>Did you read this or are you considering it?</div>
       <div style={{ display:"flex", gap:7 }}>
-        <button onClick={() => onReact(null)} style={{ flex:1, padding:"8px", borderRadius:"var(--r-md)", border:"none", background:"var(--gold)", color:"#060402", fontSize:18, fontWeight:700, cursor:"pointer" }}>I read it</button>
-        <button onClick={onConsider} style={{ flex:1, padding:"8px", borderRadius:"var(--r-md)", border:"1px solid rgba(255,255,255,.12)", background:"transparent", color:"var(--text2)", fontSize:18, fontWeight:600, cursor:"pointer" }}>Considering it</button>
+        <button onClick={() => onReact(null)} style={{ flex:1, padding:"8px", borderRadius:"var(--r-md)", border:"none", background:"var(--gold)", color:"#060402", fontSize:13, fontWeight:700, cursor:"pointer" }}>I read it</button>
+        <button onClick={onConsider} style={{ flex:1, padding:"8px", borderRadius:"var(--r-md)", border:"1px solid rgba(255,255,255,.12)", background:"transparent", color:"var(--text2)", fontSize:13, fontWeight:600, cursor:"pointer" }}>Considering it</button>
       </div>
     </div>
   );
@@ -4728,7 +4728,7 @@ function TopMoment({ intelligence, signalCandidates, recCandidates, behavioral, 
     >
       {/* Intelligence label */}
       <div style={{
-        fontSize:12, fontWeight:700, letterSpacing:"2.5px", textTransform:"uppercase",
+        fontSize:10, fontWeight:700, letterSpacing:"2.5px", textTransform:"uppercase",
         color:"rgba(212,148,26,.5)", marginBottom:9,
         display:"flex", alignItems:"center", gap:7,
       }}>
@@ -4736,7 +4736,7 @@ function TopMoment({ intelligence, signalCandidates, recCandidates, behavioral, 
           width:16, height:16, borderRadius:"50%",
           background:"rgba(212,148,26,.1)", border:"1px solid rgba(212,148,26,.2)",
           display:"flex", alignItems:"center", justifyContent:"center",
-          fontSize:12, color:"var(--gold)",
+          fontSize:10, color:"var(--gold)",
         }}>✦</div>
         LitSense
       </div>
@@ -4750,7 +4750,7 @@ function TopMoment({ intelligence, signalCandidates, recCandidates, behavioral, 
         {done && (
           <span style={{
             display:"inline-block", marginLeft:8,
-            color:"var(--gold)", fontSize:20, verticalAlign:"middle",
+            color:"var(--gold)", fontSize:14, verticalAlign:"middle",
             animation:"fadeIn .4s ease",
           }}>→</span>
         )}
@@ -4784,10 +4784,10 @@ function FriendNudge({ nudge, memory, onAct, onDismiss }) {
       <button onClick={dismiss} style={{
         position:"absolute", top:10, right:12,
         background:"none", border:"none", color:"var(--muted)",
-        fontSize:24, cursor:"pointer", lineHeight:1, padding:"2px 4px",
+        fontSize:17, cursor:"pointer", lineHeight:1, padding:"2px 4px",
       }}>×</button>
       <div style={{
-        fontSize:22, color:"var(--text)", lineHeight:1.55,
+        fontSize:16, color:"var(--text)", lineHeight:1.55,
         fontFamily:"'Lora',serif", fontWeight:600,
         marginBottom: cta ? 12 : 0, paddingRight:20,
       }}>{msg}</div>
@@ -4795,7 +4795,7 @@ function FriendNudge({ nudge, memory, onAct, onDismiss }) {
         <button onClick={() => { dismiss(); onAct(prompt); }} style={{
           padding:"8px 16px", borderRadius:"var(--r-pill)", border:"none",
           background:"var(--gold)", color:"#060402",
-          fontSize:19, fontWeight:700, cursor:"pointer",
+          fontSize:14, fontWeight:700, cursor:"pointer",
           boxShadow:"0 2px 12px rgba(212,148,26,.3)",
         }}>{cta} →</button>
       )}
@@ -4822,10 +4822,10 @@ function SignalMoment({ signal, onAct, onDismiss }) {
       <button onClick={() => { setVisible(false); onDismiss(signal.id, signal); }} style={{
         position:"absolute", top:10, right:12,
         background:"none", border:"none", color:"var(--muted)",
-        fontSize:24, cursor:"pointer", lineHeight:1, padding:"2px 4px",
+        fontSize:17, cursor:"pointer", lineHeight:1, padding:"2px 4px",
       }}>×</button>
       <div style={{
-        fontSize:20, color:"var(--text2)", lineHeight:1.6,
+        fontSize:14, color:"var(--text2)", lineHeight:1.6,
         paddingRight:20, marginBottom:10,
       }}>
         {message}
@@ -4834,7 +4834,7 @@ function SignalMoment({ signal, onAct, onDismiss }) {
         onClick={() => { setVisible(false); onDismiss(signal.id, signal); onAct(signal.prompt, signal); }}
         style={{
           background:"none", border:"none", color:"var(--gold)",
-          fontSize:19, fontWeight:600, cursor:"pointer", padding:0,
+          fontSize:14, fontWeight:600, cursor:"pointer", padding:0,
         }}
       >{signal.cta} →</button>
     </div>
@@ -4924,16 +4924,16 @@ function BookDetailSheet({ book: b, onClose, onAsk, isSaved, onSave, onDismiss, 
           <div style={{
             position:"absolute", bottom:0, left:0, right:0, padding:"0 20px 16px",
           }}>
-            <div style={{fontFamily:"'Lora',serif",fontSize:27,fontWeight:700,color:"#f0e8d8",lineHeight:1.22,marginBottom:4}}>{b.title}</div>
-            <div style={{fontSize:16,color:"rgba(212,148,26,.9)"}}>{b.author}</div>
+            <div style={{fontFamily:"'Lora',serif",fontSize:19,fontWeight:700,color:"#f0e8d8",lineHeight:1.22,marginBottom:4}}>{b.title}</div>
+            <div style={{fontSize:12,color:"rgba(212,148,26,.9)"}}>{b.author}</div>
           </div>
         </div>
 
         {/* Tags + match score */}
         <div style={{display:"flex",alignItems:"center",gap:8,padding:"0 20px 16px",flexWrap:"wrap"}}>
-          <span style={{fontSize:15,fontWeight:700,color:"var(--gold)",marginRight:4}}>{b.score}% match</span>
+          <span style={{fontSize:11,fontWeight:700,color:"var(--gold)",marginRight:4}}>{b.score}% match</span>
           {b.tags?.slice(0,3).map(t=>(
-            <span key={t} style={{display:"inline-block",fontSize:13,fontWeight:600,padding:"3px 10px",borderRadius:99,background:"rgba(255,255,255,.07)",color:"var(--text2)"}}>{t}</span>
+            <span key={t} style={{display:"inline-block",fontSize:10,fontWeight:600,padding:"3px 10px",borderRadius:99,background:"rgba(255,255,255,.07)",color:"var(--text2)"}}>{t}</span>
           ))}
         </div>
 
@@ -4943,12 +4943,12 @@ function BookDetailSheet({ book: b, onClose, onAsk, isSaved, onSave, onDismiss, 
         {/* Full conviction pitch */}
         <div style={{padding:"0 20px 20px"}}>
           <div style={{
-            fontSize:13, fontWeight:700, letterSpacing:"2px",
+            fontSize:10, fontWeight:700, letterSpacing:"2px",
             textTransform:"uppercase", color:"rgba(212,148,26,.7)",
             marginBottom:10,
           }}>Why this could be your next favorite</div>
           <div style={{
-            fontSize:21, lineHeight:1.75,
+            fontSize:15, lineHeight:1.75,
             color:"rgba(240,232,216,.9)",
             fontFamily:"'Lora',serif",
             fontStyle:"italic",
@@ -4964,7 +4964,7 @@ function BookDetailSheet({ book: b, onClose, onAsk, isSaved, onSave, onDismiss, 
                 flex:2, padding:"13px", borderRadius:12, border:"none",
                 background: isSaved ? "rgba(212,148,26,.15)" : "var(--gold)",
                 color: isSaved ? "var(--gold)" : "#060402",
-                fontSize:21, fontWeight:700, cursor: isSaved?"default":"pointer",
+                fontSize:15, fontWeight:700, cursor: isSaved?"default":"pointer",
                 ...(isSaved?{border:"1px solid rgba(212,148,26,.3)"}:{}),
               }}
             >{isSaved ? "✓ Saved to read" : "Save to Read"}</button>
@@ -4974,7 +4974,7 @@ function BookDetailSheet({ book: b, onClose, onAsk, isSaved, onSave, onDismiss, 
                 flex:1, padding:"13px", borderRadius:12,
                 border:"1px solid rgba(255,255,255,.12)",
                 background:"transparent", color:"var(--muted)",
-                fontSize:20, fontWeight:500, cursor:"pointer",
+                fontSize:14, fontWeight:500, cursor:"pointer",
               }}
             >Not for me</button>
           </div>
@@ -4984,7 +4984,7 @@ function BookDetailSheet({ book: b, onClose, onAsk, isSaved, onSave, onDismiss, 
               width:"100%", padding:"12px", borderRadius:12,
               border:"1px solid rgba(255,255,255,.1)",
               background:"rgba(255,255,255,.05)",
-              color:"var(--text2)", fontSize:20, fontWeight:600, cursor:"pointer",
+              color:"var(--text2)", fontSize:14, fontWeight:600, cursor:"pointer",
               display:"flex", alignItems:"center", justifyContent:"center", gap:7,
             }}
           >
@@ -5075,7 +5075,7 @@ function BookTile({ book: b, onAsk, onTap, scrollScale = 1, isFirst, isLast, isS
         {/* Score badge */}
         <div style={{
           position:"absolute", top:7, right:7, zIndex:2,
-          fontSize:14, fontWeight:700, color:"var(--gold)",
+          fontSize:10, fontWeight:700, color:"var(--gold)",
           background:"rgba(10,8,6,.82)", backdropFilter:"blur(4px)",
           padding:"2px 6px", borderRadius:99, border:"1px solid rgba(212,148,26,.25)",
         }}>{b.score}%</div>
@@ -5084,7 +5084,7 @@ function BookTile({ book: b, onAsk, onTap, scrollScale = 1, isFirst, isLast, isS
         {isSaved && (
           <div style={{
             position:"absolute", bottom:7, left:7, zIndex:2,
-            fontSize:12, fontWeight:700, color:"var(--gold)",
+            fontSize:10, fontWeight:700, color:"var(--gold)",
             background:"rgba(10,8,6,.9)", backdropFilter:"blur(4px)",
             padding:"2px 6px", borderRadius:99, border:"1px solid rgba(212,148,26,.4)",
           }}>✓</div>
@@ -5092,8 +5092,8 @@ function BookTile({ book: b, onAsk, onTap, scrollScale = 1, isFirst, isLast, isS
       </div>
       {/* Title below */}
       <div style={{marginTop:6,width:150}}>
-        <div style={{fontSize:17,fontWeight:600,color:"var(--text2)",lineHeight:1.3,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{b.title}</div>
-        <div style={{fontSize:16,color:"var(--muted)",fontStyle:"italic",marginTop:1}}>{b.author}</div>
+        <div style={{fontSize:12,fontWeight:600,color:"var(--text2)",lineHeight:1.3,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{b.title}</div>
+        <div style={{fontSize:12,color:"var(--muted)",fontStyle:"italic",marginTop:1}}>{b.author}</div>
       </div>
     </div>
   );
@@ -5141,12 +5141,12 @@ function BookRow({ books, title, subtitle, onAsk, onTap, savedBooks, onSave, onD
       {/* Row header — stacked title + subtitle */}
       <div style={{padding:"0 16px",marginBottom:10}}>
         <div style={{
-          fontFamily:"'Lora',serif",fontSize:22,fontWeight:700,
+          fontFamily:"'Lora',serif",fontSize:16,fontWeight:700,
           color:"var(--text)",letterSpacing:"-.15px",lineHeight:1.2,
         }}>{title}</div>
         {subtitle && (
           <div style={{
-            fontSize:16,color:"var(--text2)",marginTop:4,
+            fontSize:12,color:"var(--text2)",marginTop:4,
             fontStyle:"italic",lineHeight:1.4,opacity:.8,
           }}>{subtitle}</div>
         )}
@@ -5199,12 +5199,12 @@ function TasteCard({ readBooks, onAddBooks, isPro, onUpgrade }) {
     }}>
       {/* Level badge + title */}
       <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
-        <div style={{fontSize:42,lineHeight:1}}>{level.emoji}</div>
+        <div style={{fontSize:30,lineHeight:1}}>{level.emoji}</div>
         <div>
-          <div style={{fontFamily:"'Lora',serif",fontSize:22,fontWeight:700,color:"var(--text)",lineHeight:1.2}}>{level.label}</div>
-          <div style={{fontSize:16,color:"var(--text2)",marginTop:1}}>{count} book{count!==1?"s":""} rated</div>
+          <div style={{fontFamily:"'Lora',serif",fontSize:16,fontWeight:700,color:"var(--text)",lineHeight:1.2}}>{level.label}</div>
+          <div style={{fontSize:12,color:"var(--text2)",marginTop:1}}>{count} book{count!==1?"s":""} rated</div>
         </div>
-        {isPro && <div style={{marginLeft:"auto",fontSize:15,fontWeight:700,color:"#0a0806",background:"var(--gold)",padding:"2px 8px",borderRadius:99}}>PRO</div>}
+        {isPro && <div style={{marginLeft:"auto",fontSize:11,fontWeight:700,color:"#0a0806",background:"var(--gold)",padding:"2px 8px",borderRadius:99}}>PRO</div>}
       </div>
 
       {/* Progress bar to next level */}
@@ -5213,7 +5213,7 @@ function TasteCard({ readBooks, onAddBooks, isPro, onUpgrade }) {
           <div style={{height:3,background:"rgba(255,255,255,.08)",borderRadius:99,overflow:"hidden"}}>
             <div style={{height:"100%",width:`${progress}%`,background:"var(--gold)",borderRadius:99,transition:"width .4s ease"}}/>
           </div>
-          <div style={{fontSize:15,color:"var(--muted)",marginTop:5}}>
+          <div style={{fontSize:11,color:"var(--muted)",marginTop:5}}>
             {level.next - count} more to reach <strong style={{color:"var(--text2)"}}>{TASTE_LEVELS.find(l=>l.min===level.next)?.label}</strong>
           </div>
         </div>
@@ -5222,20 +5222,20 @@ function TasteCard({ readBooks, onAddBooks, isPro, onUpgrade }) {
       {/* Detected genres */}
       {genres.length > 0 && (
         <div style={{marginBottom:12}}>
-          <div style={{fontSize:14,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"var(--muted)",marginBottom:7}}>Your taste</div>
+          <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"var(--muted)",marginBottom:7}}>Your taste</div>
           <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
             {genres.map(g=>(
-              <span key={g} style={{fontSize:16,fontWeight:600,color:"var(--gold)",background:"rgba(212,148,26,.12)",border:"1px solid rgba(212,148,26,.2)",padding:"3px 10px",borderRadius:99}}>{g}</span>
+              <span key={g} style={{fontSize:12,fontWeight:600,color:"var(--gold)",background:"rgba(212,148,26,.12)",border:"1px solid rgba(212,148,26,.2)",padding:"3px 10px",borderRadius:99}}>{g}</span>
             ))}
           </div>
         </div>
       )}
 
-      <div style={{fontSize:17,color:"var(--text2)",lineHeight:1.6,marginBottom:12,fontStyle:"italic"}}>{level.desc}</div>
+      <div style={{fontSize:12,color:"var(--text2)",lineHeight:1.6,marginBottom:12,fontStyle:"italic"}}>{level.desc}</div>
 
       <button
         onClick={onAddBooks}
-        style={{display:"flex",alignItems:"center",gap:6,background:"var(--gold)",color:"#0a0806",border:"none",padding:"8px 16px",borderRadius:99,fontSize:18,fontWeight:700,cursor:"pointer"}}
+        style={{display:"flex",alignItems:"center",gap:6,background:"var(--gold)",color:"#0a0806",border:"none",padding:"8px 16px",borderRadius:99,fontSize:13,fontWeight:700,cursor:"pointer"}}
       >+ Rate another book</button>
     </div>
   );
@@ -5249,10 +5249,10 @@ function QuickRateCard({ onRate, onSkip }) {
 
   return (
     <div style={{margin:"0 16px 28px",background:"var(--card)",borderRadius:16,padding:"18px 16px",border:"1px solid rgba(255,255,255,.06)"}}>
-      <div style={{fontFamily:"'Lora',serif",fontSize:24,fontWeight:700,color:"var(--text)",marginBottom:4}}>
+      <div style={{fontFamily:"'Lora',serif",fontSize:17,fontWeight:700,color:"var(--text)",marginBottom:4}}>
         Rate a few books.
       </div>
-      <div style={{fontSize:20,color:"var(--text2)",marginBottom:16,lineHeight:1.6}}>
+      <div style={{fontSize:14,color:"var(--text2)",marginBottom:16,lineHeight:1.6}}>
         LitSense learns from what you've loved. The more you rate, the smarter your recommendations get.
       </div>
 
@@ -5262,12 +5262,12 @@ function QuickRateCard({ onRate, onSkip }) {
             <BookCover isbn={b.isbn} title={b.title} color={b.color}/>
           </div>
           <div style={{flex:1,minWidth:0}}>
-            <div style={{fontFamily:"'Lora',serif",fontSize:19,fontWeight:600,color:"var(--text)",lineHeight:1.3,marginBottom:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{b.title}</div>
-            <div style={{fontSize:16,color:"var(--muted)",fontStyle:"italic"}}>{b.author}</div>
+            <div style={{fontFamily:"'Lora',serif",fontSize:14,fontWeight:600,color:"var(--text)",lineHeight:1.3,marginBottom:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{b.title}</div>
+            <div style={{fontSize:12,color:"var(--muted)",fontStyle:"italic"}}>{b.author}</div>
           </div>
           <div style={{display:"flex",gap:3,flexShrink:0}}>
             {[1,2,3,4,5].map(s=>(
-              <span key={s} onClick={()=>setRatings(r=>({...r,[b.id]:s}))} style={{cursor:"pointer",fontSize:22,color:ratings[b.id]>=s?"var(--gold)":"var(--faint)"}}>★</span>
+              <span key={s} onClick={()=>setRatings(r=>({...r,[b.id]:s}))} style={{cursor:"pointer",fontSize:16,color:ratings[b.id]>=s?"var(--gold)":"var(--faint)"}}>★</span>
             ))}
           </div>
         </div>
@@ -5281,11 +5281,11 @@ function QuickRateCard({ onRate, onSkip }) {
             flex:1,padding:"10px",borderRadius:99,border:"none",
             background:ratedCount>0?"var(--gold)":"rgba(212,148,26,.2)",
             color:ratedCount>0?"#0a0806":"var(--muted)",
-            fontFamily:"'Inter',sans-serif",fontSize:20,fontWeight:700,
+            fontFamily:"'Inter',sans-serif",fontSize:14,fontWeight:700,
             cursor:ratedCount>0?"pointer":"default",transition:"all .2s",
           }}
         >{ratedCount>0?`Save ${ratedCount} rating${ratedCount>1?"s":""}  →`:"Rate at least one book"}</button>
-        <button onClick={onSkip} style={{padding:"10px 14px",borderRadius:99,border:"1px solid rgba(255,255,255,.1)",background:"transparent",color:"var(--muted)",fontSize:18,cursor:"pointer"}}>Skip</button>
+        <button onClick={onSkip} style={{padding:"10px 14px",borderRadius:99,border:"1px solid rgba(255,255,255,.1)",background:"transparent",color:"var(--muted)",fontSize:13,cursor:"pointer"}}>Skip</button>
       </div>
     </div>
   );
@@ -5324,7 +5324,7 @@ function TileModal({ book: b, onClose, onAsk, isSaved, onSave, onDismiss, userSt
               flex:1,padding:"13px",borderRadius:10,border:"none",
               background: isSaved ? "rgba(212,148,26,.12)" : "var(--gold)",
               color: isSaved ? "var(--gold)" : "#0a0806",
-              fontFamily:"'Inter',sans-serif",fontSize:21,fontWeight:700,
+              fontFamily:"'Inter',sans-serif",fontSize:15,fontWeight:700,
               cursor: isSaved ? "default" : "pointer",
               transition:"all .2s",
               boxSizing:"border-box",
@@ -5337,7 +5337,7 @@ function TileModal({ book: b, onClose, onAsk, isSaved, onSave, onDismiss, userSt
             style={{
               padding:"13px 16px",borderRadius:10,
               border:"1px solid rgba(255,255,255,.1)",background:"transparent",
-              color:"var(--muted)",fontSize:21,fontWeight:500,
+              color:"var(--muted)",fontSize:15,fontWeight:500,
               cursor:"pointer",transition:"all .18s",boxSizing:"border-box",
               flexShrink:0,
             }}
@@ -5356,7 +5356,7 @@ function TileModal({ book: b, onClose, onAsk, isSaved, onSave, onDismiss, userSt
             display:"block",width:"100%",padding:"13px",borderRadius:10,
             background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.1)",
             color:"var(--text2)",textAlign:"center",textDecoration:"none",
-            fontSize:21,fontWeight:600,marginBottom:10,boxSizing:"border-box",
+            fontSize:15,fontWeight:600,marginBottom:10,boxSizing:"border-box",
           }}
         >Buy on Amazon →</SafeAmazonLink>
         <button className="ls-tile-modal-cancel" onClick={onClose}>Close</button>
@@ -5408,32 +5408,32 @@ function ReferralCard({ userEmail, referralCount }) {
       {/* Header */}
       <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:12}}>
         <div>
-          <div style={{fontFamily:"'Lora',serif",fontSize:24,fontWeight:700,color:"var(--text)",lineHeight:1.2,marginBottom:3}}>
+          <div style={{fontFamily:"'Lora',serif",fontSize:17,fontWeight:700,color:"var(--text)",lineHeight:1.2,marginBottom:3}}>
             Invite friends.<br/><em style={{color:"var(--gold)"}}>Earn more.</em>
           </div>
-          <div style={{fontSize:18,color:"var(--text2)",lineHeight:1.55}}>
+          <div style={{fontSize:13,color:"var(--text2)",lineHeight:1.55}}>
             They get 14 days Pro free.<br/>You get +3 questions/day per referral.
           </div>
         </div>
-        <div style={{fontSize:42,flexShrink:0,marginLeft:10}}>🎁</div>
+        <div style={{fontSize:30,flexShrink:0,marginLeft:10}}>🎁</div>
       </div>
 
       {/* Stats row */}
       <div style={{display:"flex",gap:10,marginBottom:14}}>
         <div style={{flex:1,background:"var(--card)",borderRadius:10,padding:"10px 12px",border:"1px solid rgba(255,255,255,.05)"}}>
-          <div style={{fontFamily:"'Lora',serif",fontSize:33,fontWeight:700,color:"var(--gold)",lineHeight:1}}>{referralCount}</div>
-          <div style={{fontSize:15,color:"var(--muted)",marginTop:2,fontWeight:600,letterSpacing:".5px",textTransform:"uppercase"}}>Referred</div>
+          <div style={{fontFamily:"'Lora',serif",fontSize:24,fontWeight:700,color:"var(--gold)",lineHeight:1}}>{referralCount}</div>
+          <div style={{fontSize:11,color:"var(--muted)",marginTop:2,fontWeight:600,letterSpacing:".5px",textTransform:"uppercase"}}>Referred</div>
         </div>
         <div style={{flex:1,background:"var(--card)",borderRadius:10,padding:"10px 12px",border:"1px solid rgba(255,255,255,.05)"}}>
-          <div style={{fontFamily:"'Lora',serif",fontSize:33,fontWeight:700,color:milestone?"var(--gold)":"var(--muted)",lineHeight:1}}>
+          <div style={{fontFamily:"'Lora',serif",fontSize:24,fontWeight:700,color:milestone?"var(--gold)":"var(--muted)",lineHeight:1}}>
             {milestone ? `+${milestone.bonus === 999 ? "∞" : milestone.bonus}` : "+0"}
           </div>
-          <div style={{fontSize:15,color:"var(--muted)",marginTop:2,fontWeight:600,letterSpacing:".5px",textTransform:"uppercase"}}>Q/day bonus</div>
+          <div style={{fontSize:11,color:"var(--muted)",marginTop:2,fontWeight:600,letterSpacing:".5px",textTransform:"uppercase"}}>Q/day bonus</div>
         </div>
         {milestone && (
           <div style={{flex:1,background:"var(--card)",borderRadius:10,padding:"10px 12px",border:"1px solid rgba(255,255,255,.05)"}}>
-            <div style={{fontSize:21,fontWeight:700,color:"var(--gold)",lineHeight:1.2}}>{milestone.label}</div>
-            <div style={{fontSize:15,color:"var(--muted)",marginTop:2,fontWeight:600,letterSpacing:".5px",textTransform:"uppercase"}}>Your status</div>
+            <div style={{fontSize:15,fontWeight:700,color:"var(--gold)",lineHeight:1.2}}>{milestone.label}</div>
+            <div style={{fontSize:11,color:"var(--muted)",marginTop:2,fontWeight:600,letterSpacing:".5px",textTransform:"uppercase"}}>Your status</div>
           </div>
         )}
       </div>
@@ -5442,8 +5442,8 @@ function ReferralCard({ userEmail, referralCount }) {
       {next && (
         <div style={{marginBottom:14}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:5}}>
-            <span style={{fontSize:16,color:"var(--text2)"}}>{referralCount} of {next.refs} referrals to <strong style={{color:"var(--gold)"}}>{next.reward}</strong></span>
-            <span style={{fontSize:15,color:"var(--muted)"}}>{next.refs - referralCount} to go</span>
+            <span style={{fontSize:12,color:"var(--text2)"}}>{referralCount} of {next.refs} referrals to <strong style={{color:"var(--gold)"}}>{next.reward}</strong></span>
+            <span style={{fontSize:11,color:"var(--muted)"}}>{next.refs - referralCount} to go</span>
           </div>
           <div style={{height:3,background:"rgba(255,255,255,.07)",borderRadius:99,overflow:"hidden"}}>
             <div style={{height:"100%",width:`${progress}%`,background:"linear-gradient(90deg,var(--gold-d),var(--gold))",borderRadius:99,transition:"width .4s ease"}}/>
@@ -5451,7 +5451,7 @@ function ReferralCard({ userEmail, referralCount }) {
         </div>
       )}
       {!next && referralCount >= 10 && (
-        <div style={{marginBottom:14,padding:"8px 12px",background:"rgba(212,148,26,.1)",borderRadius:8,fontSize:18,color:"var(--gold)",fontFamily:"'Inter',sans-serif",fontStyle:"italic"}}>
+        <div style={{marginBottom:14,padding:"8px 12px",background:"rgba(212,148,26,.1)",borderRadius:8,fontSize:13,color:"var(--gold)",fontFamily:"'Inter',sans-serif",fontStyle:"italic"}}>
           🏆 Champion — you've earned 3 months Pro free. We'll be in touch.
         </div>
       )}
@@ -5462,12 +5462,12 @@ function ReferralCard({ userEmail, referralCount }) {
         display:"flex",alignItems:"center",justifyContent:"space-between",
         marginBottom:10,border:"1px solid rgba(255,255,255,.06)",
       }}>
-        <span style={{fontSize:17,color:"var(--text2)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1}}>{link}</span>
+        <span style={{fontSize:12,color:"var(--text2)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1}}>{link}</span>
         <button onClick={copyLink} style={{
           flexShrink:0,marginLeft:8,padding:"4px 10px",borderRadius:6,border:"none",
           background:copied?"rgba(74,128,96,.3)":"rgba(212,148,26,.15)",
           color:copied?"#6ecf9a":"var(--gold)",
-          fontSize:16,fontWeight:700,cursor:"pointer",transition:"all .2s",whiteSpace:"nowrap",
+          fontSize:12,fontWeight:700,cursor:"pointer",transition:"all .2s",whiteSpace:"nowrap",
         }}>{copied?"✓ Copied":"Copy"}</button>
       </div>
 
@@ -5476,25 +5476,25 @@ function ReferralCard({ userEmail, referralCount }) {
         <button onClick={shareLink} style={{
           flex:1,padding:"10px",borderRadius:99,border:"none",
           background:"var(--gold)",color:"#0a0806",
-          fontFamily:"'Inter',sans-serif",fontSize:20,fontWeight:700,
+          fontFamily:"'Inter',sans-serif",fontSize:14,fontWeight:700,
           cursor:"pointer",
         }}>Share your link</button>
       </div>
 
       {/* How it works */}
       <details style={{marginTop:12}}>
-        <summary style={{fontSize:16,color:"var(--muted)",cursor:"pointer",userSelect:"none",listStyle:"none",display:"flex",alignItems:"center",gap:5}}>
+        <summary style={{fontSize:12,color:"var(--muted)",cursor:"pointer",userSelect:"none",listStyle:"none",display:"flex",alignItems:"center",gap:5}}>
           <span>How it works</span>
         </summary>
         <div style={{marginTop:8,display:"flex",flexDirection:"column",gap:6}}>
           {REFERRAL_MILESTONES.map(m=>(
             <div key={m.refs} style={{display:"flex",alignItems:"center",gap:8,opacity:referralCount>=m.refs?1:.5}}>
-              <div style={{width:20,height:20,borderRadius:"50%",background:referralCount>=m.refs?"var(--gold)":"rgba(255,255,255,.1)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:referralCount>=m.refs?"#0a0806":"var(--muted)",flexShrink:0}}>
+              <div style={{width:20,height:20,borderRadius:"50%",background:referralCount>=m.refs?"var(--gold)":"rgba(255,255,255,.1)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,color:referralCount>=m.refs?"#0a0806":"var(--muted)",flexShrink:0}}>
                 {referralCount>=m.refs?"✓":m.refs}
               </div>
               <div>
-                <span style={{fontSize:17,fontWeight:600,color:"var(--text2)"}}>{m.refs} referral{m.refs>1?"s":""}</span>
-                <span style={{fontSize:16,color:"var(--muted)"}}> → {m.reward}</span>
+                <span style={{fontSize:12,fontWeight:600,color:"var(--text2)"}}>{m.refs} referral{m.refs>1?"s":""}</span>
+                <span style={{fontSize:12,color:"var(--muted)"}}> → {m.reward}</span>
               </div>
             </div>
           ))}
@@ -5568,7 +5568,7 @@ function ListBookModal({ onClose, onSubmit }) {
             ))}
           </div>
         </div>
-        <div style={{fontSize:16,color:"var(--muted)",lineHeight:1.6,marginBottom:16}}>
+        <div style={{fontSize:12,color:"var(--muted)",lineHeight:1.6,marginBottom:16}}>
           LitSense holds payment in escrow until the buyer confirms delivery. We take a 10% platform fee. You keep the rest.
         </div>
         <button className="ls-list-submit" disabled={!ready} onClick={()=>{ onSubmit({title,author,price:Number(price),condition}); onClose(); }}>
@@ -5592,8 +5592,8 @@ function MarketplaceTab({ isPro, savedBooks, wantList, onRequirePro, userEmail }
     return (
       <div className="ls-market" style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",flex:1,padding:"40px 32px",textAlign:"center"}}>
         <Lock size={36} strokeWidth={1.5} style={{color:"var(--gold)",opacity:.6,marginBottom:16}}/>
-        <div style={{fontFamily:"'Lora',serif",fontSize:30,fontWeight:700,color:"var(--text)",marginBottom:8}}>Marketplace is Pro</div>
-        <div style={{fontSize:20,color:"var(--muted)",lineHeight:1.7,marginBottom:24}}>Buy and sell books directly with other readers. Trade your shelf for something new.</div>
+        <div style={{fontFamily:"'Lora',serif",fontSize:22,fontWeight:700,color:"var(--text)",marginBottom:8}}>Marketplace is Pro</div>
+        <div style={{fontSize:14,color:"var(--muted)",lineHeight:1.7,marginBottom:24}}>Buy and sell books directly with other readers. Trade your shelf for something new.</div>
         <button className="ls-list-submit" style={{maxWidth:240}} onClick={onRequirePro}>Go Pro to access →</button>
       </div>
     );
@@ -5603,11 +5603,11 @@ function MarketplaceTab({ isPro, savedBooks, wantList, onRequirePro, userEmail }
     <div className="ls-market" style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",flex:1,padding:"40px 32px",textAlign:"center"}}>
       <ShoppingBag size={44} strokeWidth={1.2} style={{color:"var(--gold)",opacity:.5,marginBottom:20}}/>
       <div className="ls-market-new-badge" style={{marginBottom:16}}><Sparkles size={10}/> Coming Soon</div>
-      <div style={{fontFamily:"'Lora',serif",fontSize:33,fontWeight:700,color:"var(--text)",marginBottom:10}}>Book Marketplace</div>
-      <div style={{fontSize:21,color:"var(--muted)",lineHeight:1.75,maxWidth:300,marginBottom:28}}>
+      <div style={{fontFamily:"'Lora',serif",fontSize:24,fontWeight:700,color:"var(--text)",marginBottom:10}}>Book Marketplace</div>
+      <div style={{fontSize:15,color:"var(--muted)",lineHeight:1.75,maxWidth:300,marginBottom:28}}>
         Buy and sell books directly with other LitSense readers. We handle payment, escrow, and shipping labels. Launching soon.
       </div>
-      <div style={{fontSize:20,color:"var(--text2)",lineHeight:1.7,padding:"14px 18px",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:"var(--r-lg)",maxWidth:300}}>
+      <div style={{fontSize:14,color:"var(--text2)",lineHeight:1.7,padding:"14px 18px",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:"var(--r-lg)",maxWidth:300}}>
         Be among the first sellers when we launch — list a book and reach readers who'll actually love it.
       </div>
     </div>
@@ -5635,7 +5635,7 @@ function MarketplaceTab({ isPro, savedBooks, wantList, onRequirePro, userEmail }
         <>
           {matches.length > 0 && (
             <div style={{margin:"0 16px 12px",padding:"12px 14px",background:"rgba(212,148,26,.08)",border:"1px solid rgba(212,148,26,.25)",borderRadius:"var(--r-md)"}}>
-              <div style={{fontSize:16,fontWeight:700,color:"var(--gold)",letterSpacing:".5px",textTransform:"uppercase",marginBottom:6}}>On your want list</div>
+              <div style={{fontSize:12,fontWeight:700,color:"var(--gold)",letterSpacing:".5px",textTransform:"uppercase",marginBottom:6}}>On your want list</div>
               {matches.map(l=><ListingCard key={l.id} listing={l} onTap={setSelected}/>)}
             </div>
           )}
@@ -5687,27 +5687,27 @@ function MarketplaceTab({ isPro, savedBooks, wantList, onRequirePro, userEmail }
                 <BookCover isbn={selected.isbn} title={selected.title} author={selected.author} color={selected.color} className="fill"/>
               </div>
               <div>
-                <div style={{fontFamily:"'Lora',serif",fontSize:26,fontWeight:700,color:"var(--text)",lineHeight:1.3,marginBottom:4}}>{selected.title}</div>
-                <div style={{fontSize:18,color:"var(--muted)",marginBottom:10}}>{selected.author}</div>
-                <div style={{fontSize:30,fontWeight:700,color:"var(--gold)",marginBottom:4}}>${selected.price}</div>
-                <div style={{fontSize:16,color:"var(--text2)"}}>{selected.condition} · Listed by {selected.seller}</div>
+                <div style={{fontFamily:"'Lora',serif",fontSize:19,fontWeight:700,color:"var(--text)",lineHeight:1.3,marginBottom:4}}>{selected.title}</div>
+                <div style={{fontSize:13,color:"var(--muted)",marginBottom:10}}>{selected.author}</div>
+                <div style={{fontSize:22,fontWeight:700,color:"var(--gold)",marginBottom:4}}>${selected.price}</div>
+                <div style={{fontSize:12,color:"var(--text2)"}}>{selected.condition} · Listed by {selected.seller}</div>
               </div>
             </div>
-            <div style={{fontSize:18,color:"var(--muted)",lineHeight:1.7,marginBottom:20}}>
+            <div style={{fontSize:13,color:"var(--muted)",lineHeight:1.7,marginBottom:20}}>
               Payment is held in escrow until you confirm delivery. We generate the postage label — seller ships to you directly. LitSense takes a 10% platform fee.
             </div>
 
             {buyDone ? (
               <div style={{textAlign:"center",padding:"20px 0"}}>
                 <CheckCircle size={36} style={{color:"var(--gold)",marginBottom:12}}/>
-                <div style={{fontFamily:"'Lora',serif",fontSize:27,fontWeight:700,color:"var(--text)",marginBottom:8}}>Payment held in escrow</div>
-                <div style={{fontSize:20,color:"var(--muted)",lineHeight:1.7}}>The seller has been notified. They'll ship within 3 days. You'll get tracking info here.</div>
+                <div style={{fontFamily:"'Lora',serif",fontSize:19,fontWeight:700,color:"var(--text)",marginBottom:8}}>Payment held in escrow</div>
+                <div style={{fontSize:14,color:"var(--muted)",lineHeight:1.7}}>The seller has been notified. They'll ship within 3 days. You'll get tracking info here.</div>
                 <button className="ls-list-submit" style={{marginTop:20}} onClick={()=>{setSelected(null);setBuyDone(false);}}>Done</button>
               </div>
             ) : (
               <>
                 {buyError && (
-                  <div style={{padding:"10px 14px",background:"rgba(220,50,50,.1)",border:"1px solid rgba(220,50,50,.3)",borderRadius:"var(--r-md)",fontSize:20,color:"#e06060",marginBottom:14}}>
+                  <div style={{padding:"10px 14px",background:"rgba(220,50,50,.1)",border:"1px solid rgba(220,50,50,.3)",borderRadius:"var(--r-md)",fontSize:14,color:"#e06060",marginBottom:14}}>
                     {buyError}
                   </div>
                 )}
@@ -5744,7 +5744,7 @@ function MarketplaceTab({ isPro, savedBooks, wantList, onRequirePro, userEmail }
                 </button>
               </>
             )}
-            <button onClick={()=>{setSelected(null);setBuyError("");setBuyDone(false);}} style={{width:"100%",marginTop:10,padding:12,background:"none",border:"none",color:"var(--muted)",fontSize:20,cursor:"pointer"}}>Cancel</button>
+            <button onClick={()=>{setSelected(null);setBuyError("");setBuyDone(false);}} style={{width:"100%",marginTop:10,padding:12,background:"none",border:"none",color:"var(--muted)",fontSize:14,cursor:"pointer"}}>Cancel</button>
           </div>
         </div>
       )}
@@ -6531,7 +6531,7 @@ description: one sentence max.`,
           <div className="ls-logo">
           {isPro ? (
             /* Pro logo — includes red PRO badge built into the SVG */
-            <svg height="88" viewBox="0 0 1267.82 368.3" xmlns="http://www.w3.org/2000/svg" style={{width:"auto"}}>
+            <svg height="32" viewBox="0 0 1267.82 368.3" xmlns="http://www.w3.org/2000/svg" style={{width:"auto"}}>
               <defs><style>{`.lp1{fill:#931a1d}.lp2{fill:#f0e8d8;stroke:#f0e8d8;stroke-miterlimit:10}.lp3{fill:#d4941a}.ls2{fill:#f0e8d8}`}</style></defs>
               <g><g>
                 <path className="lp3" d="M799.84,92.35c7.82,0,13.41,4.25,16.78,12.74,3.37,8.49,3.81,19.41,1.35,32.77-1.26,6.61-1.1,10.44.49,11.47h2.51c17.19-19.83,26.45-32.28,27.77-37.34,1.52-5.83-1.11-13.13-7.9-21.88-6.79-8.75-17.03-13.13-30.71-13.13-18.06,0-34.74,8.43-50.03,25.28-15.3,16.85-25.57,35.33-30.82,55.42-3.02,11.54-4.07,23.4-3.16,35.59.91,12.19,5.69,27.07,14.34,44.66,8.65,17.59,13.45,30.04,14.39,37.36.94,7.32.57,14.22-1.12,20.69-3.28,12.56-9.85,23.61-19.69,33.13-9.84,9.52-19.7,14.28-29.56,14.28-9.03,0-15.36-3.82-18.99-11.47-3.63-7.65-3.5-21.58.38-41.81,1.23-6.48,1.53-10.92.9-13.32-.63-2.4-2.44-3.6-5.41-3.6-.84,0-5.83,6.61-14.96,19.83-9.14,13.22-14.18,21.65-15.12,25.28-1.69,6.48,1.28,14.88,8.92,25.18,7.64,10.31,19.42,15.46,35.34,15.46,19.27,0,38.39-8.78,57.36-26.35,18.97-17.56,31.47-37.88,37.51-60.96,2.61-9.98,3.36-20.52,2.25-31.6-1.11-11.08-6.26-25.97-15.46-44.67-9.2-18.7-14.36-32.35-15.48-40.96-1.12-8.61-.7-16.67,1.27-24.18,2.71-10.36,7.69-19.26,14.94-26.71,7.25-7.44,14.55-11.17,21.91-11.17Z"/>
@@ -6555,7 +6555,7 @@ description: one sentence max.`,
             </svg>
           ) : (
             /* Standard logo — warm cream version */
-            <svg height="88" viewBox="0 0 1267.82 368.3" xmlns="http://www.w3.org/2000/svg" style={{width:"auto"}}>
+            <svg height="32" viewBox="0 0 1267.82 368.3" xmlns="http://www.w3.org/2000/svg" style={{width:"auto"}}>
               <defs><style>{`.ls1{fill:#d4941a}.ls2{fill:#f0e8d8}`}</style></defs>
               <g><g>
                 <path className="ls1" d="M799.84,92.35c7.82,0,13.41,4.25,16.78,12.74,3.37,8.49,3.81,19.41,1.35,32.77-1.26,6.61-1.1,10.44.49,11.47h2.51c17.19-19.83,26.45-32.28,27.77-37.34,1.52-5.83-1.11-13.13-7.9-21.88-6.79-8.75-17.03-13.13-30.71-13.13-18.06,0-34.74,8.43-50.03,25.28-15.3,16.85-25.57,35.33-30.82,55.42-3.02,11.54-4.07,23.4-3.16,35.59.91,12.19,5.69,27.07,14.34,44.66,8.65,17.59,13.45,30.04,14.39,37.36.94,7.32.57,14.22-1.12,20.69-3.28,12.56-9.85,23.61-19.69,33.13-9.84,9.52-19.7,14.28-29.56,14.28-9.03,0-15.36-3.82-18.99-11.47-3.63-7.65-3.5-21.58.38-41.81,1.23-6.48,1.53-10.92.9-13.32-.63-2.4-2.44-3.6-5.41-3.6-.84,0-5.83,6.61-14.96,19.83-9.14,13.22-14.18,21.65-15.12,25.28-1.69,6.48,1.28,14.88,8.92,25.18,7.64,10.31,19.42,15.46,35.34,15.46,19.27,0,38.39-8.78,57.36-26.35,18.97-17.56,31.47-37.88,37.51-60.96,2.61-9.98,3.36-20.52,2.25-31.6-1.11-11.08-6.26-25.97-15.46-44.67-9.2-18.7-14.36-32.35-15.48-40.96-1.12-8.61-.7-16.67,1.27-24.18,2.71-10.36,7.69-19.26,14.94-26.71,7.25-7.44,14.55-11.17,21.91-11.17Z"/>
@@ -6609,7 +6609,7 @@ description: one sentence max.`,
             {/* ── Scrollable logo — Discover only ── */}
             <div style={{
               display:"flex", flexDirection:"column", alignItems:"center",
-              padding:"100px 20px 100px", position:"relative",
+              padding:"24px 20px 20px", position:"relative",
             }}>
               <div className="ls-hdr-right" style={{position:"absolute", top:20, right:20}}>
                 {!isSignedIn ? (
@@ -6629,7 +6629,7 @@ description: one sentence max.`,
               </div>
               <div className="ls-logo" style={{position:"static", transform:"none", animation:"logoIn .6s var(--ease) both"}}>
                 {isPro ? (
-                  <svg height="88" viewBox="0 0 1267.82 368.3" xmlns="http://www.w3.org/2000/svg" style={{width:"auto"}}>
+                  <svg height="48" viewBox="0 0 1267.82 368.3" xmlns="http://www.w3.org/2000/svg" style={{width:"auto"}}>
                     <defs><style>{`.lp1{fill:#931a1d}.lp2{fill:#f0e8d8;stroke:#f0e8d8;stroke-miterlimit:10}.lp3{fill:#d4941a}.ls2{fill:#f0e8d8}`}</style></defs>
                     <g><g>
                       <path className="lp3" d="M799.84,92.35c7.82,0,13.41,4.25,16.78,12.74,3.37,8.49,3.81,19.41,1.35,32.77-1.26,6.61-1.1,10.44.49,11.47h2.51c17.19-19.83,26.45-32.28,27.77-37.34,1.52-5.83-1.11-13.13-7.9-21.88-6.79-8.75-17.03-13.13-30.71-13.13-18.06,0-34.74,8.43-50.03,25.28-15.3,16.85-25.57,35.33-30.82,55.42-3.02,11.54-4.07,23.4-3.16,35.59.91,12.19,5.69,27.07,14.34,44.66,8.65,17.59,13.45,30.04,14.39,37.36.94,7.32.57,14.22-1.12,20.69-3.28,12.56-9.85,23.61-19.69,33.13-9.84,9.52-19.7,14.28-29.56,14.28-9.03,0-15.36-3.82-18.99-11.47-3.63-7.65-3.5-21.58.38-41.81,1.23-6.48,1.53-10.92.9-13.32-.63-2.4-2.44-3.6-5.41-3.6-.84,0-5.83,6.61-14.96,19.83-9.14,13.22-14.18,21.65-15.12,25.28-1.69,6.48,1.28,14.88,8.92,25.18,7.64,10.31,19.42,15.46,35.34,15.46,19.27,0,38.39-8.78,57.36-26.35,18.97-17.56,31.47-37.88,37.51-60.96,2.61-9.98,3.36-20.52,2.25-31.6-1.11-11.08-6.26-25.97-15.46-44.67-9.2-18.7-14.36-32.35-15.48-40.96-1.12-8.61-.7-16.67,1.27-24.18,2.71-10.36,7.69-19.26,14.94-26.71,7.25-7.44,14.55-11.17,21.91-11.17Z"/>
@@ -6637,7 +6637,7 @@ description: one sentence max.`,
                     <path className="lp3" d="M356.87,35.66c-7.41.84-14.7,1.85-21.87,3.01V0l-12.14,2.66c-29.04,6.36-55.87,18.36-79.73,35.67-27.97,20.29-46.55,44.23-58.59,64.66-.18.17-.36.34-.53.5-.18-.17-.36-.34-.54-.5-12.04-20.43-30.62-44.37-58.59-64.66C101.01,21.02,74.18,9.02,45.14,2.66l-12.14-2.66v38.67c-7.17-1.16-14.46-2.17-21.87-3.01l-11.13-1.26v278.88l8.91.98c29.92,3.29,58.65,8.78,85.38,16.3,29.82,8.39,56.6,19.14,79.71,31.98,1.67.93,3.33,1.87,4.97,2.82l3.38,1.96,1.66.96,1.66-.96,3.38-1.96c1.64-.95,3.29-1.89,4.97-2.82,23.11-12.84,49.89-23.59,79.71-31.98,26.73-7.53,55.46-13.01,85.38-16.3l8.91-.98V34.4l-11.13,1.26Z"/>
                   </svg>
                 ) : (
-                  <svg height="88" viewBox="0 0 1267.82 368.3" xmlns="http://www.w3.org/2000/svg" style={{width:"auto"}}>
+                  <svg height="48" viewBox="0 0 1267.82 368.3" xmlns="http://www.w3.org/2000/svg" style={{width:"auto"}}>
                     <defs><style>{`.ls1{fill:#d4941a}.ls2{fill:#f0e8d8}`}</style></defs>
                     <g><g>
                       <path className="ls1" d="M799.84,92.35c7.82,0,13.41,4.25,16.78,12.74,3.37,8.49,3.81,19.41,1.35,32.77-1.26,6.61-1.1,10.44.49,11.47h2.51c17.19-19.83,26.45-32.28,27.77-37.34,1.52-5.83-1.11-13.13-7.9-21.88-6.79-8.75-17.03-13.13-30.71-13.13-18.06,0-34.74,8.43-50.03,25.28-15.3,16.85-25.57,35.33-30.82,55.42-3.02,11.54-4.07,23.4-3.16,35.59.91,12.19,5.69,27.07,14.34,44.66,8.65,17.59,13.45,30.04,14.39,37.36.94,7.32.57,14.22-1.12,20.69-3.28,12.56-9.85,23.61-19.69,33.13-9.84,9.52-19.7,14.28-29.56,14.28-9.03,0-15.36-3.82-18.99-11.47-3.63-7.65-3.5-21.58.38-41.81,1.23-6.48,1.53-10.92.9-13.32-.63-2.4-2.44-3.6-5.41-3.6-.84,0-5.83,6.61-14.96,19.83-9.14,13.22-14.18,21.65-15.12,25.28-1.69,6.48,1.28,14.88,8.92,25.18,7.64,10.31,19.42,15.46,35.34,15.46,19.27,0,38.39-8.78,57.36-26.35,18.97-17.56,31.47-37.88,37.51-60.96,2.61-9.98,3.36-20.52,2.25-31.6-1.11-11.08-6.26-25.97-15.46-44.67-9.2-18.7-14.36-32.35-15.48-40.96-1.12-8.61-.7-16.67,1.27-24.18,2.71-10.36,7.69-19.26,14.94-26.71,7.25-7.44,14.55-11.17,21.91-11.17Z"/>
@@ -6742,7 +6742,7 @@ description: one sentence max.`,
                       <span>Few novels manage to be this precise and this moving at the same time. Three generations across seventy years in South India — the kind of patient, sweeping storytelling that rewards attention and stays with you long after. If the books you love most are the ones that feel genuinely important once you finish them, this is a very strong fit.</span>
                     </div>
                     <SafeAmazonLink title="The Covenant of Water" author="Abraham Verghese" isbn="9780802162175"
-                      style={{display:"inline-flex",alignItems:"center",gap:5,marginTop:10,padding:"5px 12px",borderRadius:99,textDecoration:"none",background:"rgba(212,148,26,.15)",border:"1px solid rgba(212,148,26,.25)",color:"var(--gold)",fontSize:16,fontWeight:600}}>Buy on Amazon →</SafeAmazonLink>
+                      style={{display:"inline-flex",alignItems:"center",gap:5,marginTop:10,padding:"5px 12px",borderRadius:99,textDecoration:"none",background:"rgba(212,148,26,.15)",border:"1px solid rgba(212,148,26,.25)",color:"var(--gold)",fontSize:12,fontWeight:600}}>Buy on Amazon →</SafeAmazonLink>
                   </div>
                 </div>
               </div>
@@ -6830,7 +6830,7 @@ description: one sentence max.`,
                     <div style={{padding:"4px 16px 20px",display:"flex",gap:8,flexWrap:"wrap"}}>
                       {row.prompts.map((p, pi) => (
                         <button key={pi} onClick={()=>goAsk(p.prompt)}
-                          style={{padding:"8px 15px",borderRadius:"var(--r-pill)",border:"1px solid rgba(255,248,236,.12)",background:"rgba(255,248,236,.05)",color:"var(--text2)",fontSize:19,fontWeight:500,cursor:"pointer",backdropFilter:"blur(8px)"}}
+                          style={{padding:"8px 15px",borderRadius:"var(--r-pill)",border:"1px solid rgba(255,248,236,.12)",background:"rgba(255,248,236,.05)",color:"var(--text2)",fontSize:14,fontWeight:500,cursor:"pointer",backdropFilter:"blur(8px)"}}
                           onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--gold)";e.currentTarget.style.color="var(--gold)";e.currentTarget.style.background="var(--gold-l)";}}
                           onMouseLeave={e=>{e.currentTarget.style.borderColor="rgba(255,248,236,.12)";e.currentTarget.style.color="var(--text2)";e.currentTarget.style.background="rgba(255,248,236,.05)";}}
                         >{p.label} →</button>
@@ -6903,7 +6903,7 @@ description: one sentence max.`,
                   </label>
 
                   {/* Display name */}
-                  <input className="ls-profile-name" style={{background:"transparent",border:"none",outline:"none",textAlign:"center",fontFamily:"'Lora',serif",fontSize:33,fontWeight:700,color:"var(--text)",width:"100%",marginBottom:4}}
+                  <input className="ls-profile-name" style={{background:"transparent",border:"none",outline:"none",textAlign:"center",fontFamily:"'Lora',serif",fontSize:24,fontWeight:700,color:"var(--text)",width:"100%",marginBottom:4}}
                     placeholder={userEmail?.split("@")[0]?.replace(/[._]/g," ")?.replace(/\b\w/g,c=>c.toUpperCase()) || "Your name"}
                     value={userName}
                     onChange={e=>{setUserName(e.target.value);try{localStorage.setItem("ls_username",e.target.value);}catch{}}}
@@ -6946,7 +6946,7 @@ description: one sentence max.`,
                     <div className="ls-profile-section-title">Currently reading</div>
                     <div style={{padding:"12px 14px",background:"rgba(212,148,26,.08)",border:"1px solid rgba(212,148,26,.2)",borderRadius:"var(--r-lg)",display:"flex",alignItems:"center",gap:12}}>
                       <BookOpen size={18} style={{color:"var(--gold)",flexShrink:0}}/>
-                      <div style={{fontSize:21,fontWeight:600,color:"var(--text)"}}>{currentBook}</div>
+                      <div style={{fontSize:15,fontWeight:600,color:"var(--text)"}}>{currentBook}</div>
                     </div>
                   </div>
                 )}
@@ -7005,7 +7005,7 @@ description: one sentence max.`,
                         const label = {loved:"Loved it",finished:"Finished",abandoned:"Stopped reading","too slow":"Too slow",fast:"Couldn't put it down"}[reaction]||reaction;
                         return (
                           <div key={bookId} className="ls-profile-reaction">
-                            <div style={{fontSize:27,flexShrink:0}}>{emoji}</div>
+                            <div style={{fontSize:19,flexShrink:0}}>{emoji}</div>
                             <div className="ls-profile-reaction-info">
                               <div className="ls-profile-reaction-title">{book.title}</div>
                               <div className="ls-profile-reaction-label">{label}{note?` — "${note}"`:""}</div>
@@ -7031,15 +7031,15 @@ description: one sentence max.`,
                 {/* ── Empty state ── */}
                 {readBooks.length===0 && !currentBook && Object.keys(reactions).length===0 && (
                   <div className="ls-profile-empty">
-                    <div style={{fontSize:48,marginBottom:12}}>📚</div>
-                    <div style={{fontFamily:"'Lora',serif",fontSize:24,fontWeight:700,color:"var(--text2)",marginBottom:8}}>Your profile builds itself</div>
+                    <div style={{fontSize:35,marginBottom:12}}>📚</div>
+                    <div style={{fontFamily:"'Lora',serif",fontSize:17,fontWeight:700,color:"var(--text2)",marginBottom:8}}>Your profile builds itself</div>
                     Tell LitSense what you've read, what you loved, what you abandoned.<br/>It fills in as you go.
                   </div>
                 )}
 
                 {/* ── Sign out ── */}
                 <div style={{padding:"28px 20px 0",textAlign:"center"}}>
-                  <button onClick={handleSignOut} style={{background:"none",border:"none",color:"var(--muted)",fontSize:20,cursor:"pointer",textDecoration:"underline"}}>
+                  <button onClick={handleSignOut} style={{background:"none",border:"none",color:"var(--muted)",fontSize:14,cursor:"pointer",textDecoration:"underline"}}>
                     Sign out
                   </button>
                 </div>
@@ -7079,7 +7079,7 @@ description: one sentence max.`,
                     overflow:"hidden",
                     backgroundImage:userPhoto?`url(${userPhoto})`:"none",
                     backgroundSize:"cover",backgroundPosition:"center",
-                    fontSize:30,fontWeight:700,color:"var(--gold)",
+                    fontSize:22,fontWeight:700,color:"var(--gold)",
                   }}>
                     {!userPhoto && userInitial}
                   </div>
@@ -7097,9 +7097,9 @@ description: one sentence max.`,
                 </label>
                 {/* Username */}
                 <div style={{flex:1}}>
-                  <div style={{fontSize:16,fontWeight:700,letterSpacing:".5px",textTransform:"uppercase",color:"var(--muted)",marginBottom:6}}>Display name</div>
+                  <div style={{fontSize:12,fontWeight:700,letterSpacing:".5px",textTransform:"uppercase",color:"var(--muted)",marginBottom:6}}>Display name</div>
                   <input
-                    style={{width:"100%",background:"transparent",border:"none",borderBottom:"1px solid rgba(255,255,255,.12)",color:"var(--text)",fontSize:22,fontWeight:600,padding:"2px 0",outline:"none",fontFamily:"'Inter',sans-serif",boxSizing:"border-box"}}
+                    style={{width:"100%",background:"transparent",border:"none",borderBottom:"1px solid rgba(255,255,255,.12)",color:"var(--text)",fontSize:16,fontWeight:600,padding:"2px 0",outline:"none",fontFamily:"'Inter',sans-serif",boxSizing:"border-box"}}
                     placeholder={userEmail?.split("@")[0] || "Your name"}
                     value={userName}
                     onChange={e=>{
@@ -7107,7 +7107,7 @@ description: one sentence max.`,
                       try { localStorage.setItem("ls_username", e.target.value); } catch {}
                     }}
                   />
-                  <div style={{fontSize:16,color:"var(--muted)",marginTop:4}}>{userEmail}</div>
+                  <div style={{fontSize:12,color:"var(--muted)",marginTop:4}}>{userEmail}</div>
                 </div>
               </div>
             )}
@@ -7120,7 +7120,7 @@ description: one sentence max.`,
                 <button className="ls-action-btn" style={{marginTop:16,maxWidth:260}} onClick={()=>{setAuthMode("signup");setShowAuth(true);}}>
                   Create your free account
                 </button>
-                <button style={{background:"none",border:"none",color:"var(--muted)",fontSize:20,cursor:"pointer",marginTop:6}} onClick={()=>{setAuthMode("login");setShowAuth(true);}}>
+                <button style={{background:"none",border:"none",color:"var(--muted)",fontSize:14,cursor:"pointer",marginTop:6}} onClick={()=>{setAuthMode("login");setShowAuth(true);}}>
                   Already have an account? Sign in
                 </button>
               </div>
@@ -7177,7 +7177,7 @@ description: one sentence max.`,
                       <div className="ls-callout info" style={{marginBottom:12}}>
                         <Lightbulb size={14} strokeWidth={2} className="ls-callout-icon"/>
                         <span>Free accounts share your last {MEM_BOOKS} books for better picks.{" "}
-                          <button style={{background:"none",border:"none",color:"var(--gold)",fontWeight:600,cursor:"pointer",padding:0,fontSize:18}} onClick={()=>setPro(true)}>Upgrade to Pro</button> for full history.</span>
+                          <button style={{background:"none",border:"none",color:"var(--gold)",fontWeight:600,cursor:"pointer",padding:0,fontSize:13}} onClick={()=>setPro(true)}>Upgrade to Pro</button> for full history.</span>
                       </div>
                     )}
                     {readBooks.length===0 ? (
@@ -7268,7 +7268,7 @@ description: one sentence max.`,
                               <button className="ls-ask-ai-btn" onClick={()=>goAsk(`Should I read "${t}"? Give me a real, honest take based on what I've read before.`)}>Ask AI</button>
                               <SafeAmazonLink
                                 title={t.split(" — ")[0]} author={t.split(" — ")[1]||""} isbn=""
-                                style={{display:"inline-flex",alignItems:"center",padding:"4px 9px",borderRadius:6,textDecoration:"none",background:"rgba(212,148,26,.1)",border:"1px solid rgba(212,148,26,.2)",color:"var(--gold)",fontSize:16,fontWeight:600}}>Buy</SafeAmazonLink>
+                                style={{display:"inline-flex",alignItems:"center",padding:"4px 9px",borderRadius:6,textDecoration:"none",background:"rgba(212,148,26,.1)",border:"1px solid rgba(212,148,26,.2)",color:"var(--gold)",fontSize:12,fontWeight:600}}>Buy</SafeAmazonLink>
                               <button className="ls-remove-btn" onClick={()=>setWantList(p=>p.filter((_,j)=>j!==i))}><X size={14}/></button>
                             </div>
                           </div>
@@ -7305,7 +7305,7 @@ description: one sentence max.`,
                               <button className="ls-ask-ai-btn" onClick={()=>goAsk(`I saved "${b.title}" by ${b.author}. Should I read it next? Give me your honest take.`)}>Ask AI</button>
                               <SafeAmazonLink
                                 title={b.title} author={b.author||""} isbn={b.isbn||""}
-                                style={{display:"inline-flex",alignItems:"center",padding:"4px 9px",borderRadius:6,textDecoration:"none",background:"rgba(212,148,26,.1)",border:"1px solid rgba(212,148,26,.2)",color:"var(--gold)",fontSize:16,fontWeight:600}}>Buy</SafeAmazonLink>
+                                style={{display:"inline-flex",alignItems:"center",padding:"4px 9px",borderRadius:6,textDecoration:"none",background:"rgba(212,148,26,.1)",border:"1px solid rgba(212,148,26,.2)",color:"var(--gold)",fontSize:12,fontWeight:600}}>Buy</SafeAmazonLink>
                               <button className="ls-remove-btn" title="Remove from saved"
                                 onClick={()=>setSavedBooks(p=>p.filter(sb=>sb.id!==b.id))}>
                                 <X size={14}/>
@@ -7353,7 +7353,7 @@ description: one sentence max.`,
                   <div className="ls-ask-entry">
                     {currentBook ? (
                       <>
-                        <div style={{fontSize:16,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"rgba(198,161,91,.55)",marginBottom:14}}>Currently reading</div>
+                        <div style={{fontSize:12,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"rgba(198,161,91,.55)",marginBottom:14}}>Currently reading</div>
                         <div className="ls-ask-entry-headline">
                           How's <em>{currentBook.split(":")[0].split(" ").slice(0,5).join(" ")}</em> going?
                         </div>
@@ -7588,7 +7588,7 @@ description: one sentence max.`,
             {proStep==="card" && (
               <>
                 <div className="ls-modal-eyebrow">LitSense Pro — $4.99/month</div>
-                <div className="ls-modal-title" style={{fontSize:33,marginBottom:20}}>Payment details</div>
+                <div className="ls-modal-title" style={{fontSize:24,marginBottom:20}}>Payment details</div>
 
                 {proError && <div className="ls-stripe-error">{proError}</div>}
 
@@ -7629,7 +7629,7 @@ description: one sentence max.`,
                   </div>
                 </div>
 
-                <div style={{fontSize:16,color:"var(--muted)",marginBottom:16,lineHeight:1.6}}>
+                <div style={{fontSize:12,color:"var(--muted)",marginBottom:16,lineHeight:1.6}}>
                   Secured by Stripe. Cancel anytime from your account settings. Free 7-day trial — card charged after trial ends.
                 </div>
 
@@ -7696,7 +7696,7 @@ description: one sentence max.`,
             {proStep==="done" && (
               <div style={{textAlign:"center",padding:"20px 0"}}>
                 <CheckCircle size={44} style={{color:"var(--gold)",marginBottom:16}}/>
-                <div className="ls-modal-title" style={{fontSize:36,marginBottom:8}}>Welcome to Pro</div>
+                <div className="ls-modal-title" style={{fontSize:26,marginBottom:8}}>Welcome to Pro</div>
                 <div className="ls-modal-sub">Your 7-day free trial has started. Enjoy unlimited everything.</div>
                 <button className="ls-modal-cta" style={{marginTop:24}} onClick={()=>{setPro(false);setProStep("pitch");}}>
                   Let's go →
@@ -7724,10 +7724,10 @@ description: one sentence max.`,
                 background:"rgba(184,64,40,.15)", border:"1px solid rgba(184,64,40,.3)",
                 borderRadius:"var(--r-md)", display:"flex", alignItems:"center", justifyContent:"space-between", gap:10,
               }}>
-                <span style={{ fontSize:19, color:"#f0c8b8", lineHeight:1.4 }}>Leave signup? Your progress is not saved.</span>
+                <span style={{ fontSize:14, color:"#f0c8b8", lineHeight:1.4 }}>Leave signup? Your progress is not saved.</span>
                 <div style={{ display:"flex", gap:6, flexShrink:0 }}>
-                  <button onClick={()=>setAuthExitWarn(false)} style={{ padding:"5px 10px", borderRadius:6, border:"none", background:"rgba(255,255,255,.12)", color:"var(--text2)", fontSize:17, fontWeight:600, cursor:"pointer" }}>Stay</button>
-                  <button onClick={()=>{ setShowAuth(false); setAuthError(""); setAuthExitWarn(false); }} style={{ padding:"5px 10px", borderRadius:6, border:"none", background:"rgba(184,64,40,.4)", color:"#f0c8b8", fontSize:17, fontWeight:600, cursor:"pointer" }}>Leave</button>
+                  <button onClick={()=>setAuthExitWarn(false)} style={{ padding:"5px 10px", borderRadius:6, border:"none", background:"rgba(255,255,255,.12)", color:"var(--text2)", fontSize:12, fontWeight:600, cursor:"pointer" }}>Stay</button>
+                  <button onClick={()=>{ setShowAuth(false); setAuthError(""); setAuthExitWarn(false); }} style={{ padding:"5px 10px", borderRadius:6, border:"none", background:"rgba(184,64,40,.4)", color:"#f0c8b8", fontSize:12, fontWeight:600, cursor:"pointer" }}>Leave</button>
                 </div>
               </div>
             )}
@@ -7792,13 +7792,13 @@ description: one sentence max.`,
               textAlign:"center", flexShrink:0,
             }}>
               <div style={{
-                fontSize:11, fontWeight:700, letterSpacing:"5px",
+                fontSize:10, fontWeight:700, letterSpacing:"5px",
                 textTransform:"uppercase", color:"rgba(198,161,91,.75)",
                 marginBottom:18,
               }}>LitSense</div>
 
               <div style={{
-                fontFamily:"'Lora',serif", fontSize:28, fontWeight:700,
+                fontFamily:"'Lora',serif", fontSize:20, fontWeight:700,
                 color:"#f0e8d8", lineHeight:1.28, marginBottom:14,
                 fontStyle:"italic",
               }}>
@@ -7811,7 +7811,7 @@ description: one sentence max.`,
               }}/>
 
               <div style={{
-                fontSize:15, color:"rgba(240,232,216,.78)",
+                fontSize:11, color:"rgba(240,232,216,.78)",
                 lineHeight:1.75, maxWidth:300, margin:"0 auto",
               }}>
                 Every book you'll ever love, waiting on the other side. LitSense learns your taste — your pace, your mood, what moves you — and finds exactly what's next. Not an algorithm. A real opinion, made entirely for you.
@@ -7868,7 +7868,7 @@ description: one sentence max.`,
                   }}/>
                 </div>
                 <div style={{
-                  fontSize:12, fontWeight:700, letterSpacing:"4px",
+                  fontSize:10, fontWeight:700, letterSpacing:"4px",
                   textTransform:"uppercase", color:"rgba(198,161,91,.85)",
                   textShadow:"0 2px 16px rgba(0,0,0,.9)",
                 }}>Tap the door</div>
@@ -7879,7 +7879,7 @@ description: one sentence max.`,
           {/* Bottom note — hidden while playing */}
           {!welcomePlaying && (
             <div style={{
-              paddingBottom:36, fontSize:12,
+              paddingBottom:36, fontSize:10,
               color:"rgba(240,232,216,.45)",
               fontStyle:"italic", flexShrink:0,
             }}>No account needed to begin</div>
