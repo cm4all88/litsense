@@ -4907,21 +4907,34 @@ function BookDetailSheet({ book: b, onClose, onAsk, isSaved, onSave, onDismiss, 
           overflowY:"auto",
         }}
       >
-        <div style={{width:40,height:4,background:"rgba(255,255,255,.15)",borderRadius:2,margin:"14px auto 20px"}}/>
+        <div style={{width:40,height:4,background:"rgba(255,255,255,.2)",borderRadius:2,position:"absolute",top:10,left:"50%",transform:"translateX(-50%)",zIndex:10}}/>
 
-        {/* Cover + meta row */}
-        <div style={{display:"flex",gap:16,padding:"0 20px 16px"}}>
-          <div style={{width:80,height:118,borderRadius:10,overflow:"hidden",flexShrink:0,boxShadow:"0 8px 28px rgba(0,0,0,.65)",position:"relative"}}>
-            <BookCover isbn={b.isbn} title={b.title} author={b.author} color={b.color} className="fill"/>
+        {/* Full-width hero cover */}
+        <div style={{
+          width:"100%", height:320, position:"relative", overflow:"hidden",
+          borderRadius:"20px 20px 0 0", marginBottom:20,
+        }}>
+          <BookCover isbn={b.isbn} title={b.title} author={b.author} color={b.color} className="fill"/>
+          {/* Gradient fade into sheet */}
+          <div style={{
+            position:"absolute", inset:0,
+            background:"linear-gradient(to bottom, transparent 40%, rgba(18,14,9,.98) 100%)",
+          }}/>
+          {/* Title + author overlaid on the gradient */}
+          <div style={{
+            position:"absolute", bottom:0, left:0, right:0, padding:"0 20px 16px",
+          }}>
+            <div style={{fontFamily:"'Lora',serif",fontSize:27,fontWeight:700,color:"#f0e8d8",lineHeight:1.22,marginBottom:4}}>{b.title}</div>
+            <div style={{fontSize:16,color:"rgba(212,148,26,.9)"}}>{b.author}</div>
           </div>
-          <div style={{flex:1,minWidth:0,paddingTop:4}}>
-            <div style={{fontFamily:"'Lora',serif",fontSize:27,fontWeight:700,color:"var(--text)",lineHeight:1.3,marginBottom:4}}>{b.title}</div>
-            <div style={{fontSize:18,color:"rgba(212,148,26,.8)",marginBottom:10}}>{b.author}</div>
-            {b.tags?.slice(0,2).map(t=>(
-              <span key={t} style={{display:"inline-block",fontSize:15,fontWeight:600,padding:"3px 9px",borderRadius:99,background:"rgba(255,255,255,.07)",color:"var(--text2)",marginRight:5,marginBottom:5}}>{t}</span>
-            ))}
-            <div style={{fontSize:16,color:"var(--gold)",fontWeight:700,marginTop:4}}>{b.score}% match</div>
-          </div>
+        </div>
+
+        {/* Tags + match score */}
+        <div style={{display:"flex",alignItems:"center",gap:8,padding:"0 20px 16px",flexWrap:"wrap"}}>
+          <span style={{fontSize:15,fontWeight:700,color:"var(--gold)",marginRight:4}}>{b.score}% match</span>
+          {b.tags?.slice(0,3).map(t=>(
+            <span key={t} style={{display:"inline-block",fontSize:13,fontWeight:600,padding:"3px 10px",borderRadius:99,background:"rgba(255,255,255,.07)",color:"var(--text2)"}}>{t}</span>
+          ))}
         </div>
 
         {/* Divider */}
@@ -6202,14 +6215,7 @@ export default function LitSense() {
   const [shelfToast, setShelfToast] = useState(null); // { title } shown briefly when book auto-added
   const [discBook,   setDiscBook]   = useState(null); // book being discussed
   const [detailBook, setDetailBook] = useState(null); // glass detail sheet
-  const [showWelcome, setShowWelcome] = useState(() => {
-    try {
-      const last = localStorage.getItem("ls_welcome_shown");
-      if (!last) return true;
-      const lastDate = new Date(last).toDateString();
-      return lastDate !== new Date().toDateString(); // show once per day
-    } catch { return true; }
-  });
+  const [showWelcome, setShowWelcome] = useState(true); // always show for testing; restore once-per-day gate before launch
   const [welcomePlaying, setWelcomePlaying] = useState(false);
   const welcomeVideoRef = useRef(null);
   const [shelfTab, setShelfTab]   = useState("read");
