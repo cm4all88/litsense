@@ -298,7 +298,7 @@ const CSS = `
 
 /* ── LAYOUT ── */
 .ls-main{flex:1;overflow:hidden;display:flex;flex-direction:column;}
-.ls-scroll{flex:1;overflow-y:auto;overscroll-behavior:none;-webkit-overflow-scrolling:auto;}
+.ls-scroll{flex:1;overflow-y:auto;overscroll-behavior:none;-webkit-overflow-scrolling:touch;}
 
 /* ── CINEMATIC HERO ── */
 .ls-hero{
@@ -6524,15 +6524,16 @@ export default function LitSense() {
     return voice;
   }, [savedBooks, readBooks, mood, genre]);
 
-  const wheelBooks = BOOKS
+  const wheelBooks = useMemo(() => BOOKS
     .filter(b => !dismissedBooks.includes(b.id))
     .sort((a, b) => b.score - a.score)
-    .slice(0, 7);
+    .slice(0, 7),
+  [dismissedBooks]);
 
   // Tracks which book is centered in the wheel — drives scene illustration
-  const [activeWheelBook, setActiveWheelBook] = useState(wheelBooks[0] || null);
+  const [activeWheelBook, setActiveWheelBook] = useState(null);
 
-  const userInitial = userEmail ? userEmail[0].toUpperCase() : "";
+  const userInitial = useMemo(() => userEmail ? userEmail[0].toUpperCase() : "", [userEmail]);
   const [userName,  setUserName]  = useState(() => { try { return localStorage.getItem("ls_username") || ""; } catch { return ""; } });
   const [userPhoto, setUserPhoto] = useState(() => { try { return localStorage.getItem("ls_photo") || ""; } catch { return ""; } });
 
@@ -6552,8 +6553,8 @@ export default function LitSense() {
   // Intent-driven background key — must be after adaptedVoice
   const bgKey = useMemo(() => getBackgroundKey({
     mood, adaptedVoice, genre,
-    inAsk: tab === "ask" && msgs.length > 0,
-  }), [mood, adaptedVoice, genre, tab, msgs.length]);
+    inAsk: tab === "ask",
+  }), [mood, adaptedVoice, genre, tab]);
 
   const adaptedUserState = useMemo(() => adaptUserState(
     { savedBooks, readBooks, mood, genre, dismissedBooks, voice: adaptedVoice },
@@ -6730,11 +6731,6 @@ export default function LitSense() {
   const [quickRateDone, setQuickRateDone] = useState(() => { try { return !!localStorage.getItem("ls_qr_done"); } catch { return false; } });
   const [referralCount, setReferralCount] = useState(() => { try { return parseInt(localStorage.getItem("ls_refs")||"0",10); } catch { return 0; } });
   // Referral bonus adds to daily question limit
-  const refMilestone = getReferralMilestone(referralCount);
-  const refBonus = (!isPro && isSignedIn && refMilestone) ? refMilestone.bonus : 0;
-  const questionLimit = isPro ? Infinity : isSignedIn ? LIMIT_FREE + refBonus : LIMIT_ANON;
-  const questionsLeft = questionLimit === Infinity ? null : Math.max(0, questionLimit - questionsUsed);
-  const atLimit = !isPro && questionsUsed >= questionLimit;
   const [msgs, setMsgs]           = useState([]);
   const [chatIn, setChatIn]       = useState("");
   const [chatLoad, setLoad]       = useState(false);
@@ -6742,12 +6738,19 @@ export default function LitSense() {
   const endRef = useRef(null);
   useEffect(() => { endRef.current?.scrollIntoView({behavior:"smooth"}); }, [msgs, chatLoad]);
 
+  // ── DERIVED VALUES — after all hooks ──────────────────────────────────────
+  const refMilestone = getReferralMilestone(referralCount);
+  const refBonus = (!isPro && isSignedIn && refMilestone) ? refMilestone.bonus : 0;
+  const questionLimit = isPro ? Infinity : isSignedIn ? LIMIT_FREE + refBonus : LIMIT_ANON;
+  const questionsLeft = questionLimit === Infinity ? null : Math.max(0, questionLimit - questionsUsed);
+  const atLimit = !isPro && questionsUsed >= questionLimit;
+
   // ── SHELF ACTIONS ─────────────────────────────────────────────────────────
-  const requireAuth = (cb) => { if (!isSignedIn) { setAuthMode("signup"); setShowAuth(true); return; } cb(); };
-  const addBook    = () => requireAuth(() => { if (!bookInput.trim()) return; setReadBooks(p=>[...p,{id:Date.now(),title:bookInput.trim(),author:"",rating:3}]); setBookInput(""); });
-  const setRating  = (id,r) => setReadBooks(p=>p.map(b=>b.id===id?{...b,rating:r}:b));
-  const removeBook = (id) => setReadBooks(p=>p.filter(b=>b.id!==id));
-  const addWant    = () => requireAuth(() => { if (!wantInput.trim()) return; setWantList(p=>[...p,wantInput.trim()]); setWantInput(""); });
+  const requireAuth = useCallback((cb) => { if (!isSignedIn) { setAuthMode("signup"); setShowAuth(true); return; } cb(); }, [isSignedIn]);
+  const addBook    = useCallback(() => requireAuth(() => { if (!bookInput.trim()) return; setReadBooks(p=>[...p,{id:Date.now(),title:bookInput.trim(),author:"",rating:3}]); setBookInput(""); }), [requireAuth, bookInput]);
+  const setRating  = useCallback((id,r) => setReadBooks(p=>p.map(b=>b.id===id?{...b,rating:r}:b)), []);
+  const removeBook = useCallback((id) => setReadBooks(p=>p.filter(b=>b.id!==id)), []);
+  const addWant    = useCallback(() => requireAuth(() => { if (!wantInput.trim()) return; setWantList(p=>[...p,wantInput.trim()]); setWantInput(""); }), [requireAuth, wantInput]);
 
   // ── PROFILE ───────────────────────────────────────────────────────────────
   // ── STEP 2: intelligence-aware profile for AI system prompt ─────────────────
@@ -6812,7 +6815,7 @@ export default function LitSense() {
   }, [readBooks, currentBook, wantList, mood, genre, isPro, intelligence, reactions, savedBooks]);
 
   // ── CHAT ──────────────────────────────────────────────────────────────────
-  const sendChat = async (msg, isRetry=false) => {
+  const sendChat = useCallback(async (msg, isRetry=false) => {
     if (chatLoad||!msg.trim()) return;
     if (atLimit) { setPro(true); return; }
 
@@ -6892,12 +6895,12 @@ export default function LitSense() {
       });
     }
     setLoad(false);
-  };
+  }, [chatLoad, atLimit, msgs, questionsUsed, buildProfile, saveCounter]);
 
-  const dismissWelcome = () => {
+  const dismissWelcome = useCallback(() => {
     try { localStorage.setItem("ls_welcome_shown", new Date().toISOString()); } catch {}
     setShowWelcome(false);
-  };
+  }, []);
 
   // ── LINK HANDLING ─────────────────────────────────────────────────────────
   const fetchLinkMeta = useCallback(async (url) => {
@@ -6935,7 +6938,7 @@ description: one sentence max.`,
     }
   }, [linkCard, fetchLinkMeta]);
 
-  const goAsk = (prompt) => { setTab("ask"); setTimeout(()=>sendChat(prompt),80); };
+  const goAsk = useCallback((prompt) => { setTab("ask"); setTimeout(()=>sendChat(prompt),80); }, [sendChat]);
 
   // ── BACK NAVIGATION ───────────────────────────────────────────────────────
   // Priority order: overlay → ask result → tab → root
@@ -6952,7 +6955,8 @@ description: one sentence max.`,
     }
   }, [detailBook, tappedBook, tab, msgs]);
 
-  const canGoBack = !!(detailBook || tappedBook || (tab === "ask" && msgs.length > 0) || tab !== "discover");
+  const canGoBack = useMemo(() => !!(detailBook || tappedBook || (tab === "ask" && msgs.length > 0) || tab !== "discover"),
+    [detailBook, tappedBook, tab, msgs.length]);
 
   // Stable ref so the popstate listener always calls the latest goBack
   const goBackRef = useRef(goBack);
@@ -6971,14 +6975,12 @@ description: one sentence max.`,
   }, []);
 
   // ── AUTH HANDLERS ─────────────────────────────────────────────────────────
-  const handleAuth = async () => {
+  const handleAuth = useCallback(async () => {
     setAuthError("");
     if (!authEmail.trim() || !authPass.trim()) { setAuthError("Please fill in both fields."); return; }
     try {
       if (authMode === "signup") {
         await signUp(authEmail.trim(), authPass.trim());
-        // Supabase sends a confirmation email by default
-        // For now we auto-sign-in after signup
         await signIn(authEmail.trim(), authPass.trim());
       } else {
         await signIn(authEmail.trim(), authPass.trim());
@@ -6987,25 +6989,25 @@ description: one sentence max.`,
     } catch (err) {
       setAuthError(err.message || "Something went wrong. Please try again.");
     }
-  };
+  }, [authEmail, authPass, authMode]);
 
-  const handleSignOut = async () => {
+  const handleSignOut = useCallback(async () => {
     await signOut();
     setIsPro(false);
     setReadBooks([]); setCurrentBook(""); setWantList([]);
     localStorage.removeItem("ls_pro");
-  };
+  }, []);
 
-  const handleUpgrade = () => {
+  const handleUpgrade = useCallback(() => {
     if (!isSignedIn) { setShowAuth(true); setAuthMode("signup"); setPro(false); return; }
     localStorage.setItem("ls_pro", "1");
     setIsPro(true);
     setPro(false);
-  };
+  }, [isSignedIn]);
 
 
   // ── BACKGROUND — inline gradients, no CSS class dependency ─────────────────
-  const discoverRows = buildDiscoverRows(BOOKS, adaptedUserState);
+  const discoverRows = useMemo(() => buildDiscoverRows(BOOKS, adaptedUserState), [adaptedUserState]);
 
   return (
     <div style={{ position:"relative", height:"100dvh", overflow:"hidden", background:"#12100E" }}>
@@ -8252,14 +8254,14 @@ description: one sentence max.`,
             color:"rgba(212,148,26,.55)", textAlign:"center",
           }}>A doorworth opening</div>
 
-          {/* Keyhole image — takes up center */}
-          <div style={{flex:1, display:"flex", alignItems:"center", justifyContent:"center", width:"100%"}}>
+          {/* Keyhole image — takes up center, capped so it never overlaps bottom content */}
+          <div style={{flex:1, display:"flex", alignItems:"center", justifyContent:"center", width:"100%", overflow:"hidden", maxHeight:"55vh"}}>
             <img
               src="/keyhole.svg"
               alt=""
               style={{
-                width:"100%", maxWidth:420,
-                height:"auto",
+                width:"100%", maxWidth:380,
+                height:"100%",
                 objectFit:"contain",
               }}
             />
