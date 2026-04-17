@@ -6557,6 +6557,14 @@ export default function LitSense() {
     adaptVoice(bgVoice, archetype, signalEngagements),
   [bgVoice, archetype, signalEngagements]);
 
+  // ── CHAT STATE — must be before bgKey which reads msgs.length ───────────
+  const [msgs, setMsgs]           = useState([]);
+  const [chatIn, setChatIn]       = useState("");
+  const [chatLoad, setLoad]       = useState(false);
+  const [linkCard, setLinkCard]   = useState(null); // {phase,url,book} | null
+  const endRef = useRef(null);
+  useEffect(() => { endRef.current?.scrollIntoView({behavior:"smooth"}); }, [msgs, chatLoad]);
+
   // Intent-driven background key — must be after adaptedVoice
   const bgKey = useMemo(() => getBackgroundKey({
     mood, adaptedVoice, genre,
@@ -6743,12 +6751,6 @@ export default function LitSense() {
   const questionLimit = isPro ? Infinity : isSignedIn ? LIMIT_FREE + refBonus : LIMIT_ANON;
   const questionsLeft = questionLimit === Infinity ? null : Math.max(0, questionLimit - questionsUsed);
   const atLimit = !isPro && questionsUsed >= questionLimit;
-  const [msgs, setMsgs]           = useState([]);
-  const [chatIn, setChatIn]       = useState("");
-  const [chatLoad, setLoad]       = useState(false);
-  const [linkCard, setLinkCard]   = useState(null); // {phase,url,book} | null
-  const endRef = useRef(null);
-  useEffect(() => { endRef.current?.scrollIntoView({behavior:"smooth"}); }, [msgs, chatLoad]);
 
   // ── SHELF ACTIONS ─────────────────────────────────────────────────────────
   const requireAuth = (cb) => { if (!isSignedIn) { setAuthMode("signup"); setShowAuth(true); return; } cb(); };
