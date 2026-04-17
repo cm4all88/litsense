@@ -6215,7 +6215,7 @@ export default function LitSense() {
   const [shelfToast, setShelfToast] = useState(null); // { title } shown briefly when book auto-added
   const [discBook,   setDiscBook]   = useState(null); // book being discussed
   const [detailBook, setDetailBook] = useState(null); // glass detail sheet
-  const [showWelcome, setShowWelcome] = useState(true); // always show for testing; restore once-per-day gate before launch
+  const [showWelcome, setShowWelcome] = useState(false);
   const [welcomePlaying, setWelcomePlaying] = useState(false);
   const welcomeVideoRef = useRef(null);
   const [shelfTab, setShelfTab]   = useState("read");
