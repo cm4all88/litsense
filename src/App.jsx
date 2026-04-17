@@ -6492,27 +6492,14 @@ description: one sentence max.`,
     <div style={{ position:"relative", height:"100dvh", overflow:"hidden", background:"#12100E" }}>
       <style>{CSS}</style>
 
-      {/* ── BACKGROUND ── */}
+      {/* ── BACKGROUND — static library bookshelf ── */}
       <div style={{ position:"absolute", inset:0, zIndex:0, pointerEvents:"none", overflow:"hidden" }}>
-        {/* Previous image — fades out */}
-        {bgPrev && (
-          <div style={{
-            position:"absolute", inset:"-5%",
-            backgroundImage: `url('${BACKGROUNDS[bgPrev]}')`,
-            backgroundSize:"cover", backgroundPosition:"center",
-            filter:"blur(4px) saturate(0.85) brightness(0.72)",
-            opacity:0, transition:"opacity 1.2s ease",
-          }}/>
-        )}
-        {/* Current image — always visible */}
         <div style={{
           position:"absolute", inset:"-5%",
-          backgroundImage: `url('${BACKGROUNDS[bgCurrent]}')`,
-          backgroundSize:"cover", backgroundPosition:"center",
-          filter:"blur(4px) saturate(0.85) brightness(0.72)",
-          opacity:1, transition:"opacity 1.2s ease",
+          backgroundImage: `url('${BACKGROUNDS.literary}')`,
+          backgroundSize: "cover", backgroundPosition: "center",
+          filter: "blur(8px) saturate(0.8) brightness(0.62)",
         }}/>
-        {/* Overlay + vignette — single pass */}
         <div style={{
           position:"absolute", inset:0,
           background:"radial-gradient(ellipse 140% 110% at 50% 38%, rgba(10,8,6,.32) 0%, rgba(8,6,4,.50) 55%, rgba(6,4,2,.72) 100%)",
@@ -6633,19 +6620,47 @@ description: one sentence max.`,
               }}
             />
 
-            {/* ── Recommendation Wheel ── */}
+            {/* ── Recommendation Wheel — genre background shifts with active book ── */}
             {wheelBooks.length > 0 && (
-              <RecommendationWheel
-                books={wheelBooks}
-                savedBooks={savedBooks}
-                onSave={handleSaveBook}
-                onDismiss={handleDismissBook}
-                onAsk={goAsk}
-                onTap={setTappedBook}
-                onReact={handleReaction}
-                userState={adaptedUserState}
-                onActiveBook={setActiveWheelBook}
-              />
+              <div style={{ position:"relative", isolation:"isolate", overflow:"hidden" }}>
+                {/* Genre photo — crossfades as active book changes */}
+                <div style={{ position:"absolute", inset:0, zIndex:0, overflow:"hidden" }}>
+                  {bgPrev && (
+                    <div style={{
+                      position:"absolute", inset:"-5%",
+                      backgroundImage:`url('${BACKGROUNDS[bgPrev]}')`,
+                      backgroundSize:"cover", backgroundPosition:"center",
+                      filter:"blur(6px) saturate(1.1) brightness(0.6)",
+                      opacity:0, transition:"opacity 1.2s ease",
+                    }}/>
+                  )}
+                  <div style={{
+                    position:"absolute", inset:"-5%",
+                    backgroundImage:`url('${BACKGROUNDS[bgCurrent]}')`,
+                    backgroundSize:"cover", backgroundPosition:"center",
+                    filter:"blur(6px) saturate(1.1) brightness(0.6)",
+                    opacity:1, transition:"opacity 1.2s ease",
+                  }}/>
+                  {/* Gradient fade — darker at bottom so info panel stays readable */}
+                  <div style={{
+                    position:"absolute", inset:0,
+                    background:"linear-gradient(to bottom, rgba(6,4,2,.30) 0%, rgba(6,4,2,.70) 70%, rgba(6,4,2,.92) 100%)",
+                  }}/>
+                </div>
+                <div style={{ position:"relative", zIndex:1 }}>
+                  <RecommendationWheel
+                    books={wheelBooks}
+                    savedBooks={savedBooks}
+                    onSave={handleSaveBook}
+                    onDismiss={handleDismissBook}
+                    onAsk={goAsk}
+                    onTap={setTappedBook}
+                    onReact={handleReaction}
+                    userState={adaptedUserState}
+                    onActiveBook={setActiveWheelBook}
+                  />
+                </div>
+              </div>
             )}
 
             {/* Cinematic Hero */}
