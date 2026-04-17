@@ -223,7 +223,7 @@ const CSS = `
 
 /* ── HEADER — espresso glass ── */
 .ls-hdr{
-  height:116px;min-height:116px;padding:14px 20px;
+  height:288px;min-height:288px;padding:100px 20px;
   display:flex;align-items:center;justify-content:space-between;
   position:relative;
   background:rgba(18,16,14,.72);
