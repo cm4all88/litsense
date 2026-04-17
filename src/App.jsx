@@ -7727,25 +7727,51 @@ description: one sentence max.`,
         </div>
       )}
 
-      {/* ── WELCOME SCREEN — shown once per day ── */}
+      {/* ── WELCOME SCREEN ── */}
       {showWelcome && (
         <div style={{
           position:"fixed", inset:0, zIndex:500,
           display:"flex", flexDirection:"column",
           alignItems:"center", justifyContent:"space-between",
-          background:"#07050380",
-          backdropFilter:"blur(2px)",
+          background:"#080604",
           paddingBottom:"env(safe-area-inset-bottom,0)",
         }}>
 
-          {/* Eyebrow */}
-          <div style={{
-            paddingTop:36, fontSize:10, fontWeight:700,
-            letterSpacing:"5px", textTransform:"uppercase",
-            color:"rgba(198,161,91,.5)", textAlign:"center", flexShrink:0,
-          }}>Your reading life begins here</div>
+          {/* Top — eyebrow + headline */}
+          {!welcomePlaying && (
+            <div style={{
+              width:"100%", padding:"44px 32px 0",
+              textAlign:"center", flexShrink:0,
+            }}>
+              <div style={{
+                fontSize:11, fontWeight:700, letterSpacing:"5px",
+                textTransform:"uppercase", color:"rgba(198,161,91,.75)",
+                marginBottom:18,
+              }}>LitSense</div>
 
-          {/* Video — static until tapped, plays once, then dismisses */}
+              <div style={{
+                fontFamily:"'Lora',serif", fontSize:28, fontWeight:700,
+                color:"#f0e8d8", lineHeight:1.28, marginBottom:14,
+                fontStyle:"italic",
+              }}>
+                Behind this door is an<br/>adventure built for you.
+              </div>
+
+              <div style={{
+                height:1, width:40, background:"rgba(198,161,91,.4)",
+                margin:"0 auto 16px",
+              }}/>
+
+              <div style={{
+                fontSize:15, color:"rgba(240,232,216,.78)",
+                lineHeight:1.75, maxWidth:300, margin:"0 auto",
+              }}>
+                Every book you'll ever love, waiting on the other side. LitSense learns your taste — your pace, your mood, what moves you — and finds exactly what's next. Not an algorithm. A real opinion, made entirely for you.
+              </div>
+            </div>
+          )}
+
+          {/* Door — static until tapped, plays once, dismisses on end */}
           <div
             onClick={() => {
               if (welcomePlaying) return;
@@ -7753,7 +7779,8 @@ description: one sentence max.`,
               welcomeVideoRef.current?.play();
             }}
             style={{
-              flex:1, display:"flex", alignItems:"center", justifyContent:"center",
+              flex:1, display:"flex", flexDirection:"column",
+              alignItems:"center", justifyContent:"center",
               width:"100%", overflow:"hidden", minHeight:0,
               cursor: welcomePlaying ? "default" : "pointer",
               position:"relative",
@@ -7762,105 +7789,53 @@ description: one sentence max.`,
             <video
               ref={welcomeVideoRef}
               src="/keyhole.mp4"
-              poster="/keyhole.svg"
               muted playsInline
               onEnded={dismissWelcome}
               style={{
-                width:"100%", maxWidth:400,
+                width:"100%", maxWidth:420,
                 maxHeight:"100%",
                 objectFit:"contain",
               }}
             />
-            {/* Tap hint — visible only before play */}
+
+            {/* Tap prompt overlay — visible before play only */}
             {!welcomePlaying && (
               <div style={{
-                position:"absolute",
-                bottom:"12%", left:"50%", transform:"translateX(-50%)",
-                display:"flex", flexDirection:"column", alignItems:"center", gap:8,
-                animation:"fadeIn .6s ease",
+                position:"absolute", bottom:"10%",
+                left:0, right:0,
+                display:"flex", flexDirection:"column",
+                alignItems:"center", gap:10,
+                animation:"fadeIn .9s ease",
               }}>
+                {/* Pulsing ring */}
                 <div style={{
-                  width:48, height:48, borderRadius:"50%",
-                  border:"1.5px solid rgba(198,161,91,.5)",
+                  width:52, height:52, borderRadius:"50%",
+                  border:"1.5px solid rgba(198,161,91,.55)",
                   display:"flex", alignItems:"center", justifyContent:"center",
-                  background:"rgba(6,4,2,.45)", backdropFilter:"blur(8px)",
+                  animation:"micPulse 2s ease-in-out infinite",
                 }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(198,161,91,.85)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polygon points="5 3 19 12 5 21 5 3"/>
-                  </svg>
+                  <div style={{
+                    width:10, height:10, borderRadius:"50%",
+                    background:"rgba(198,161,91,.8)",
+                  }}/>
                 </div>
                 <div style={{
-                  fontSize:10, fontWeight:700, letterSpacing:"3px",
-                  textTransform:"uppercase", color:"rgba(198,161,91,.55)",
+                  fontSize:12, fontWeight:700, letterSpacing:"4px",
+                  textTransform:"uppercase", color:"rgba(198,161,91,.85)",
+                  textShadow:"0 2px 16px rgba(0,0,0,.9)",
                 }}>Tap the door</div>
               </div>
             )}
           </div>
 
-          {/* Bottom — hidden once video starts */}
+          {/* Bottom note — hidden while playing */}
           {!welcomePlaying && (
-            <div style={{width:"100%", padding:"0 32px 44px", textAlign:"center", flexShrink:0}}>
-              <div style={{
-                fontFamily:"'Lora',serif", fontSize:24, fontWeight:700,
-                color:"#f0e8d8", lineHeight:1.3, marginBottom:10,
-                fontStyle:"italic",
-              }}>
-                Behind this door is every book<br/>you were meant to read.
-              </div>
-              <div style={{
-                height:1, width:36, background:"rgba(198,161,91,.35)",
-                margin:"0 auto 14px",
-              }}/>
-              <div style={{
-                fontSize:13, color:"rgba(240,232,216,.52)",
-                lineHeight:1.75, maxWidth:290, margin:"0 auto 0",
-              }}>
-                LitSense doesn't just recommend books — it learns exactly how you read. Your pace. Your mood. What moves you. What you can't put down. Then it finds what's next.
-              </div>
-            </div>
+            <div style={{
+              paddingBottom:36, fontSize:12,
+              color:"rgba(240,232,216,.45)",
+              fontStyle:"italic", flexShrink:0,
+            }}>No account needed to begin</div>
           )}
-        </div>
-      )}
-
-      {false && showWelcome && (
-        <div className="ls-welcome">
-          {/* Logo */}
-          <div className="ls-welcome-logo">
-            <svg height="40" viewBox="0 0 1267.82 368.3" xmlns="http://www.w3.org/2000/svg" style={{width:"auto"}}>
-              <defs><style>{`.wl1{fill:#d4941a}.wl2{fill:#fff}`}</style></defs>
-              <path className="wl2" d="M551.37,199.01c-2.51,10.46-4.77,17.95-6.77,22.47-2,4.52-4.59,8.72-7.75,12.59-1.95,3.62-6.14,7.24-12.57,10.85-8.57,4.78-20.34,7.17-35.33,7.17l-8.8-.19-8.24.19-13.27-.75c-.93-1.17-1.4-3.7-1.4-7.59l.56-92.27c0-5.19.05-9.41.14-12.65.28-8.7.42-16.42.42-23.17,0-5.84-.14-12.65-.42-20.44-.19-4.93-.28-8.43-.28-10.51,0-1.69.03-3.37.1-5.06.21-6.49.31-10.06.31-10.71v-5.64l.42-12.26.14-5.45c.19-.65.46-1.43.84-2.34,1.12-.78,1.91-1.29,2.37-1.56l17.31-5.65c3.54-.65,5.59-1.43,6.14-2.34,1.02-1.54,1.54-3.78,1.54-6.72,0-3.71-.37-6.27-1.12-7.68-.56-1.02-1.54-1.54-2.93-1.54-.47,0-2.19.18-5.17.53-10.05,1.08-18.29,1.61-24.72,1.61l-14.8-.39-19.97.19c-13.96-1.04-22.06-1.56-24.3-1.56-.93,0-1.82.33-2.65.97-.09,2.08-.14,3.63-.14,4.67,0,1.82.09,4.41.28,7.78,1.3,1.56,3.58,2.92,6.84,4.08,1.86.52,3.96,1.43,6.28,2.72,3.07,1.69,4.84,2.66,5.31,2.92,4.75,2.08,7.42,3.8,8.03,5.16.6,1.36,1.23,8.85,1.89,22.48v2.73l-.14,19.66-.56,43.4.28,20.25-.14,19.07v16.15l-.84,25.3.28,24.91c0,2.08-.28,4.67-.84,7.78-1.21,1.5-3.63,2.32-7.26,2.44-.93,0-4.03.53-9.29,1.6-5.26,1.07-9.33,2.18-12.22,3.35-.65,2.46-.98,6.42-.98,11.86,0,1.04.09,2.27.28,3.69,1.21.13,2.09.19,2.65.19h2.09c9.59-1.04,19.87-1.75,30.86-2.14l28.49-1.17c15.27,0,30.86.39,46.78,1.17s24.81,1.23,26.67,1.36c10.24,1.04,15.78,1.56,16.62,1.56l7.26-.19h5.17c.56,0,1.91-.26,4.05-.78.65-2.07,1.3-7.76,1.95-17.07,1.68-23.27,2.51-39.56,2.51-48.87v-5.43c-2.79-.52-5.31-.78-7.54-.78h-4.47Z"/>
-              <path className="wl1" d="M799.84,92.35c7.82,0,13.41,4.25,16.78,12.74,3.37,8.49,3.81,19.41,1.35,32.77-1.26,6.61-1.1,10.44.49,11.47h2.51c17.19-19.83,26.45-32.28,27.77-37.34,1.52-5.83-1.11-13.13-7.9-21.88-6.79-8.75-17.03-13.13-30.71-13.13-18.06,0-34.74,8.43-50.03,25.28-15.3,16.85-25.57,35.33-30.82,55.42-3.02,11.54-4.07,23.4-3.16,35.59.91,12.19,5.69,27.07,14.34,44.66,8.65,17.59,13.45,30.04,14.39,37.36.94,7.32.57,14.22-1.12,20.69-3.28,12.56-9.85,23.61-19.69,33.13-9.84,9.52-19.7,14.28-29.56,14.28-9.03,0-15.36-3.82-18.99-11.47-3.63-7.65-3.5-21.58.38-41.81,1.23-6.48,1.53-10.92.9-13.32-.63-2.4-2.44-3.6-5.41-3.6-.84,0-5.83,6.61-14.96,19.83-9.14,13.22-14.18,21.65-15.12,25.28-1.69,6.48,1.28,14.88,8.92,25.18,7.64,10.31,19.42,15.46,35.34,15.46,19.27,0,38.39-8.78,57.36-26.35,18.97-17.56,31.47-37.88,37.51-60.96,2.61-9.98,3.36-20.52,2.25-31.6-1.11-11.08-6.26-25.97-15.46-44.67-9.2-18.7-14.36-32.35-15.48-40.96-1.12-8.61-.7-16.67,1.27-24.18,2.71-10.36,7.69-19.26,14.94-26.71,7.25-7.44,14.55-11.17,21.91-11.17Z"/>
-              <path className="wl1" d="M356.87,35.66c-7.41.84-14.7,1.85-21.87,3.01V0l-12.14,2.66c-29.04,6.36-55.87,18.36-79.73,35.67-27.97,20.29-46.55,44.23-58.59,64.66-.18.17-.36.34-.53.5-.18-.17-.36-.34-.54-.5-12.04-20.43-30.62-44.37-58.59-64.66C101.01,21.02,74.18,9.02,45.14,2.66l-12.14-2.66v38.67c-7.17-1.16-14.46-2.17-21.87-3.01l-11.13-1.26v278.88l8.91.98c29.92,3.29,58.65,8.78,85.38,16.3,29.82,8.39,56.6,19.14,79.71,31.98,1.67.93,3.33,1.87,4.97,2.82l3.38,1.96,1.66.96,1.66-.96,3.38-1.96c1.64-.95,3.29-1.89,4.97-2.82,23.11-12.84,49.89-23.59,79.71-31.98,26.73-7.53,55.46-13.01,85.38-16.3l8.91-.98V34.4l-11.13,1.26Z"/>
-            </svg>
-          </div>
-
-          <div className="ls-welcome-title">Your smart,<br/><em>observant</em> reading friend.</div>
-
-          <div className="ls-welcome-features">
-            {[
-              [BookOpen, "Reads with you", "Tell it what you're reading. It checks in, asks how it's going, and remembers."],
-              [Star, "Learns your taste", "The more you rate and react, the more personal your recommendations get."],
-              [MessageCircle, "Honest opinions", "Ask anything. Get a real answer — not an algorithm, a considered opinion."],
-              [Sparkles, "No assumptions", "It only knows what you tell it. Nothing is invented."],
-            ].map(([Icon, title, desc]) => (
-              <div key={title} className="ls-welcome-feature">
-                <div className="ls-welcome-feature-icon">
-                  <Icon size={15} strokeWidth={1.75} style={{color:"var(--gold)"}}/>
-                </div>
-                <div className="ls-welcome-feature-text">
-                  <div className="ls-welcome-feature-title">{title}</div>
-                  <div className="ls-welcome-feature-desc">{desc}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <button className="ls-welcome-cta" onClick={dismissWelcome}>
-            Start reading smarter →
-          </button>
-          <button className="ls-welcome-skip" onClick={dismissWelcome}>
-            Skip for now
-          </button>
         </div>
       )}
 
