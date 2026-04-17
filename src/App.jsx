@@ -223,7 +223,7 @@ const CSS = `
 
 /* ── HEADER — espresso glass ── */
 .ls-hdr{
-  height:68px;min-height:68px;padding:0 20px;
+  height:100px;min-height:100px;padding:0 20px;
   display:flex;align-items:center;justify-content:space-between;
   position:relative;
   background:rgba(18,16,14,.72);
@@ -643,6 +643,21 @@ const CSS = `
 .ls-dot:nth-child(2){animation-delay:.2s;}.ls-dot:nth-child(3){animation-delay:.4s;}
 @keyframes ldot{0%,60%,100%{transform:translateY(0);opacity:.3}30%{transform:translateY(-6px);opacity:1}}
 .ls-retry-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 11px;border-radius:6px;border:1px solid rgba(184,64,40,.3);background:transparent;color:var(--rust);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;align-self:flex-start;}
+.ls-prompt-btn{width:100%;padding:13px 16px;border-radius:var(--r-md);border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.06);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);color:var(--text2);font-size:13.5px;font-weight:500;font-family:'Inter',sans-serif;text-align:left;cursor:pointer;transition:all .22s var(--ease);line-height:1.4;}
+.ls-prompt-btn:hover{background:rgba(212,148,26,.10);border-color:rgba(212,148,26,.35);color:var(--gold);transform:translateX(3px);}
+.ls-prompt-btn:active{transform:scale(.98);}
+/* ── ASK ENTRY — Phase 19 ── */
+.ls-ask-entry{flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 32px 40px;animation:fadeIn .4s var(--ease) both;}
+.ls-ask-entry-headline{font-family:'Lora',serif;font-size:26px;font-weight:700;color:var(--text);line-height:1.22;margin-bottom:6px;letter-spacing:-.3px;}
+.ls-ask-entry-headline em{color:var(--gold);font-style:italic;}
+.ls-ask-entry-sub{font-size:14px;color:rgba(240,232,216,.48);line-height:1.65;margin-bottom:44px;}
+.ls-ask-nudge-list{display:flex;flex-direction:column;gap:24px;}
+.ls-ask-nudge{background:none;border:none;padding:0;cursor:pointer;text-align:left;display:flex;align-items:center;gap:14px;transition:all .25s var(--ease);-webkit-tap-highlight-color:transparent;}
+.ls-ask-nudge:hover .ls-ask-nudge-text{color:rgba(240,232,216,.9);transform:translateX(5px);}
+.ls-ask-nudge:hover .ls-ask-nudge-dot{background:var(--gold);box-shadow:0 0 10px rgba(198,161,91,.38);}
+.ls-ask-nudge:active .ls-ask-nudge-text{opacity:.65;}
+.ls-ask-nudge-dot{width:4px;height:4px;border-radius:50%;background:rgba(198,161,91,.32);flex-shrink:0;transition:all .25s var(--ease);margin-top:1px;}
+.ls-ask-nudge-text{font-family:'Lora',serif;font-style:italic;font-size:18px;font-weight:400;color:rgba(240,232,216,.52);line-height:1.3;transition:color .25s var(--ease),transform .25s var(--ease);letter-spacing:-.1px;}
 
 /* ── CHAT INPUT — glass ── */
 .ls-input-row-chat{display:flex;gap:9px;padding:10px 16px;border-top:1px solid rgba(255,255,255,.07);background:rgba(18,14,10,.75);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);flex-shrink:0;}
@@ -7062,7 +7077,7 @@ description: one sentence max.`,
           <div className="ls-logo">
           {isPro ? (
             /* Pro logo — includes red PRO badge built into the SVG */
-            <svg height="44" viewBox="0 0 1267.82 368.3" xmlns="http://www.w3.org/2000/svg" style={{width:"auto"}}>
+            <svg height="88" viewBox="0 0 1267.82 368.3" xmlns="http://www.w3.org/2000/svg" style={{width:"auto"}}>
               <defs><style>{`.lp1{fill:#931a1d}.lp2{fill:#f0e8d8;stroke:#f0e8d8;stroke-miterlimit:10}.lp3{fill:#d4941a}.ls2{fill:#f0e8d8}`}</style></defs>
               <g><g>
                 <path className="lp3" d="M799.84,92.35c7.82,0,13.41,4.25,16.78,12.74,3.37,8.49,3.81,19.41,1.35,32.77-1.26,6.61-1.1,10.44.49,11.47h2.51c17.19-19.83,26.45-32.28,27.77-37.34,1.52-5.83-1.11-13.13-7.9-21.88-6.79-8.75-17.03-13.13-30.71-13.13-18.06,0-34.74,8.43-50.03,25.28-15.3,16.85-25.57,35.33-30.82,55.42-3.02,11.54-4.07,23.4-3.16,35.59.91,12.19,5.69,27.07,14.34,44.66,8.65,17.59,13.45,30.04,14.39,37.36.94,7.32.57,14.22-1.12,20.69-3.28,12.56-9.85,23.61-19.69,33.13-9.84,9.52-19.7,14.28-29.56,14.28-9.03,0-15.36-3.82-18.99-11.47-3.63-7.65-3.5-21.58.38-41.81,1.23-6.48,1.53-10.92.9-13.32-.63-2.4-2.44-3.6-5.41-3.6-.84,0-5.83,6.61-14.96,19.83-9.14,13.22-14.18,21.65-15.12,25.28-1.69,6.48,1.28,14.88,8.92,25.18,7.64,10.31,19.42,15.46,35.34,15.46,19.27,0,38.39-8.78,57.36-26.35,18.97-17.56,31.47-37.88,37.51-60.96,2.61-9.98,3.36-20.52,2.25-31.6-1.11-11.08-6.26-25.97-15.46-44.67-9.2-18.7-14.36-32.35-15.48-40.96-1.12-8.61-.7-16.67,1.27-24.18,2.71-10.36,7.69-19.26,14.94-26.71,7.25-7.44,14.55-11.17,21.91-11.17Z"/>
@@ -7086,7 +7101,7 @@ description: one sentence max.`,
             </svg>
           ) : (
             /* Standard logo — warm cream version */
-            <svg height="44" viewBox="0 0 1267.82 368.3" xmlns="http://www.w3.org/2000/svg" style={{width:"auto"}}>
+            <svg height="88" viewBox="0 0 1267.82 368.3" xmlns="http://www.w3.org/2000/svg" style={{width:"auto"}}>
               <defs><style>{`.ls1{fill:#d4941a}.ls2{fill:#f0e8d8}`}</style></defs>
               <g><g>
                 <path className="ls1" d="M799.84,92.35c7.82,0,13.41,4.25,16.78,12.74,3.37,8.49,3.81,19.41,1.35,32.77-1.26,6.61-1.1,10.44.49,11.47h2.51c17.19-19.83,26.45-32.28,27.77-37.34,1.52-5.83-1.11-13.13-7.9-21.88-6.79-8.75-17.03-13.13-30.71-13.13-18.06,0-34.74,8.43-50.03,25.28-15.3,16.85-25.57,35.33-30.82,55.42-3.02,11.54-4.07,23.4-3.16,35.59.91,12.19,5.69,27.07,14.34,44.66,8.65,17.59,13.45,30.04,14.39,37.36.94,7.32.57,14.22-1.12,20.69-3.28,12.56-9.85,23.61-19.69,33.13-9.84,9.52-19.7,14.28-29.56,14.28-9.03,0-15.36-3.82-18.99-11.47-3.63-7.65-3.5-21.58.38-41.81,1.23-6.48,1.53-10.92.9-13.32-.63-2.4-2.44-3.6-5.41-3.6-.84,0-5.83,6.61-14.96,19.83-9.14,13.22-14.18,21.65-15.12,25.28-1.69,6.48,1.28,14.88,8.92,25.18,7.64,10.31,19.42,15.46,35.34,15.46,19.27,0,38.39-8.78,57.36-26.35,18.97-17.56,31.47-37.88,37.51-60.96,2.61-9.98,3.36-20.52,2.25-31.6-1.11-11.08-6.26-25.97-15.46-44.67-9.2-18.7-14.36-32.35-15.48-40.96-1.12-8.61-.7-16.67,1.27-24.18,2.71-10.36,7.69-19.26,14.94-26.71,7.25-7.44,14.55-11.17,21.91-11.17Z"/>
@@ -7826,59 +7841,63 @@ description: one sentence max.`,
             ) : (
               <div className="ls-ask-msgs">
                 {msgs.length===0&&!chatLoad ? (
-                  <div className="ls-welcome">
-                    <div style={{ width:"100%", textAlign:"left", padding:"24px 20px 0" }}>
-                      {currentBook ? (
-                        // COMPANION MODE — the primary experience when reading
-                        <>
-                          <div style={{ fontSize:13, color:"var(--gold)", fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:10 }}>Currently reading</div>
-                          <div style={{ fontSize:24, fontFamily:"'Lora',serif", fontWeight:700, color:"var(--text)", lineHeight:1.25, marginBottom:10 }}>
-                            How's <em style={{color:"var(--gold)"}}>{currentBook.split(":")[0].split(" ").slice(0,5).join(" ")}</em> going?
-                          </div>
-                          <div style={{ fontSize:15, color:"var(--text2)", lineHeight:1.65, marginBottom:22 }}>
-                            Tell me where you are in it. I'll ask the right questions.
-                          </div>
-                          <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:28 }}>
-                            {[
-                              { label: "Just started it", prompt: `I just started "${currentBook}". What should I know going in?` },
-                              { label: "I'm about halfway through", prompt: `I'm about halfway through "${currentBook}". Ask me what I think of it so far.` },
-                              { label: "It's losing me a bit", prompt: `I'm reading "${currentBook}" but it's starting to lose me. Ask me what's happening and help me figure out if I should keep going.` },
-                              { label: "I just finished it", prompt: `I just finished "${currentBook}". I want to talk about it.` },
-                            ].map((o,i) => (
-                              <button key={i} className="ls-prompt-btn" onClick={() => sendChat(o.prompt)}>{o.label}</button>
-                            ))}
-                          </div>
-                        </>
-                      ) : readBooks.length >= 2 ? (
-                        <>
-                          <div style={{ fontSize:22, fontFamily:"'Lora',serif", fontWeight:700, color:"var(--text)", lineHeight:1.25, marginBottom:8 }}>
-                            What are you looking for<em style={{color:"var(--gold)"}}>?</em>
-                          </div>
-                          <div style={{ fontSize:15, color:"var(--text2)", lineHeight:1.65, marginBottom:20 }}>
-                            I've got a feel for your taste. Tell me what kind of read you're after right now.
-                          </div>
-                          <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:28 }}>
-                            {ASK_PROMPTS.map((p,i) => (
-                              <button key={i} className="ls-prompt-btn" onClick={() => sendChat(p)}>{p}</button>
-                            ))}
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <div style={{ fontSize:22, fontFamily:"'Lora',serif", fontWeight:700, color:"var(--text)", lineHeight:1.25, marginBottom:8 }}>
-                            Tell me what you<em style={{color:"var(--gold)"}}> love.</em>
-                          </div>
-                          <div style={{ fontSize:15, color:"var(--text2)", lineHeight:1.65, marginBottom:20 }}>
-                            What's a book you finished and still think about? I'll take it from there.
-                          </div>
-                          <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:28 }}>
-                            {ASK_PROMPTS.map((p,i) => (
-                              <button key={i} className="ls-prompt-btn" onClick={() => sendChat(p)}>{p}</button>
-                            ))}
-                          </div>
-                        </>
-                      )}
-                    </div>
+                  <div className="ls-ask-entry">
+                    {currentBook ? (
+                      <>
+                        <div style={{fontSize:11,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"rgba(198,161,91,.55)",marginBottom:14}}>Currently reading</div>
+                        <div className="ls-ask-entry-headline">
+                          How's <em>{currentBook.split(":")[0].split(" ").slice(0,5).join(" ")}</em> going?
+                        </div>
+                        <div className="ls-ask-entry-sub">Tell me where you are. I'll take it from there.</div>
+                        <div className="ls-ask-nudge-list">
+                          {[
+                            { label: "Just started it",        prompt: `I just started "${currentBook}". What should I know going in?` },
+                            { label: "About halfway through",   prompt: `I'm about halfway through "${currentBook}". Ask me what I think so far.` },
+                            { label: "It's losing me",          prompt: `I'm reading "${currentBook}" but it's starting to lose me. Help me figure out if I should keep going.` },
+                            { label: "Just finished it",        prompt: `I just finished "${currentBook}". I want to talk about it.` },
+                          ].map((o,i) => (
+                            <button key={i} className="ls-ask-nudge" onClick={() => sendChat(o.prompt)}>
+                              <span className="ls-ask-nudge-dot"/>
+                              <span className="ls-ask-nudge-text">{o.label}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    ) : readBooks.length >= 2 ? (
+                      <>
+                        <div className="ls-ask-entry-headline">What are you<em> in the mood for?</em></div>
+                        <div className="ls-ask-entry-sub">I've got a sense of your taste.</div>
+                        <div className="ls-ask-nudge-list">
+                          {[
+                            { label: "Something I can't put down",        prompt: "I want something I genuinely can't put down." },
+                            { label: "Something emotional, but not heavy", prompt: "Something emotional but not heavy — a book that moves me without wrecking me." },
+                            { label: "Surprise me",                        prompt: "Surprise me — something I'd never pick myself but would probably love." },
+                          ].map((o,i) => (
+                            <button key={i} className="ls-ask-nudge" onClick={() => sendChat(o.prompt)}>
+                              <span className="ls-ask-nudge-dot"/>
+                              <span className="ls-ask-nudge-text">{o.label}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="ls-ask-entry-headline">Tell me what you<em> love.</em></div>
+                        <div className="ls-ask-entry-sub">A book you finished and still think about.</div>
+                        <div className="ls-ask-nudge-list">
+                          {[
+                            { label: "Something I can't put down",  prompt: "I want something I genuinely can't put down this weekend." },
+                            { label: "Something dark, not depressing", prompt: "Something dark but not depressing." },
+                            { label: "Surprise me",                  prompt: "Surprise me — something I'd never pick but would love." },
+                          ].map((o,i) => (
+                            <button key={i} className="ls-ask-nudge" onClick={() => sendChat(o.prompt)}>
+                              <span className="ls-ask-nudge-dot"/>
+                              <span className="ls-ask-nudge-text">{o.label}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
                   </div>
                 ) : (
                   <>
