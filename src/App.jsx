@@ -4911,8 +4911,8 @@ function BookDetailSheet({ book: b, onClose, onAsk, isSaved, onSave, onDismiss, 
 
         {/* Full-width hero cover */}
         <div style={{
-          width:"100%", height:320, position:"relative", overflow:"hidden",
-          borderRadius:"20px 20px 0 0", marginBottom:20,
+          width:"100%", height:220, position:"relative", overflow:"hidden",
+          borderRadius:"20px 20px 0 0", marginBottom:16,
         }}>
           <BookCover isbn={b.isbn} title={b.title} author={b.author} color={b.color} className="fill"/>
           {/* Gradient fade into sheet */}
@@ -5927,6 +5927,14 @@ export default function LitSense() {
   const loadShelf = () => { try { const r = localStorage.getItem("ls_shelf"); return r ? JSON.parse(r) : null; } catch { return null; } };
   const [readBooks, setReadBooks]     = useState(() => loadShelf()?.readBooks ?? []);
   const [currentBook, setCurrentBook] = useState(() => loadShelf()?.currentBook ?? "");
+
+  // ── READING NOTES — persisted, fed into AI ────────────────────────────────
+  const [readingNotes, setReadingNotes] = useState(() => {
+    try { const r = localStorage.getItem("ls_notes"); return r ? JSON.parse(r) : {}; } catch { return {}; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem("ls_notes", JSON.stringify(readingNotes)); } catch {}
+  }, [readingNotes]);
   const [wantList, setWantList]       = useState(() => loadShelf()?.wantList ?? []);
   useEffect(() => { if (!isSignedIn) return; try { localStorage.setItem("ls_shelf",JSON.stringify({readBooks,currentBook,wantList})); } catch {} }, [readBooks,currentBook,wantList,isSignedIn]);
 
@@ -6268,6 +6276,8 @@ export default function LitSense() {
 
     if (currentBook) {
       lines.push(`CURRENTLY READING: "${currentBook}". Ask about this book first before recommending anything else.`);
+      const notes = readingNotes[currentBook];
+      if (notes?.trim()) lines.push(`Reader's notes while reading: "${notes.trim()}"`);
     }
 
     // Only include reactions that actually exist
@@ -6298,7 +6308,7 @@ export default function LitSense() {
     }
 
     return lines.filter(Boolean).join(" ") || "";
-  }, [readBooks, currentBook, wantList, mood, genre, isPro, intelligence, reactions, savedBooks]);
+  }, [readBooks, currentBook, readingNotes, wantList, mood, genre, isPro, intelligence, reactions, savedBooks]);
 
   // ── CHAT ──────────────────────────────────────────────────────────────────
   const sendChat = async (msg, isRetry=false) => {
@@ -7171,15 +7181,43 @@ description: one sentence max.`,
                       <input className="ls-input full" placeholder="What are you reading right now?"
                         value={currentBook} onChange={e=>setCurrentBook(e.target.value)}/>
                     </div>
+
                     {currentBook ? (
-                      <button className="ls-action-btn" onClick={()=>goAsk(`I'm currently reading "${currentBook}". What should I read right after I finish?`)}>
-                        What do I read after this?
-                      </button>
+                      <>
+                        {/* Notes area */}
+                        <div className="ls-input-card" style={{marginTop:0}}>
+                          <div className="ls-input-label" style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                            <span>Your notes</span>
+                            <span style={{fontSize:9,color:"var(--muted)",fontWeight:400,letterSpacing:".5px"}}>LitSense reads these</span>
+                          </div>
+                          <textarea
+                            className="ls-input full"
+                            placeholder={`Thoughts while reading "${currentBook.split(":")[0].split(" ").slice(0,4).join(" ")}"… what's landing? What isn't? How far are you?`}
+                            value={readingNotes[currentBook] || ""}
+                            onChange={e => setReadingNotes(p=>({...p,[currentBook]:e.target.value}))}
+                            style={{minHeight:90,resize:"none",lineHeight:1.6}}
+                          />
+                        </div>
+
+                        {/* Actions */}
+                        <div style={{display:"flex",flexDirection:"column",gap:8,padding:"0 20px"}}>
+                          <button className="ls-action-btn" onClick={()=>goAsk(
+                            `I'm reading "${currentBook}". ${readingNotes[currentBook]?.trim() ? `Here are my notes so far: "${readingNotes[currentBook].trim()}". ` : ""}Ask me how it's going.`
+                          )}>
+                            Talk about this book
+                          </button>
+                          <button className="ls-action-btn" onClick={()=>goAsk(
+                            `I just finished "${currentBook}". ${readingNotes[currentBook]?.trim() ? `My notes while reading: "${readingNotes[currentBook].trim()}". ` : ""}Ask me what I thought — what landed, what didn't, would I recommend it. Then tell me what to read next.`
+                          )} style={{background:"rgba(198,161,91,.12)",borderColor:"rgba(198,161,91,.3)",color:"var(--gold)"}}>
+                            I finished it — let's talk
+                          </button>
+                        </div>
+                      </>
                     ) : (
                       <div className="ls-empty">
                         <div className="ls-empty-icon"><BookOpen size={40} strokeWidth={1}/></div>
                         <div className="ls-empty-title">Nothing logged yet</div>
-                        <div className="ls-empty-body">Enter what you're reading and get a recommendation for what comes next.</div>
+                        <div className="ls-empty-body">Enter what you're reading. Take notes as you go — LitSense remembers them and uses them when you talk.</div>
                       </div>
                     )}
                   </>
