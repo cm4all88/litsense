@@ -4855,7 +4855,7 @@ function BookCover({ isbn, title, author = "", color = ["#1a1408","#0e0c06"], cl
         <img src={url} alt={title}
           onLoad={(e) => { if (e.target.naturalWidth > 5) setLoaded(true); else setError(true); }}
           onError={() => setError(true)}
-          style={{ display: loaded ? "block" : "none", position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }}/>
+          style={{ display: loaded ? "block" : "none", position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover", objectPosition:"top" }}/>
       )}
       {(!hasIsbn || !loaded || error) && (
         <div className="ls-book-cover-fallback">
@@ -4911,7 +4911,7 @@ function BookDetailSheet({ book: b, onClose, onAsk, isSaved, onSave, onDismiss, 
 
         {/* Full-width hero cover */}
         <div style={{
-          width:"100%", height:300, position:"relative", overflow:"hidden",
+          width:"100%", height:"45dvh", position:"relative", overflow:"hidden",
           borderRadius:"20px 20px 0 0", marginBottom:16,
         }}>
           <BookCover isbn={b.isbn} title={b.title} author={b.author} color={b.color} className="fill"/>
@@ -6513,14 +6513,10 @@ description: one sentence max.`,
       {/* ── BACKGROUND — static library bookshelf ── */}
       <div style={{ position:"absolute", inset:0, zIndex:0, pointerEvents:"none", overflow:"hidden" }}>
         <div style={{
-          position:"absolute", inset:"-5%",
+          position:"absolute", inset:0,
           backgroundImage: `url('${BACKGROUNDS.literary}')`,
           backgroundSize: "cover", backgroundPosition: "center",
-          filter: "brightness(0.55)",
-        }}/>
-        <div style={{
-          position:"absolute", inset:0,
-          background:"radial-gradient(ellipse 140% 110% at 50% 38%, rgba(10,8,6,.32) 0%, rgba(8,6,4,.50) 55%, rgba(6,4,2,.72) 100%)",
+          filter: "brightness(0.52)",
         }}/>
       </div>
       {/* Grain — paper/leather tactile texture */}
