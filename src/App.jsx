@@ -4903,7 +4903,7 @@ function BookDetailSheet({ book: b, onClose, onAsk, isSaved, onSave, onDismiss, 
           padding:"0 0 40px",
           transform: exiting ? "translateY(100%)" : "translateY(0)",
           transition:"transform .28s cubic-bezier(.32,.72,0,1)",
-          maxHeight:"78dvh",
+          maxHeight:"92dvh",
           overflowY:"auto",
         }}
       >
@@ -4911,7 +4911,7 @@ function BookDetailSheet({ book: b, onClose, onAsk, isSaved, onSave, onDismiss, 
 
         {/* Full-width hero cover */}
         <div style={{
-          width:"100%", height:220, position:"relative", overflow:"hidden",
+          width:"100%", height:300, position:"relative", overflow:"hidden",
           borderRadius:"20px 20px 0 0", marginBottom:16,
         }}>
           <BookCover isbn={b.isbn} title={b.title} author={b.author} color={b.color} className="fill"/>
@@ -6516,7 +6516,7 @@ description: one sentence max.`,
           position:"absolute", inset:"-5%",
           backgroundImage: `url('${BACKGROUNDS.literary}')`,
           backgroundSize: "cover", backgroundPosition: "center",
-          filter: "blur(2px) saturate(0.9) brightness(0.58)",
+          filter: "brightness(0.55)",
         }}/>
         <div style={{
           position:"absolute", inset:0,
@@ -6577,8 +6577,8 @@ description: one sentence max.`,
           >
             {/* ── Scrollable logo — Discover only ── */}
             <div style={{
-              display:"flex", flexDirection:"column", alignItems:"center",
-              padding:"32px 20px 24px", position:"relative",
+              display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
+              padding:"48px 20px 32px", position:"relative", width:"100%",
             }}>
               {/* Auth buttons — top right */}
               <div style={{position:"absolute", top:20, right:20, display:"flex", alignItems:"center", gap:8}}>
@@ -6597,11 +6597,11 @@ description: one sentence max.`,
                   </>
                 )}
               </div>
-              {/* Logo — centered, no class conflict */}
+              {/* Logo — unmodified, centered */}
               <img
                 src="/logo.png"
                 alt="LitSense"
-                style={{height:"72px", width:"auto", display:"block", maxWidth:"80vw", objectFit:"contain"}}
+                style={{width:"72%", maxWidth:340, height:"auto", display:"block", margin:"0 auto"}}
               />
             </div>
 
@@ -6633,24 +6633,24 @@ description: one sentence max.`,
                 <div style={{ position:"absolute", inset:0, zIndex:0, overflow:"hidden" }}>
                   {bgPrev && (
                     <div style={{
-                      position:"absolute", inset:"-5%",
+                      position:"absolute", inset:0,
                       backgroundImage:`url('${BACKGROUNDS[bgPrev]}')`,
                       backgroundSize:"cover", backgroundPosition:"center",
-                      filter:"blur(2px) saturate(1.0) brightness(0.58)",
+                      filter:"brightness(0.55)",
                       opacity:0, transition:"opacity 1.2s ease",
                     }}/>
                   )}
                   <div style={{
-                    position:"absolute", inset:"-5%",
+                    position:"absolute", inset:0,
                     backgroundImage:`url('${BACKGROUNDS[bgCurrent]}')`,
                     backgroundSize:"cover", backgroundPosition:"center",
-                    filter:"blur(2px) saturate(1.0) brightness(0.58)",
+                    filter:"brightness(0.55)",
                     opacity:1, transition:"opacity 1.2s ease",
                   }}/>
                   {/* Gradient fade — darker at bottom so info panel stays readable */}
                   <div style={{
                     position:"absolute", inset:0,
-                    background:"linear-gradient(to bottom, rgba(6,4,2,.30) 0%, rgba(6,4,2,.70) 70%, rgba(6,4,2,.92) 100%)",
+                    background:"linear-gradient(to bottom, rgba(6,4,2,.20) 0%, rgba(6,4,2,.60) 70%, rgba(6,4,2,.92) 100%)",
                   }}/>
                 </div>
                 <div style={{ position:"relative", zIndex:1 }}>
