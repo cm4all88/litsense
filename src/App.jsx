@@ -6539,9 +6539,8 @@ description: one sentence max.`,
             </button>
           )}
           <div className="ls-logo">
-          <img src="/logo.png" alt="LitSense" style={{height:"32px",width:"auto",display:"block",filter:"drop-shadow(0 0 12px rgba(198,161,91,.12))"}}/>
-          <div className="ls-logo-sub">Reading Companion</div>
-        </div>
+          <img src="/logo.png" alt="LitSense" style={{height:"36px",width:"auto",display:"block",maxWidth:"60vw",objectFit:"contain"}}/>
+          </div>
         </div>
         <div className="ls-hdr-right">
           {!isSignedIn ? (
@@ -6579,9 +6578,10 @@ description: one sentence max.`,
             {/* ── Scrollable logo — Discover only ── */}
             <div style={{
               display:"flex", flexDirection:"column", alignItems:"center",
-              padding:"24px 20px 20px", position:"relative",
+              padding:"32px 20px 24px", position:"relative",
             }}>
-              <div className="ls-hdr-right" style={{position:"absolute", top:20, right:20}}>
+              {/* Auth buttons — top right */}
+              <div style={{position:"absolute", top:20, right:20, display:"flex", alignItems:"center", gap:8}}>
                 {!isSignedIn ? (
                   <>
                     <button className="ls-signin-btn" onClick={()=>{setAuthMode("login");setShowAuth(true);}}>Sign in</button>
@@ -6597,10 +6597,12 @@ description: one sentence max.`,
                   </>
                 )}
               </div>
-              <div className="ls-logo" style={{position:"static", transform:"none", animation:"logoIn .6s var(--ease) both"}}>
-                <img src="/logo.png" alt="LitSense" style={{height:"48px",width:"auto",display:"block",filter:"drop-shadow(0 0 12px rgba(198,161,91,.12))"}}/>
-                <div className="ls-logo-sub">Reading Companion</div>
-              </div>
+              {/* Logo — centered, no class conflict */}
+              <img
+                src="/logo.png"
+                alt="LitSense"
+                style={{height:"72px", width:"auto", display:"block", maxWidth:"80vw", objectFit:"contain"}}
+              />
             </div>
 
             {/* ── TOP MOMENT — one thing worth saying ── */}
