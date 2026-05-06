@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cookie Notice — LitSense</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink:    #f0e8d8;
+      --ink-dim:#b8a88a;
+      --bg:     #0f0c07;
+      --bg2:    #1a1510;
+      --gold:   #c9a84c;
+      --rule:   rgba(201,168,76,0.18);
+      --max:    720px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 18px;
+      line-height: 1.8;
+      min-height: 100vh;
+    }
+    header {
+      border-bottom: 1px solid var(--rule);
+      padding: 2.5rem 2rem 2rem;
+      text-align: center;
+      background: linear-gradient(180deg, rgba(201,168,76,0.06) 0%, transparent 100%);
+    }
+    .site-name {
+      font-family: 'Cinzel', serif;
+      font-size: 0.85rem;
+      letter-spacing: 0.25em;
+      color: var(--gold);
+      text-decoration: none;
+      display: block;
+      margin-bottom: 1.5rem;
+    }
+    header h1 {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-weight: 400;
+      color: var(--ink);
+      margin-bottom: 0.5rem;
+    }
+    .doc-meta { font-size: 0.9rem; color: var(--ink-dim); font-style: italic; }
+    .container { max-width: var(--max); margin: 0 auto; padding: 3rem 2rem 6rem; }
+    section { margin-bottom: 2.5rem; }
+    h2 { font-family: 'Cinzel', serif; font-size: 1.05rem; font-weight: 400; letter-spacing: 0.12em; color: var(--gold); margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--rule); }
+    h3 { font-family: 'Cinzel', serif; font-size: 0.85rem; font-weight: 400; letter-spacing: 0.1em; color: var(--ink-dim); margin: 1.5rem 0 0.5rem; }
+    p { margin-bottom: 1rem; }
+    ul { padding-left: 1.4em; margin-bottom: 1rem; }
+    li { margin: 0.4rem 0; }
+    strong { color: var(--ink); font-weight: 500; }
+    a { color: var(--gold); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .callout { border-left: 2px solid var(--gold); background: rgba(201,168,76,0.06); padding: 1rem 1.25rem; margin: 1.5rem 0; font-size: 0.95rem; }
+    table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.9rem; }
+    th { font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 0.12em; color: var(--gold); text-align: left; padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--rule); }
+    td { padding: 0.6rem 0.75rem; border-bottom: 1px solid rgba(201,168,76,0.08); vertical-align: top; color: var(--ink-dim); }
+    tr:last-child td { border-bottom: none; }
+    .badge {
+      display: inline-block;
+      font-family: 'Cinzel', serif;
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      padding: 0.15em 0.5em;
+      border-radius: 2px;
+      margin-left: 0.4em;
+      vertical-align: middle;
+    }
+    .badge-req { background: rgba(201,168,76,0.15); color: var(--gold); border: 1px solid rgba(201,168,76,0.3); }
+    .badge-opt { background: rgba(180,180,180,0.1); color: var(--ink-dim); border: 1px solid rgba(180,180,180,0.2); }
+    footer { border-top: 1px solid var(--rule); padding: 2rem; text-align: center; font-size: 0.85rem; color: var(--ink-dim); }
+    footer a { color: var(--gold); }
+    .footer-links { margin-top: 0.75rem; }
+    .footer-links a { margin: 0 0.75rem; }
+  </style>
+</head>
+<body>
+
+<header>
+  <a class="site-name" href="/">LITSENSE</a>
+  <h1>Cookie & Storage Notice</h1>
+  <p class="doc-meta">Effective April 25, 2026 &nbsp;·&nbsp; Last updated April 25, 2026</p>
+</header>
+
+<div class="container">
+
+  <div class="callout">
+    LitSense does not use advertising cookies or sell your browsing data. We use browser storage only to make the app work and remember your preferences.
+  </div>
+
+  <section>
+    <h2>What We Use & Why</h2>
+    <p>LitSense uses <strong>cookies</strong> (small files stored in your browser) and <strong>localStorage</strong> (browser-side storage) to operate the Service and remember your preferences. We do not use third-party advertising trackers or sell cookie data.</p>
+  </section>
+
+  <section>
+    <h2>Cookies</h2>
+    <p>Cookies are set by the following parties when you use LitSense:</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Cookie Name / Pattern</th>
+          <th>Set By</th>
+          <th>Purpose</th>
+          <th>Duration</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>__session</code>, <code>__clerk_*</code></td>
+          <td>Clerk</td>
+          <td>Authentication — keeps you signed in <span class="badge badge-req">Required</span></td>
+          <td>Session / 1 year</td>
+        </tr>
+        <tr>
+          <td><code>__stripe_*</code></td>
+          <td>Stripe</td>
+          <td>Fraud prevention and payment security <span class="badge badge-req">Required</span></td>
+          <td>Session / 1 year</td>
+        </tr>
+        <tr>
+          <td>Vercel analytics</td>
+          <td>Vercel</td>
+          <td>Aggregated performance analytics — no personal identification <span class="badge badge-opt">Optional</span></td>
+          <td>90 days</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>LitSense does not set any advertising or retargeting cookies. We do not use Google Analytics, Facebook Pixel, or similar advertising trackers.</p>
+  </section>
+
+  <section>
+    <h2>localStorage & sessionStorage</h2>
+    <p>LitSense stores the following data in your browser's local storage. This data stays on your device and is not transmitted to our servers unless explicitly used in a feature:</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Purpose</th>
+          <th>Type</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>ls_welcome_shown</code></td>
+          <td>Tracks whether you've seen the welcome screen so it only shows once</td>
+          <td>Functional</td>
+        </tr>
+        <tr>
+          <td><code>ls_counter</code></td>
+          <td>Daily usage counter for free tier rate limiting</td>
+          <td>Functional</td>
+        </tr>
+        <tr>
+          <td><code>ls_onboarding_*</code></td>
+          <td>Saves your progress through the onboarding flow</td>
+          <td>Functional</td>
+        </tr>
+        <tr>
+          <td><code>ls_prefs_*</code></td>
+          <td>UI preferences (theme, layout settings)</td>
+          <td>Functional</td>
+        </tr>
+        <tr>
+          <td>Clerk session tokens</td>
+          <td>Authentication state — required to stay signed in</td>
+          <td>Essential</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Third-Party Cookies</h2>
+    <p>When you click affiliate links to external retailers like Amazon, those sites may set their own cookies. LitSense has no control over third-party cookies set on external websites. Please refer to those sites' own cookie policies for details.</p>
+  </section>
+
+  <section>
+    <h2>Your Choices</h2>
+    <h3>Cookies</h3>
+    <p>You can control cookies through your browser settings. Most browsers allow you to block or delete cookies. Note that blocking <strong>essential cookies</strong> (authentication) will prevent you from signing in to LitSense.</p>
+    <ul>
+      <li><a href="https://support.google.com/chrome/answer/95647" target="_blank" rel="noopener">Chrome cookie settings</a></li>
+      <li><a href="https://support.mozilla.org/en-US/kb/enable-and-disable-cookies-website-preferences" target="_blank" rel="noopener">Firefox cookie settings</a></li>
+      <li><a href="https://support.apple.com/guide/safari/manage-cookies-sfri11471/mac" target="_blank" rel="noopener">Safari cookie settings</a></li>
+      <li><a href="https://support.microsoft.com/en-us/microsoft-edge/delete-cookies-in-microsoft-edge-63947406-40ac-c3b8-57b9-2a946a29ae09" target="_blank" rel="noopener">Edge cookie settings</a></li>
+    </ul>
+    <h3>localStorage</h3>
+    <p>You can clear localStorage data through your browser's developer tools or by clearing your browser's site data for litsense.vercel.app. This will reset your welcome screen status, usage counters, and UI preferences. You will not lose account data or your saved shelf — that is stored in Supabase and tied to your account.</p>
+  </section>
+
+  <section>
+    <h2>Do Not Track</h2>
+    <p>LitSense respects Do Not Track (DNT) signals where technically feasible. We do not engage in cross-site tracking regardless of DNT settings, as we do not use cross-site advertising trackers.</p>
+  </section>
+
+  <section>
+    <h2>Contact</h2>
+    <p>Questions about our use of cookies or browser storage? Email us at <a href="mailto:privacy@litsense.app">privacy@litsense.app</a>.</p>
+  </section>
+
+</div>
+
+<footer>
+  <p>© 2026 Tahoma Industries LLC. All rights reserved. LitSense is a product of Tahoma Industries LLC. All rights reserved.</p>
+  <div class="footer-links">
+    <a href="/terms.html">Terms of Service</a>
+    <a href="/privacy.html">Privacy Policy</a>
+    <a href="/affiliate-disclosure.html">Affiliate Disclosure</a>
+    <a href="/cookies.html">Cookie Notice</a>
+  </div>
+</footer>
+
+</body>
+</html>

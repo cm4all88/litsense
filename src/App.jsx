@@ -69,6 +69,14 @@ function amazonLink(title, author, isbn) {
   return `https://www.amazon.com/s?k=${q}&tag=${AMAZON_TAG}`;
 }
 
+// ── AUDIBLE AFFILIATE ─────────────────────────────────────────────────────────
+// Uses Amazon Associates tag (same program). Swap tag when Associates approved.
+const AUDIBLE_TAG = "litsense-20";
+function audibleUrl(title, author) {
+  const q = encodeURIComponent(`${title} ${author || ""}`.trim());
+  return `https://www.audible.com/search?keywords=${q}&tag=${AUDIBLE_TAG}`;
+}
+
 // ── SAFE AMAZON LINK ──────────────────────────────────────────────────────────
 // Validates the ISBN-based URL before navigation. Falls back to search silently.
 // Pre-validates on hover so the result is ready by the time the user clicks.
@@ -5356,9 +5364,20 @@ function TileModal({ book: b, onClose, onAsk, isSaved, onSave, onDismiss, userSt
             display:"block",width:"100%",padding:"13px",borderRadius:10,
             background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.1)",
             color:"var(--text2)",textAlign:"center",textDecoration:"none",
-            fontSize:15,fontWeight:600,marginBottom:10,boxSizing:"border-box",
+            fontSize:15,fontWeight:600,marginBottom:8,boxSizing:"border-box",
           }}
         >Buy on Amazon →</SafeAmazonLink>
+        <a
+          href={audibleUrl(b.title, b.author)}
+          target="_blank"
+          rel="noopener noreferrer sponsored"
+          style={{
+            display:"block",width:"100%",padding:"13px",borderRadius:10,
+            background:"rgba(255,170,0,.07)",border:"1px solid rgba(255,170,0,.2)",
+            color:"#ffaa00",textAlign:"center",textDecoration:"none",
+            fontSize:15,fontWeight:600,marginBottom:10,boxSizing:"border-box",
+          }}
+        >🎧 Listen on Audible →</a>
         <button className="ls-tile-modal-cancel" onClick={onClose}>Close</button>
       </div>
     </div>
@@ -5917,6 +5936,7 @@ export default function LitSense() {
   const [authPass, setAuthPass]     = useState("");
   const [authError, setAuthError]   = useState("");
   const [authExitWarn, setAuthExitWarn] = useState(false);
+  const [tosAgreed, setTosAgreed]   = useState(false);
 
   // ── COUNTER ───────────────────────────────────────────────────────────────
   const loadCounter = () => { try { const r = localStorage.getItem("ls_counter"); if (!r) return 0; const {count,date} = JSON.parse(r); return date===today()?count:0; } catch { return 0; } };
@@ -7492,6 +7512,21 @@ description: one sentence max.`,
         ))}
       </nav>
 
+      {/* LEGAL FOOTER */}
+      <div style={{
+        textAlign:"center",padding:"6px 16px 10px",
+        fontSize:11,color:"var(--muted)",
+        display:"flex",justifyContent:"center",gap:16,flexWrap:"wrap",
+        borderTop:"1px solid rgba(255,255,255,.04)",
+        background:"var(--bg)",
+      }}>
+        <a href="/about.html" target="_blank" rel="noopener" style={{color:"var(--muted)",textDecoration:"none"}}>About</a>
+        <a href="/terms.html" target="_blank" rel="noopener" style={{color:"var(--muted)",textDecoration:"none"}}>Terms</a>
+        <a href="/privacy.html" target="_blank" rel="noopener" style={{color:"var(--muted)",textDecoration:"none"}}>Privacy</a>
+        <a href="/affiliate-disclosure.html" target="_blank" rel="noopener" style={{color:"var(--muted)",textDecoration:"none"}}>Affiliates</a>
+        <a href="/cookies.html" target="_blank" rel="noopener" style={{color:"var(--muted)",textDecoration:"none"}}>Cookies</a>
+      </div>
+
       {/* BOOK DETAIL SHEET */}
       {detailBook && (
         <BookDetailSheet
@@ -7738,7 +7773,25 @@ description: one sentence max.`,
                 value={authPass} onChange={e=>{setAuthPass(e.target.value);setAuthExitWarn(false);}}
                 onKeyDown={e=>{if(e.key==="Enter")handleAuth();}}/>
             </div>
-            <button className="ls-auth-cta" onClick={handleAuth}>
+            {authMode==="signup" && (
+              <div style={{display:"flex",alignItems:"flex-start",gap:10,marginBottom:12,marginTop:4}}>
+                <input
+                  type="checkbox" id="ls-tos-agree"
+                  style={{marginTop:3,accentColor:"var(--gold)",flexShrink:0,width:16,height:16,cursor:"pointer"}}
+                  checked={tosAgreed} onChange={e=>setTosAgreed(e.target.checked)}
+                />
+                <label htmlFor="ls-tos-agree" style={{fontSize:12.5,color:"var(--text2)",lineHeight:1.55,cursor:"pointer"}}>
+                  I agree to the{" "}
+                  <a href="/terms.html" target="_blank" rel="noopener" style={{color:"var(--gold)"}}>Terms of Service</a>
+                  {" "}and{" "}
+                  <a href="/privacy.html" target="_blank" rel="noopener" style={{color:"var(--gold)"}}>Privacy Policy</a>
+                </label>
+              </div>
+            )}
+            <button className="ls-auth-cta" onClick={handleAuth}
+              disabled={authMode==="signup" && !tosAgreed}
+              style={authMode==="signup" && !tosAgreed ? {opacity:0.5,cursor:"not-allowed"} : {}}
+            >
               {authMode==="signup"?"Create free account":"Sign in"}
             </button>
             <div className="ls-auth-switch">
