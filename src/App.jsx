@@ -23,7 +23,7 @@
  *  .ls-proof-reason: line-height 1.62 → 1.68
  *    Hero proof card body — more breathing room.
  *
- *  .ls-pro-feat-desc: line-height 1.55 → 1.62
+ *  .ls-plus-feat-desc: line-height 1.55 → 1.62
  *    Pro modal feature descriptions.
  *
  *  WHEEL FOCUS PANEL (inline)
@@ -45,7 +45,7 @@ import { supabase, signUp, signIn, signOut, loadShelfFromDB, upsertBookState, sa
 import {
   BookOpen, BookMarked, MessageCircle, Search, Star,
   Sun, Brain, Heart, Lightbulb, Smile, Moon,
-  Plus, X, Send, Crown, ChevronRight, ChevronLeft, RotateCcw,
+  Plus, X, Send, ChevronRight, ChevronLeft, RotateCcw,
   Library, Bookmark, Sparkles, Lock,
   ShoppingBag, ArrowLeftRight, Package, Tag, Users, MessageSquare, CheckCircle,
 } from "lucide-react";
@@ -152,8 +152,8 @@ function SafeAmazonLink({ title, author, isbn, children, style, className }) {
 const REFERRAL_MILESTONES = [
   { refs:1,  label:"Sharer",    reward:"+3 questions/day",     bonus:3  },
   { refs:3,  label:"Connector", reward:"+9 questions/day",     bonus:9  },
-  { refs:5,  label:"Advocate",  reward:"1 month Pro free",     bonus:15 },
-  { refs:10, label:"Champion",  reward:"3 months Pro free",    bonus:15 },
+  { refs:5,  label:"Advocate",  reward:"1 month Plus free",     bonus:15 },
+  { refs:10, label:"Champion",  reward:"3 months Plus free",    bonus:15 },
 ];
 
 function genRefCode(email) {
@@ -274,7 +274,7 @@ const CSS = `
   backdrop-filter:blur(8px);
 }
 .ls-signin-btn:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-l);}
-.ls-pro-btn{
+.ls-plus-btn{
   display:flex;align-items:center;gap:5px;
   padding:7px 15px;border-radius:var(--r-pill);
   background:var(--gold);color:#0e0c09;border:none;
@@ -282,7 +282,7 @@ const CSS = `
   transition:all .30s var(--ease);
   box-shadow:0 2px 18px var(--glow);
 }
-.ls-pro-btn:hover{background:var(--gold-r);transform:translateY(-1px);box-shadow:0 5px 26px rgba(198,161,91,.38);}
+.ls-plus-btn:hover{background:var(--gold-r);transform:translateY(-1px);box-shadow:0 5px 26px rgba(198,161,91,.38);}
 .ls-user-avatar{
   width:32px;height:32px;border-radius:50%;
   background:rgba(198,161,91,.10);border:1.5px solid rgba(198,161,91,.32);
@@ -291,7 +291,7 @@ const CSS = `
   transition:all .28s;
 }
 .ls-user-avatar:hover{background:rgba(198,161,91,.18);}
-.ls-pro-pip{font-size:9.5px;font-weight:700;color:#0e0c09;background:var(--gold);padding:2px 9px;border-radius:var(--r-pill);letter-spacing:.3px;}
+.ls-plus-pip{font-size:9.5px;font-weight:700;color:#0e0c09;background:var(--gold);padding:2px 9px;border-radius:var(--r-pill);letter-spacing:.3px;}
 
 /* ── BOTTOM NAV — espresso glass ── */
 .ls-nav{
@@ -711,12 +711,12 @@ textarea.ls-chat-input::placeholder{color:var(--muted);}
 .ls-modal-title{font-family:'Lora',serif;font-size:20px;font-weight:700;color:var(--text);margin-bottom:7px;line-height:1.2;}
 .ls-modal-title em{color:var(--gold);font-style:italic;}
 .ls-modal-sub{font-size:10px;color:var(--text2);line-height:1.68;margin-bottom:22px;}
-.ls-pro-features{display:flex;flex-direction:column;gap:14px;margin-bottom:26px;}
-.ls-pro-feature{display:flex;align-items:flex-start;gap:13px;}
-.ls-pro-feat-icon{width:34px;height:34px;border-radius:var(--r-md);background:rgba(212,148,26,.12);border:1px solid rgba(212,148,26,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--gold);}
-.ls-pro-feat-text{flex:1;}
-.ls-pro-feat-title{font-size:10px;font-weight:600;color:var(--text);margin-bottom:2px;}
-.ls-pro-feat-desc{font-size:10px;color:var(--muted);line-height:1.62;}
+.ls-plus-features{display:flex;flex-direction:column;gap:14px;margin-bottom:26px;}
+.ls-plus-feature{display:flex;align-items:flex-start;gap:13px;}
+.ls-plus-feat-icon{width:34px;height:34px;border-radius:var(--r-md);background:rgba(212,148,26,.12);border:1px solid rgba(212,148,26,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--gold);}
+.ls-plus-feat-text{flex:1;}
+.ls-plus-feat-title{font-size:10px;font-weight:600;color:var(--text);margin-bottom:2px;}
+.ls-plus-feat-desc{font-size:10px;color:var(--muted);line-height:1.62;}
 .ls-modal-price-row{display:flex;align-items:baseline;gap:7px;margin-bottom:18px;}
 .ls-modal-price{font-family:'Lora',serif;font-size:27px;font-weight:700;color:var(--text);}
 .ls-modal-price-period{font-size:10px;color:var(--muted);}
@@ -5242,7 +5242,7 @@ function TasteCard({ readBooks, onAddBooks, isPro, onUpgrade }) {
           <div style={{fontFamily:"'Lora',serif",fontSize:16,fontWeight:700,color:"var(--text)",lineHeight:1.2}}>{level.label}</div>
           <div style={{fontSize:12,color:"var(--text2)",marginTop:1}}>{count} book{count!==1?"s":""} rated</div>
         </div>
-        {isPro && <div style={{marginLeft:"auto",fontSize:11,fontWeight:700,color:"#0a0806",background:"var(--gold)",padding:"2px 8px",borderRadius:99}}>PRO</div>}
+        {isPro && <div style={{marginLeft:"auto",fontSize:11,fontWeight:700,color:"#0a0806",background:"var(--gold)",padding:"2px 8px",borderRadius:99}}>PLUS</div>}
       </div>
 
       {/* Progress bar to next level */}
@@ -5461,7 +5461,7 @@ function ReferralCard({ userEmail, referralCount }) {
             Invite friends.<br/><em style={{color:"var(--gold)"}}>Earn more.</em>
           </div>
           <div style={{fontSize:13,color:"var(--text2)",lineHeight:1.55}}>
-            They get 14 days Pro free.<br/>You get +3 questions/day per referral.
+            They get 14 days Plus free.<br/>You get +3 questions/day per referral.
           </div>
         </div>
         <div style={{fontSize:30,flexShrink:0,marginLeft:10}}>🎁</div>
@@ -5501,7 +5501,7 @@ function ReferralCard({ userEmail, referralCount }) {
       )}
       {!next && referralCount >= 10 && (
         <div style={{marginBottom:14,padding:"8px 12px",background:"rgba(212,148,26,.1)",borderRadius:8,fontSize:13,color:"var(--gold)",fontFamily:"'Inter',sans-serif",fontStyle:"italic"}}>
-          🏆 Champion — you've earned 3 months Pro free. We'll be in touch.
+          🏆 Champion — you've earned 3 months Plus free. We'll be in touch.
         </div>
       )}
 
@@ -5641,9 +5641,9 @@ function MarketplaceTab({ isPro, savedBooks, wantList, onRequirePro, userEmail }
     return (
       <div className="ls-market" style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",flex:1,padding:"40px 32px",textAlign:"center"}}>
         <Lock size={36} strokeWidth={1.5} style={{color:"var(--gold)",opacity:.6,marginBottom:16}}/>
-        <div style={{fontFamily:"'Lora',serif",fontSize:22,fontWeight:700,color:"var(--text)",marginBottom:8}}>Marketplace is Pro</div>
+        <div style={{fontFamily:"'Lora',serif",fontSize:22,fontWeight:700,color:"var(--text)",marginBottom:8}}>Marketplace is Plus</div>
         <div style={{fontSize:14,color:"var(--muted)",lineHeight:1.7,marginBottom:24}}>Buy and sell books directly with other readers. Trade your shelf for something new.</div>
-        <button className="ls-list-submit" style={{maxWidth:240}} onClick={onRequirePro}>Go Pro to access →</button>
+        <button className="ls-list-submit" style={{maxWidth:240}} onClick={onRequirePro}>Go Plus to access →</button>
       </div>
     );
   }
@@ -6592,11 +6592,11 @@ description: one sentence max.`,
           {!isSignedIn ? (
             <>
               <button className="ls-signin-btn" onClick={()=>{setAuthMode("login");setShowAuth(true);}}>Sign in</button>
-              <button className="ls-pro-btn" onClick={()=>setPro(true)}><Crown size={11} strokeWidth={2}/> Go Pro</button>
+              <button className="ls-plus-btn" onClick={()=>setPro(true)}><span style={{fontSize:13,fontWeight:800,lineHeight:1}}>+</span> Go Plus</button>
             </>
           ) : (
             <>
-              {!isPro && <button className="ls-pro-btn" onClick={()=>setPro(true)}><Crown size={11} strokeWidth={2}/> Go Pro</button>}
+              {!isPro && <button className="ls-plus-btn" onClick={()=>setPro(true)}><span style={{fontSize:13,fontWeight:800,lineHeight:1}}>+</span> Go Plus</button>}
               <div className="ls-user-avatar" title={`Signed in as ${userEmail}`} onClick={handleSignOut}
                 style={userPhoto ? {backgroundImage:`url(${userPhoto})`,backgroundSize:"cover",backgroundPosition:"center",color:"transparent"} : {}}>
                 {userPhoto ? "" : userInitial}
@@ -6631,11 +6631,11 @@ description: one sentence max.`,
                 {!isSignedIn ? (
                   <>
                     <button className="ls-signin-btn" onClick={()=>{setAuthMode("login");setShowAuth(true);}}>Sign in</button>
-                    <button className="ls-pro-btn" onClick={()=>setPro(true)}><Crown size={11} strokeWidth={2}/> Go Pro</button>
+                    <button className="ls-plus-btn" onClick={()=>setPro(true)}><span style={{fontSize:13,fontWeight:800,lineHeight:1}}>+</span> Go Plus</button>
                   </>
                 ) : (
                   <>
-                    {!isPro && <button className="ls-pro-btn" onClick={()=>setPro(true)}><Crown size={11} strokeWidth={2}/> Go Pro</button>}
+                    {!isPro && <button className="ls-plus-btn" onClick={()=>setPro(true)}><span style={{fontSize:13,fontWeight:800,lineHeight:1}}>+</span> Go Plus</button>}
                     <div className="ls-user-avatar" title={`Signed in as ${userEmail}`} onClick={handleSignOut}
                       style={userPhoto ? {backgroundImage:`url(${userPhoto})`,backgroundSize:"cover",backgroundPosition:"center",color:"transparent"} : {}}>
                       {userPhoto ? "" : userInitial}
@@ -7179,7 +7179,7 @@ description: one sentence max.`,
                       <div className="ls-callout info" style={{marginBottom:12}}>
                         <Lightbulb size={14} strokeWidth={2} className="ls-callout-icon"/>
                         <span>Free accounts share your last {MEM_BOOKS} books for better picks.{" "}
-                          <button style={{background:"none",border:"none",color:"var(--gold)",fontWeight:600,cursor:"pointer",padding:0,fontSize:13}} onClick={()=>setPro(true)}>Upgrade to Pro</button> for full history.</span>
+                          <button style={{background:"none",border:"none",color:"var(--gold)",fontWeight:600,cursor:"pointer",padding:0,fontSize:13}} onClick={()=>setPro(true)}>Upgrade to Plus</button> for full history.</span>
                       </div>
                     )}
                     {readBooks.length===0 ? (
@@ -7368,13 +7368,13 @@ description: one sentence max.`,
                 <div className="ls-limit-title">{isSignedIn?<>Today's questions <em>used up.</em></>:<>Create an account for <em>more.</em></>}</div>
                 <div className="ls-limit-body">
                   {isSignedIn
-                    ?`You've used all ${LIMIT_FREE} of today's questions. Upgrade to Pro for unlimited.`
-                    :`You've used all ${LIMIT_ANON} free questions. Create an account for ${LIMIT_FREE} per day — or go Pro for unlimited.`}
+                    ?`You've used all ${LIMIT_FREE} of today's questions. Upgrade to Plus for unlimited.`
+                    :`You've used all ${LIMIT_ANON} free questions. Create an account for ${LIMIT_FREE} per day — or go Plus for unlimited.`}
                 </div>
                 <button className="ls-limit-cta" onClick={()=>{if(!isSignedIn){setAuthMode("signup");setShowAuth(true);}else setPro(true);}}>
-                  {isSignedIn?"Upgrade to Pro — $4.99/mo":"Create a free account"}
+                  {isSignedIn?"Upgrade to Plus — $4.99/mo":"Create a free account"}
                 </button>
-                {!isSignedIn&&<button className="ls-limit-cta outline" onClick={()=>setPro(true)}>Upgrade to Pro — $4.99/mo</button>}
+                {!isSignedIn&&<button className="ls-limit-cta outline" onClick={()=>setPro(true)}>Upgrade to Plus — $4.99/mo</button>}
                 <div className="ls-limit-note">Resets every day at midnight.</div>
               </div>
             ) : (
@@ -7469,11 +7469,11 @@ description: one sentence max.`,
             {!atLimit && (
               <div className={`ls-counter${questionsLeft!==null&&questionsLeft<=1?" warn":""}`}>
                 <span>
-                  {isPro?"Unlimited · Pro":questionsLeft===null?"":questionsLeft===0?"No questions remaining today":`${questionsLeft} question${questionsLeft===1?"":"s"} remaining today`}
+                  {isPro?"Unlimited · Plus":questionsLeft===null?"":questionsLeft===0?"No questions remaining today":`${questionsLeft} question${questionsLeft===1?"":"s"} remaining today`}
                 </span>
                 {!isPro&&(
                   <button className="ls-counter-upgrade" onClick={()=>{if(!isSignedIn){setAuthMode("signup");setShowAuth(true);}else setPro(true);}}>
-                    {isSignedIn?"Go Pro for unlimited →":"Sign up free →"}
+                    {isSignedIn?"Go Plus for unlimited →":"Sign up free →"}
                   </button>
                 )}
               </div>
@@ -7601,16 +7601,16 @@ description: one sentence max.`,
 
             {proStep==="pitch" && (
               <>
-                <div className="ls-modal-eyebrow">LitSense Pro</div>
+                <div className="ls-modal-eyebrow">LitSense Plus</div>
                 <div className="ls-modal-title">Read <em>smarter.</em><br/>Every month.</div>
                 <div className="ls-modal-sub">For readers who take books seriously. Cancel anytime.</div>
-                <div className="ls-pro-features">
+                <div className="ls-plus-features">
                   {PRO_FEATURES.map(({Icon,title,desc},i)=>(
-                    <div key={i} className="ls-pro-feature">
-                      <div className="ls-pro-feat-icon"><Icon size={15} strokeWidth={1.75}/></div>
-                      <div className="ls-pro-feat-text">
-                        <div className="ls-pro-feat-title">{title}</div>
-                        <div className="ls-pro-feat-desc">{desc}</div>
+                    <div key={i} className="ls-plus-feature">
+                      <div className="ls-plus-feat-icon"><Icon size={15} strokeWidth={1.75}/></div>
+                      <div className="ls-plus-feat-text">
+                        <div className="ls-plus-feat-title">{title}</div>
+                        <div className="ls-plus-feat-desc">{desc}</div>
                       </div>
                     </div>
                   ))}
@@ -7632,7 +7632,7 @@ description: one sentence max.`,
 
             {proStep==="card" && (
               <>
-                <div className="ls-modal-eyebrow">LitSense Pro — $4.99/month</div>
+                <div className="ls-modal-eyebrow">LitSense Plus — $4.99/month</div>
                 <div className="ls-modal-title" style={{fontSize:24,marginBottom:20}}>Payment details</div>
 
                 {proError && <div className="ls-stripe-error">{proError}</div>}
@@ -7741,7 +7741,7 @@ description: one sentence max.`,
             {proStep==="done" && (
               <div style={{textAlign:"center",padding:"20px 0"}}>
                 <CheckCircle size={44} style={{color:"var(--gold)",marginBottom:16}}/>
-                <div className="ls-modal-title" style={{fontSize:26,marginBottom:8}}>Welcome to Pro</div>
+                <div className="ls-modal-title" style={{fontSize:26,marginBottom:8}}>Welcome to Plus</div>
                 <div className="ls-modal-sub">Your 7-day free trial has started. Enjoy unlimited everything.</div>
                 <button className="ls-modal-cta" style={{marginTop:24}} onClick={()=>{setPro(false);setProStep("pitch");}}>
                   Let's go →
