@@ -78,12 +78,6 @@ function audibleUrl(title, author) {
   return `https://www.audible.com/search?keywords=${q}&tag=${AUDIBLE_TAG}`;
 }
 
-// ── AUDIBLE AFFILIATE ────────────────────────────────────────────────────────
-const AUDIBLE_TAG = "litsense-20";
-function audibleUrl(title, author) {
-  const q = encodeURIComponent(`${title} ${author || ""}`.trim());
-  return `https://www.audible.com/search?keywords=${q}&tag=${AUDIBLE_TAG}`;
-}
 
 // ── SAFE AMAZON LINK ──────────────────────────────────────────────────────────
 // Validates the ISBN-based URL before navigation. Falls back to search silently.
@@ -3051,21 +3045,16 @@ const PRO_FEATURES = [
 // Strips browser extension artifacts (inputSel, data-gb-target, visibleText)
 // and truncates oversized messages before sending to the API.
 function sanitizeMsgs(messages) {
+  const reInputSel = new RegExp("inputSel\\s*\\[data-gb-target[^\\]]*\\][^\\r\\n]*", "g");
+  const reVisible  = new RegExp("visibleText\\s*[^\\r\\n]*", "g");
+  const reDataAttr = new RegExp("\\[data-[^\\]]+\\]", "g");
   return messages.map(m => ({
     ...m,
     content: typeof m.content === "string"
-      ? m.content
-          .replace(/inputSel\s*\[data-gb-target[^\]]*\][^
-]*/g, "")
-          .replace(/visibleText\s*[^
-]*/g, "")
-          .replace(/\[data-[^\]]+\]/g, "")
-          .trim()
-          .slice(0, 4000) // cap individual message length
+      ? m.content.replace(reInputSel,"").replace(reVisible,"").replace(reDataAttr,"").trim().slice(0,4000)
       : m.content,
-  })).filter(m => m.content?.trim());
+  })).filter(m => m.content && m.content.trim());
 }
-
 // ── PERSONA SIGNALS ────────────────────────────────────────────────────────────
 // Detects stated user context from messages: role, grade level, reading purpose.
 function detectPersonaSignals(text) {
