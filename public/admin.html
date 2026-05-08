@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LitSense Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0806; --bg2: #141008; --bg3: #1c1610;
+      --gold: #c9a84c; --gold-dim: rgba(201,168,76,0.18);
+      --ink: #f0e8d8; --ink2: #b8a88a; --muted: #6e5f47;
+      --red: #e05555; --green: #6dbf6d; --purple: #a078f0;
+      --max: 900px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--ink); font-family: 'Cormorant Garamond', Georgia, serif; font-size: 16px; min-height: 100vh; }
+
+    /* ── Auth Gate ── */
+    #gate {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; flex-direction: column; gap: 16px; padding: 20px;
+    }
+    #gate h1 { font-family: 'Cinzel', serif; font-size: 1.4rem; font-weight: 400; color: var(--gold); letter-spacing: 0.15em; }
+    #gate input {
+      background: var(--bg2); border: 1px solid var(--gold-dim); color: var(--ink);
+      padding: 10px 16px; border-radius: 8px; width: 280px; font-size: 15px;
+      font-family: inherit; outline: none;
+    }
+    #gate input:focus { border-color: var(--gold); }
+    #gate button {
+      background: rgba(201,168,76,0.1); border: 1px solid var(--gold-dim); color: var(--gold);
+      padding: 10px 24px; border-radius: 8px; font-family: 'Cinzel', serif;
+      font-size: 11px; letter-spacing: 0.15em; cursor: pointer;
+    }
+    #gate button:hover { background: rgba(201,168,76,0.18); }
+    #gate-err { color: var(--red); font-size: 13px; }
+
+    /* ── Main Layout ── */
+    #app { display: none; max-width: var(--max); margin: 0 auto; padding: 24px 20px 80px; }
+    header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+    .admin-title { font-family: 'Cinzel', serif; font-size: 1rem; letter-spacing: 0.2em; color: var(--gold); }
+    .sign-out { font-size: 11px; color: var(--muted); cursor: pointer; background: none; border: none; font-family: inherit; }
+    .sign-out:hover { color: var(--ink2); }
+
+    /* ── Tabs ── */
+    .tabs { display: flex; gap: 4px; margin-bottom: 24px; border-bottom: 1px solid var(--gold-dim); padding-bottom: 0; }
+    .tab-btn {
+      font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.18em;
+      padding: 8px 16px; border: none; background: none; color: var(--muted);
+      cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px;
+      transition: color 0.2s;
+    }
+    .tab-btn.on { color: var(--gold); border-bottom-color: var(--gold); }
+
+    /* ── Stats ── */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 24px; }
+    .stat-card { background: var(--bg2); border: 1px solid var(--gold-dim); border-radius: 10px; padding: 16px; }
+    .stat-label { font-size: 9px; font-family: 'Cinzel', serif; letter-spacing: 0.18em; color: var(--muted); margin-bottom: 6px; }
+    .stat-value { font-size: 28px; font-weight: 300; color: var(--gold); line-height: 1; }
+    .stat-sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+    /* ── Drops Table ── */
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .section-title { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.22em; color: var(--muted); }
+    .btn-primary {
+      background: rgba(201,168,76,0.1); border: 1px solid rgba(201,168,76,0.3); color: var(--gold);
+      padding: 7px 16px; border-radius: 7px; font-family: 'Cinzel', serif; font-size: 9px;
+      letter-spacing: 0.15em; cursor: pointer; transition: background 0.2s;
+    }
+    .btn-primary:hover { background: rgba(201,168,76,0.18); }
+    .btn-danger {
+      background: rgba(224,85,85,0.08); border: 1px solid rgba(224,85,85,0.25); color: var(--red);
+      padding: 5px 12px; border-radius: 6px; font-size: 11px; cursor: pointer;
+    }
+    .btn-sm {
+      padding: 5px 10px; border-radius: 6px; font-size: 11px; cursor: pointer;
+      border: 1px solid var(--gold-dim); background: none; color: var(--ink2);
+    }
+    .btn-sm:hover { border-color: var(--gold); color: var(--gold); }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    th { font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.15em; color: var(--muted); text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--gold-dim); }
+    td { padding: 10px 10px; border-bottom: 1px solid rgba(255,255,255,0.04); color: var(--ink2); vertical-align: middle; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; }
+    .badge-active { background: rgba(109,191,109,0.12); color: var(--green); border: 1px solid rgba(109,191,109,0.25); }
+    .badge-inactive { background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid rgba(255,255,255,0.08); }
+    .badge-plus { background: rgba(201,168,76,0.1); color: var(--gold); }
+    .badge-club { background: rgba(160,120,240,0.1); color: var(--purple); }
+
+    /* ── Modal / Form ── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.75); z-index: 100;
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--bg2); border: 1px solid var(--gold-dim); border-radius: 14px;
+      padding: 24px; width: 100%; max-width: 540px; max-height: 90vh; overflow-y: auto;
+    }
+    .modal-title { font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 0.2em; color: var(--gold); margin-bottom: 20px; }
+    .form-row { margin-bottom: 14px; }
+    .form-row label { display: block; font-size: 10px; font-family: 'Cinzel', serif; letter-spacing: 0.15em; color: var(--muted); margin-bottom: 5px; }
+    .form-row input, .form-row select, .form-row textarea {
+      width: 100%; background: var(--bg3); border: 1px solid rgba(255,255,255,0.1);
+      color: var(--ink); padding: 9px 12px; border-radius: 8px;
+      font-family: 'Cormorant Garamond', Georgia, serif; font-size: 15px; outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-row input:focus, .form-row select:focus, .form-row textarea:focus { border-color: var(--gold); }
+    .form-row textarea { min-height: 80px; resize: vertical; }
+    .form-row select option { background: var(--bg2); }
+    .form-row .hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+    .btn-cancel { background: none; border: 1px solid rgba(255,255,255,0.1); color: var(--ink2); padding: 9px 18px; border-radius: 8px; cursor: pointer; font-size: 13px; }
+    .btn-save { background: rgba(201,168,76,0.12); border: 1px solid rgba(201,168,76,0.35); color: var(--gold); padding: 9px 22px; border-radius: 8px; cursor: pointer; font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.15em; }
+    .btn-save:hover { background: rgba(201,168,76,0.22); }
+
+    .empty-state { text-align: center; padding: 40px; color: var(--muted); font-style: italic; font-size: 14px; }
+    .msg { padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 14px; }
+    .msg-ok { background: rgba(109,191,109,0.1); color: var(--green); border: 1px solid rgba(109,191,109,0.2); }
+    .msg-err { background: rgba(224,85,85,0.1); color: var(--red); border: 1px solid rgba(224,85,85,0.2); }
+  </style>
+</head>
+<body>
+
+<!-- ── AUTH GATE ── -->
+<div id="gate">
+  <h1>LITSENSE ADMIN</h1>
+  <input type="password" id="pw-input" placeholder="Admin password" />
+  <button onclick="doLogin()">Enter</button>
+  <span id="gate-err"></span>
+</div>
+
+<!-- ── MAIN APP ── -->
+<div id="app">
+  <header>
+    <span class="admin-title">LITSENSE ADMIN</span>
+    <button class="sign-out" onclick="doLogout()">Sign out</button>
+  </header>
+
+  <div class="tabs">
+    <button class="tab-btn on" onclick="showTab('drops')">Monthly Drops</button>
+    <button class="tab-btn" onclick="showTab('stats')">Stats</button>
+  </div>
+
+  <div id="msg-area"></div>
+
+  <!-- ── DROPS TAB ── -->
+  <div id="tab-drops">
+    <div class="section-header">
+      <span class="section-title">MONTHLY DROPS</span>
+      <button class="btn-primary" onclick="openForm()">+ New Drop</button>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Month</th>
+          <th>Title</th>
+          <th>Type</th>
+          <th>Reveal Date</th>
+          <th>Tiers</th>
+          <th>Status</th>
+          <th>Claims</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="drops-tbody">
+        <tr><td colspan="8" class="empty-state">Loading drops...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── STATS TAB ── -->
+  <div id="tab-stats" style="display:none">
+    <div class="stats-grid" id="stats-grid">
+      <div class="stat-card"><div class="stat-label">LOADING</div><div class="stat-value">—</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── DROP FORM MODAL ── -->
+<div class="modal-overlay" id="drop-modal">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">NEW MONTHLY DROP</div>
+    <input type="hidden" id="edit-id" />
+
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Month Key *</label>
+        <input type="text" id="f-month-key" placeholder="2026-05" />
+        <div class="hint">YYYY-MM format</div>
+      </div>
+      <div class="form-row">
+        <label>Reward Type *</label>
+        <select id="f-reward-type">
+          <option value="ebook">eBook</option>
+          <option value="discount">Discount</option>
+          <option value="merch">Merch</option>
+          <option value="gift_card">Gift Card</option>
+          <option value="author_event">Author Event</option>
+          <option value="reading_challenge">Reading Challenge</option>
+          <option value="digital_reward">Digital Reward</option>
+          <option value="mystery">Mystery</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label>Title *</label>
+      <input type="text" id="f-title" placeholder="May Drop: The Quiet House" />
+    </div>
+
+    <div class="form-row">
+      <label>Teaser Text * <span style="font-size:10px;color:var(--muted)">(shown before reveal / to ineligible tiers)</span></label>
+      <textarea id="f-teaser" placeholder="Something for readers who love quiet dread..."></textarea>
+    </div>
+
+    <div class="form-row">
+      <label>Full Description <span style="font-size:10px;color:var(--muted)">(shown after reveal to eligible members)</span></label>
+      <textarea id="f-description" placeholder="This month's drop is..."></textarea>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Reveal Date & Time *</label>
+        <input type="datetime-local" id="f-reveal-date" />
+      </div>
+      <div class="form-row">
+        <label>Image URL</label>
+        <input type="url" id="f-image-url" placeholder="https://..." />
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Claim URL</label>
+        <input type="url" id="f-claim-url" placeholder="https://..." />
+      </div>
+      <div class="form-row">
+        <label>Claim Button Label</label>
+        <input type="text" id="f-claim-label" placeholder="Claim your copy" />
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label>Eligible Tiers</label>
+      <div style="display:flex;gap:16px;padding:6px 0">
+        <label style="display:flex;align-items:center;gap:6px;font-size:14px;color:var(--ink2);letter-spacing:0">
+          <input type="checkbox" id="f-tier-plus" value="plus" style="accent-color:var(--gold)" /> Plus
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:14px;color:var(--ink2);letter-spacing:0">
+          <input type="checkbox" id="f-tier-club" value="club" style="accent-color:var(--gold)" /> Club
+        </label>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label>
+        <input type="checkbox" id="f-is-active" style="accent-color:var(--gold);margin-right:6px" checked />
+        Active (visible to users)
+      </label>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn-cancel" onclick="closeForm()">Cancel</button>
+      <button class="btn-save" onclick="saveDrop()">Save Drop</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let PW = '';
+const API = '/api/club-admin';
+
+// ── AUTH ──────────────────────────────────────────────────────────────────────
+async function doLogin() {
+  const pw = document.getElementById('pw-input').value;
+  const res = await fetch(`${API}?action=list&password=${encodeURIComponent(pw)}`);
+  if (res.status === 401) {
+    document.getElementById('gate-err').textContent = 'Incorrect password';
+    return;
+  }
+  PW = pw;
+  document.getElementById('gate').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  loadDrops();
+}
+document.getElementById('pw-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+function doLogout() { PW = ''; location.reload(); }
+
+// ── TABS ──────────────────────────────────────────────────────────────────────
+function showTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('on'));
+  event.target.classList.add('on');
+  document.getElementById('tab-drops').style.display = tab === 'drops' ? '' : 'none';
+  document.getElementById('tab-stats').style.display = tab === 'stats' ? '' : 'none';
+  if (tab === 'stats') loadStats();
+}
+
+// ── MESSAGE ───────────────────────────────────────────────────────────────────
+function showMsg(text, type = 'ok') {
+  const el = document.getElementById('msg-area');
+  el.innerHTML = `<div class="msg msg-${type}">${text}</div>`;
+  setTimeout(() => el.innerHTML = '', 4000);
+}
+
+// ── DROPS ─────────────────────────────────────────────────────────────────────
+async function loadDrops() {
+  const res = await fetch(`${API}?action=list`, { headers: { 'x-admin-password': PW } });
+  const data = await res.json();
+  renderDrops(data.drops || []);
+}
+
+function renderDrops(drops) {
+  const tbody = document.getElementById('drops-tbody');
+  if (!drops.length) {
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No drops yet. Create your first one.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = drops.map(d => {
+    const tiers = (d.eligible_tiers || []).map(t =>
+      `<span class="badge badge-${t}">${t}</span>`).join(' ');
+    const reveal = d.reveal_date ? new Date(d.reveal_date).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}) : '—';
+    const status = d.is_active
+      ? '<span class="badge badge-active">Active</span>'
+      : '<span class="badge badge-inactive">Inactive</span>';
+    return `<tr>
+      <td style="color:var(--ink);font-family:'Cinzel',serif;font-size:11px;letter-spacing:0.1em">${d.month_key}</td>
+      <td style="color:var(--ink)">${d.title}</td>
+      <td>${d.reward_type}</td>
+      <td>${reveal}</td>
+      <td>${tiers}</td>
+      <td>${status}</td>
+      <td>
+        <button class="btn-sm" onclick="viewClaims('${d.id}','${d.title}')">Claims</button>
+      </td>
+      <td style="display:flex;gap:6px;padding:10px 10px">
+        <button class="btn-sm" onclick="editDrop('${d.id}')">Edit</button>
+        <button class="btn-sm" onclick="toggleDrop('${d.id}',${!d.is_active})">${d.is_active ? 'Deactivate' : 'Activate'}</button>
+        <button class="btn-danger" onclick="deleteDrop('${d.id}','${d.title}')">Delete</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+async function toggleDrop(id, newState) {
+  await fetch(API, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-admin-password': PW },
+    body: JSON.stringify({ action: 'toggle', id, is_active: newState }),
+  });
+  showMsg(`Drop ${newState ? 'activated' : 'deactivated'}.`);
+  loadDrops();
+}
+
+async function deleteDrop(id, title) {
+  if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
+  await fetch(API, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-admin-password': PW },
+    body: JSON.stringify({ action: 'delete', id }),
+  });
+  showMsg('Drop deleted.');
+  loadDrops();
+}
+
+async function viewClaims(dropId, title) {
+  const res = await fetch(`${API}?action=claims&drop_id=${dropId}`, { headers: { 'x-admin-password': PW } });
+  const data = await res.json();
+  alert(`"${title}" — ${data.count} claim(s)\n\n${(data.claims || []).map(c => `${c.user_id} — ${new Date(c.claimed_at).toLocaleString()}`).join('\n') || 'No claims yet.'}`);
+}
+
+// ── FORM ──────────────────────────────────────────────────────────────────────
+function openForm(drop = null) {
+  document.getElementById('modal-title').textContent = drop ? 'EDIT DROP' : 'NEW MONTHLY DROP';
+  document.getElementById('edit-id').value = drop?.id || '';
+  document.getElementById('f-month-key').value = drop?.month_key || '';
+  document.getElementById('f-title').value = drop?.title || '';
+  document.getElementById('f-teaser').value = drop?.teaser_text || '';
+  document.getElementById('f-description').value = drop?.description || '';
+  document.getElementById('f-reward-type').value = drop?.reward_type || 'ebook';
+  document.getElementById('f-image-url').value = drop?.image_url || '';
+  document.getElementById('f-claim-url').value = drop?.claim_url || '';
+  document.getElementById('f-claim-label').value = drop?.claim_label || '';
+  document.getElementById('f-is-active').checked = drop ? drop.is_active : true;
+  document.getElementById('f-tier-plus').checked = drop ? (drop.eligible_tiers||[]).includes('plus') : true;
+  document.getElementById('f-tier-club').checked = drop ? (drop.eligible_tiers||[]).includes('club') : true;
+  if (drop?.reveal_date) {
+    const d = new Date(drop.reveal_date);
+    document.getElementById('f-reveal-date').value = d.toISOString().slice(0,16);
+  } else {
+    document.getElementById('f-reveal-date').value = '';
+  }
+  document.getElementById('drop-modal').classList.add('open');
+}
+
+async function editDrop(id) {
+  const res = await fetch(`${API}?action=get&id=${id}`, { headers: { 'x-admin-password': PW } });
+  const data = await res.json();
+  openForm(data.drop);
+}
+
+function closeForm() {
+  document.getElementById('drop-modal').classList.remove('open');
+}
+
+async function saveDrop() {
+  const id = document.getElementById('edit-id').value;
+  const tiers = [];
+  if (document.getElementById('f-tier-plus').checked) tiers.push('plus');
+  if (document.getElementById('f-tier-club').checked) tiers.push('club');
+
+  const revealVal = document.getElementById('f-reveal-date').value;
+  if (!revealVal) { alert('Reveal date is required.'); return; }
+
+  const payload = {
+    action: id ? 'update' : 'create',
+    ...(id ? { id } : {}),
+    month_key:      document.getElementById('f-month-key').value.trim(),
+    title:          document.getElementById('f-title').value.trim(),
+    teaser_text:    document.getElementById('f-teaser').value.trim(),
+    description:    document.getElementById('f-description').value.trim() || null,
+    reward_type:    document.getElementById('f-reward-type').value,
+    reveal_date:    new Date(revealVal).toISOString(),
+    image_url:      document.getElementById('f-image-url').value.trim() || null,
+    claim_url:      document.getElementById('f-claim-url').value.trim() || null,
+    claim_label:    document.getElementById('f-claim-label').value.trim() || null,
+    eligible_tiers: tiers,
+    is_active:      document.getElementById('f-is-active').checked,
+    password: PW,
+  };
+
+  if (!payload.month_key || !payload.title || !payload.teaser_text || !payload.reward_type) {
+    alert('Month key, title, teaser text, and reward type are required.');
+    return;
+  }
+
+  const res = await fetch(API, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-admin-password': PW },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json();
+  if (data.error) { showMsg(data.error, 'err'); return; }
+
+  closeForm();
+  showMsg(id ? 'Drop updated.' : 'Drop created.');
+  loadDrops();
+}
+
+// ── STATS ─────────────────────────────────────────────────────────────────────
+async function loadStats() {
+  const res = await fetch('/api/admin/stats', { headers: { 'x-admin-password': PW } });
+  if (!res.ok) {
+    document.getElementById('stats-grid').innerHTML = '<div class="stat-card"><div class="stat-label">ERROR</div><div class="stat-value" style="font-size:16px;color:var(--red)">Could not load stats</div></div>';
+    return;
+  }
+  const data = await res.json();
+  const cards = [
+    ['TOTAL USERS', data.totalUsers ?? '—', ''],
+    ['PRO USERS', data.proUsers ?? '—', ''],
+    ['BOOKS SAVED', data.booksSaved ?? '—', ''],
+    ['ACTIVE DROPS', data.activeDrops ?? '—', ''],
+  ];
+  document.getElementById('stats-grid').innerHTML = cards.map(([label, value, sub]) => `
+    <div class="stat-card">
+      <div class="stat-label">${label}</div>
+      <div class="stat-value">${value}</div>
+      ${sub ? `<div class="stat-sub">${sub}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+// Close modal on overlay click
+document.getElementById('drop-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeForm();
+});
+</script>
+</body>
+</html>

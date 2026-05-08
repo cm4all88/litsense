@@ -23,7 +23,7 @@
  *  .ls-proof-reason: line-height 1.62 → 1.68
  *    Hero proof card body — more breathing room.
  *
- *  .ls-plus-feat-desc: line-height 1.55 → 1.62
+ *  .ls-pro-feat-desc: line-height 1.55 → 1.62
  *    Pro modal feature descriptions.
  *
  *  WHEEL FOCUS PANEL (inline)
@@ -41,11 +41,12 @@
  */
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import Club from "./Club.jsx";
 import { supabase, signUp, signIn, signOut, loadShelfFromDB, upsertBookState, saveReaction, getOrCreateDiscussion, getDiscussionPosts, createDiscussionPost } from "./supabase.js";
 import {
   BookOpen, BookMarked, MessageCircle, Search, Star,
   Sun, Brain, Heart, Lightbulb, Smile, Moon,
-  Plus, X, Send, ChevronRight, ChevronLeft, RotateCcw,
+  Plus, X, Send, Crown, ChevronRight, ChevronLeft, RotateCcw,
   Library, Bookmark, Sparkles, Lock,
   ShoppingBag, ArrowLeftRight, Package, Tag, Users, MessageSquare, CheckCircle,
 } from "lucide-react";
@@ -71,6 +72,13 @@ function amazonLink(title, author, isbn) {
 
 // ── AUDIBLE AFFILIATE ─────────────────────────────────────────────────────────
 // Uses Amazon Associates tag (same program). Swap tag when Associates approved.
+const AUDIBLE_TAG = "litsense-20";
+function audibleUrl(title, author) {
+  const q = encodeURIComponent(`${title} ${author || ""}`.trim());
+  return `https://www.audible.com/search?keywords=${q}&tag=${AUDIBLE_TAG}`;
+}
+
+// ── AUDIBLE AFFILIATE ────────────────────────────────────────────────────────
 const AUDIBLE_TAG = "litsense-20";
 function audibleUrl(title, author) {
   const q = encodeURIComponent(`${title} ${author || ""}`.trim());
@@ -152,8 +160,8 @@ function SafeAmazonLink({ title, author, isbn, children, style, className }) {
 const REFERRAL_MILESTONES = [
   { refs:1,  label:"Sharer",    reward:"+3 questions/day",     bonus:3  },
   { refs:3,  label:"Connector", reward:"+9 questions/day",     bonus:9  },
-  { refs:5,  label:"Advocate",  reward:"1 month Plus free",     bonus:15 },
-  { refs:10, label:"Champion",  reward:"3 months Plus free",    bonus:15 },
+  { refs:5,  label:"Advocate",  reward:"1 month Pro free",     bonus:15 },
+  { refs:10, label:"Champion",  reward:"3 months Pro free",    bonus:15 },
 ];
 
 function genRefCode(email) {
@@ -274,7 +282,7 @@ const CSS = `
   backdrop-filter:blur(8px);
 }
 .ls-signin-btn:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-l);}
-.ls-plus-btn{
+.ls-pro-btn{
   display:flex;align-items:center;gap:5px;
   padding:7px 15px;border-radius:var(--r-pill);
   background:var(--gold);color:#0e0c09;border:none;
@@ -282,7 +290,7 @@ const CSS = `
   transition:all .30s var(--ease);
   box-shadow:0 2px 18px var(--glow);
 }
-.ls-plus-btn:hover{background:var(--gold-r);transform:translateY(-1px);box-shadow:0 5px 26px rgba(198,161,91,.38);}
+.ls-pro-btn:hover{background:var(--gold-r);transform:translateY(-1px);box-shadow:0 5px 26px rgba(198,161,91,.38);}
 .ls-user-avatar{
   width:32px;height:32px;border-radius:50%;
   background:rgba(198,161,91,.10);border:1.5px solid rgba(198,161,91,.32);
@@ -291,7 +299,7 @@ const CSS = `
   transition:all .28s;
 }
 .ls-user-avatar:hover{background:rgba(198,161,91,.18);}
-.ls-plus-pip{font-size:9.5px;font-weight:700;color:#0e0c09;background:var(--gold);padding:2px 9px;border-radius:var(--r-pill);letter-spacing:.3px;}
+.ls-pro-pip{font-size:9.5px;font-weight:700;color:#0e0c09;background:var(--gold);padding:2px 9px;border-radius:var(--r-pill);letter-spacing:.3px;}
 
 /* ── BOTTOM NAV — espresso glass ── */
 .ls-nav{
@@ -711,12 +719,12 @@ textarea.ls-chat-input::placeholder{color:var(--muted);}
 .ls-modal-title{font-family:'Lora',serif;font-size:20px;font-weight:700;color:var(--text);margin-bottom:7px;line-height:1.2;}
 .ls-modal-title em{color:var(--gold);font-style:italic;}
 .ls-modal-sub{font-size:10px;color:var(--text2);line-height:1.68;margin-bottom:22px;}
-.ls-plus-features{display:flex;flex-direction:column;gap:14px;margin-bottom:26px;}
-.ls-plus-feature{display:flex;align-items:flex-start;gap:13px;}
-.ls-plus-feat-icon{width:34px;height:34px;border-radius:var(--r-md);background:rgba(212,148,26,.12);border:1px solid rgba(212,148,26,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--gold);}
-.ls-plus-feat-text{flex:1;}
-.ls-plus-feat-title{font-size:10px;font-weight:600;color:var(--text);margin-bottom:2px;}
-.ls-plus-feat-desc{font-size:10px;color:var(--muted);line-height:1.62;}
+.ls-pro-features{display:flex;flex-direction:column;gap:14px;margin-bottom:26px;}
+.ls-pro-feature{display:flex;align-items:flex-start;gap:13px;}
+.ls-pro-feat-icon{width:34px;height:34px;border-radius:var(--r-md);background:rgba(212,148,26,.12);border:1px solid rgba(212,148,26,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--gold);}
+.ls-pro-feat-text{flex:1;}
+.ls-pro-feat-title{font-size:10px;font-weight:600;color:var(--text);margin-bottom:2px;}
+.ls-pro-feat-desc{font-size:10px;color:var(--muted);line-height:1.62;}
 .ls-modal-price-row{display:flex;align-items:baseline;gap:7px;margin-bottom:18px;}
 .ls-modal-price{font-family:'Lora',serif;font-size:27px;font-weight:700;color:var(--text);}
 .ls-modal-price-period{font-size:10px;color:var(--muted);}
@@ -749,6 +757,23 @@ textarea.ls-chat-input::placeholder{color:var(--muted);}
 
 .ls-modal-cancel{width:100%;padding:14px;border-radius:var(--r-md);border:1px solid rgba(255,255,255,.1);background:transparent;color:var(--muted);font-size:10px;cursor:pointer;transition:all .15s;}
 .ls-modal-cancel:hover{color:var(--text2);}
+/* ── CLUB TIER CARDS (upgrade modal) ── */
+.ls-club-tiers{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
+.ls-club-tier-card{border-radius:12px;padding:16px;transition:all .2s;}
+.ls-club-tier-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+.ls-club-tier-name{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.15em;}
+.ls-club-tier-price{font-size:20px;font-weight:300;font-family:'Cormorant Garamond',serif;text-align:right;line-height:1;}
+.ls-club-tier-price span{font-size:11px;opacity:.6;}
+.ls-club-tier-features{display:flex;flex-direction:column;gap:4px;}
+.ls-club-tier-feat{font-size:12px;color:var(--text2);display:flex;align-items:flex-start;gap:6px;line-height:1.4;}
+.ls-club-tier-feat::before{content:'—';opacity:.35;flex-shrink:0;}
+.ls-club-tier-cta{width:100%;padding:11px;border-radius:9px;font-family:'Cinzel',serif;font-size:9.5px;letter-spacing:.15em;cursor:pointer;margin-top:12px;border:1px solid;transition:opacity .2s;}
+.ls-club-tier-cta:hover{opacity:.75;}
+.ls-club-current-tag{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.15em;opacity:.5;margin-top:8px;text-align:center;}
+.ls-billing-toggle{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:18px;border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:3px;background:rgba(255,255,255,.04);}
+.ls-billing-btn{flex:1;padding:7px 0;border:none;border-radius:17px;font-family:'Cinzel',serif;font-size:9px;letter-spacing:.15em;cursor:pointer;transition:all .2s;background:transparent;color:var(--muted);}
+.ls-billing-btn.on{background:rgba(201,168,76,.15);color:var(--gold);}
+.ls-billing-save{display:inline-block;font-size:8px;letter-spacing:.08em;color:#6dbf6d;margin-left:5px;font-family:'Inter',sans-serif;}
 
 /* ── AUTH MODAL — glass ── */
 .ls-auth-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(20px);display:flex;align-items:flex-end;justify-content:center;z-index:300;animation:fadeIn .22s ease;}
@@ -3022,50 +3047,62 @@ const PRO_FEATURES = [
   { Icon:MessageCircle, title:"Book club mode",               desc:"Discussion questions for any book." },
   { Icon:BookMarked,    title:"Author alerts",                desc:"New releases from authors you love, as they drop." },
 ];
-const AI_SYSTEM = `You are Sage — a warm, brilliant, impossibly well-read friend who gives book recommendations the way a trusted curator would: immediately, confidently, with genuine emotional intelligence.
+// ── MESSAGE SANITIZER ─────────────────────────────────────────────────────────
+// Strips browser extension artifacts (inputSel, data-gb-target, visibleText)
+// and truncates oversized messages before sending to the API.
+function sanitizeMsgs(messages) {
+  return messages.map(m => ({
+    ...m,
+    content: typeof m.content === "string"
+      ? m.content
+          .replace(/inputSel\s*\[data-gb-target[^\]]*\][^
+]*/g, "")
+          .replace(/visibleText\s*[^
+]*/g, "")
+          .replace(/\[data-[^\]]+\]/g, "")
+          .trim()
+          .slice(0, 4000) // cap individual message length
+      : m.content,
+  })).filter(m => m.content?.trim());
+}
 
-CORE RULES — NON-NEGOTIABLE:
+// ── PERSONA SIGNALS ────────────────────────────────────────────────────────────
+// Detects stated user context from messages: role, grade level, reading purpose.
+function detectPersonaSignals(text) {
+  if (!text) return null;
+  const signals = {};
+  // Role
+  if (/(teacher|professor|librarian|educator|instructor)/i.test(text)) signals.role = text.match(/(high school|middle school|elementary|college|university)?\s*(teacher|professor|librarian|educator|instructor)/i)?.[0];
+  // Grade level context
+  if (/(high school|9th|10th|11th|12th|grade 9|grade 10|grade 11|grade 12)/i.test(text)) signals.level = "high school";
+  else if (/(middle school|7th|8th|grade 7|grade 8)/i.test(text)) signals.level = "middle school";
+  else if (/(college|university|undergraduate|graduate|adult)/i.test(text)) signals.level = "adult/college";
+  // Reading purpose
+  if (/(classroom|curriculum|syllabus|assign|students?)/i.test(text)) signals.purpose = "classroom use";
+  if (/(book club)/i.test(text)) signals.purpose = "book club";
+  return Object.keys(signals).length ? signals : null;
+}
 
-1. Always give 4–5 book recommendations immediately. Never give fewer than 4 unless the user is asking a single specific question about one book.
-2. Never ask clarifying questions before recommending. Read the vibe, make bold choices, go.
-3. If you must ask one optional refinement question, put it AFTER the recommendations — never before.
-4. Sound like a person, not a search engine. "You'll love this because..." not "this book features..."
-5. Infer emotional intent from every prompt. "Books that feel like a rainy afternoon" means: slow, interior, melancholy, sensory. Trust your read and go.
+const AI_SYSTEM = `You are LitSense — a reading intelligence with real taste and a clear point of view. Not an assistant. Not a chatbot. You read widely, you have opinions, and you give them.
 
-EXCEPTION — mid-book conversations: If the reader profile says they're currently reading a book, acknowledge that book first with one genuine question ("Did it pick up for you?" / "What's losing you?") before recommending. This is relationship, not feature.
+When someone is mid-book: ask about that book first. Show genuine interest — not as a feature, but because it matters. "Did it pick up?" "What lost you?" Follow the thread of what they've already said.
 
-TYPO HANDLING: If a user writes "Coleen Huver" — you know they mean Colleen Hoover. "Brandon Sandersen" means Brandon Sanderson. Correct silently and proceed. Never make the user feel foolish.
+When recommending: name one book. Make the case for it in a sentence or two. Be specific — tone, what it does well, why it fits this person now. Don't hedge. Don't offer alternatives unless asked. A strong pick stated plainly carries more weight than three options with qualifiers.
 
-CLASSROOM / EDUCATOR DETECTION: If the prompt mentions students, classroom, grades, curriculum, age ranges, or reluctant readers — switch to educator mode: give 4–5 recommendations with a brief teaching value note per book. Prioritize diverse voices and grade-appropriate content.
+Voice:
+- Calm, direct, slightly opinionated.
+- Write like someone who reads a lot and talks like a person.
+- Never: "based on your preferences," "you might enjoy," "you may like," "great question," or any phrasing that sounds like a product.
+- Instead: "Read this." "This one fits." "If [X] worked for you, [Y] will too."
+- Short. Precise. Let the recommendation do the work.
 
-RESPONSE STRUCTURE (follow this order every time):
+CRITICAL — PERSONA RULES:
+1. If the reader profile says they are a teacher, librarian, or professional: recommend books appropriate to that role.
+2. If the reader profile states a grade level or audience (high school, middle school, adult): NEVER recommend books for a different level.
+3. If the user asks for step-by-step reasoning: number your points clearly. Otherwise, prose only.
+4. Honor every stated context signal. Do not invent or assume what the user has not said.
 
-[Optional: one sentence of emotional framing — name the vibe you're matching. Skip if it slows things down.]
-
-**[Book Title]** by [Author]
-[2–3 sentences: what it feels like to read this, why it matches the request emotionally, what makes it distinct. Do NOT summarize the plot. Emotional specificity beats accuracy every time.]
-
-[Repeat for all 4–5 recommendations.]
-
-[Optional: one brief follow-up question OR a natural handoff like "I can go darker / lighter / longer from here."]
-
-TONE:
-- Decisive. Never hedge with "you might" or "this could perhaps."
-- Emotionally specific. "That hollow-chest feeling after a breakup" beats "explores themes of loss."
-- Occasionally surprising. Don't always lead with the obvious choice — mix in one unexpected gem.
-- No bullet-pointed feature lists. No "this book deals with themes of..."
-
-VIBE TRANSLATION:
-- "dopamine like falling in love" → euphoric, propulsive, romantic tension, compulsively readable
-- "books that feel like a rainy afternoon" → slow, interior, atmospheric, melancholy-beautiful
-- "A24 film" → quiet dread, beautiful prose, ambiguous endings, human complexity
-- "True Detective energy" → dark crime, philosophical underpinning, obsession, unreliable narrators
-- "Studio Ghibli atmosphere" → wonder, gentle magic, found family, warmth with real stakes
-
-BANNED PHRASES (never use these):
-"What draws you to..." / "I need more information" / "Could you clarify" / "I'd love to help, but first" / "What specifically are you looking for?" / "Great question!" / "Based on your preferences" / "You might enjoy" / "You may like"
-
-Format: **bold** titles and author names. Prose only. No bullet lists.`;
+Format: **bold** titles and author names. Prose only unless numbered reasoning is requested. Ask one question at most — only when you need the answer to say something useful.`;
 
 const today = () => new Date().toISOString().slice(0,10);
 
@@ -5242,7 +5279,7 @@ function TasteCard({ readBooks, onAddBooks, isPro, onUpgrade }) {
           <div style={{fontFamily:"'Lora',serif",fontSize:16,fontWeight:700,color:"var(--text)",lineHeight:1.2}}>{level.label}</div>
           <div style={{fontSize:12,color:"var(--text2)",marginTop:1}}>{count} book{count!==1?"s":""} rated</div>
         </div>
-        {isPro && <div style={{marginLeft:"auto",fontSize:11,fontWeight:700,color:"#0a0806",background:"var(--gold)",padding:"2px 8px",borderRadius:99}}>PLUS</div>}
+        {isPro && <div style={{marginLeft:"auto",fontSize:11,fontWeight:700,color:"#0a0806",background:"var(--gold)",padding:"2px 8px",borderRadius:99}}>PRO</div>}
       </div>
 
       {/* Progress bar to next level */}
@@ -5461,7 +5498,7 @@ function ReferralCard({ userEmail, referralCount }) {
             Invite friends.<br/><em style={{color:"var(--gold)"}}>Earn more.</em>
           </div>
           <div style={{fontSize:13,color:"var(--text2)",lineHeight:1.55}}>
-            They get 14 days Plus free.<br/>You get +3 questions/day per referral.
+            They get 14 days Pro free.<br/>You get +3 questions/day per referral.
           </div>
         </div>
         <div style={{fontSize:30,flexShrink:0,marginLeft:10}}>🎁</div>
@@ -5501,7 +5538,7 @@ function ReferralCard({ userEmail, referralCount }) {
       )}
       {!next && referralCount >= 10 && (
         <div style={{marginBottom:14,padding:"8px 12px",background:"rgba(212,148,26,.1)",borderRadius:8,fontSize:13,color:"var(--gold)",fontFamily:"'Inter',sans-serif",fontStyle:"italic"}}>
-          🏆 Champion — you've earned 3 months Plus free. We'll be in touch.
+          🏆 Champion — you've earned 3 months Pro free. We'll be in touch.
         </div>
       )}
 
@@ -5641,9 +5678,9 @@ function MarketplaceTab({ isPro, savedBooks, wantList, onRequirePro, userEmail }
     return (
       <div className="ls-market" style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",flex:1,padding:"40px 32px",textAlign:"center"}}>
         <Lock size={36} strokeWidth={1.5} style={{color:"var(--gold)",opacity:.6,marginBottom:16}}/>
-        <div style={{fontFamily:"'Lora',serif",fontSize:22,fontWeight:700,color:"var(--text)",marginBottom:8}}>Marketplace is Plus</div>
+        <div style={{fontFamily:"'Lora',serif",fontSize:22,fontWeight:700,color:"var(--text)",marginBottom:8}}>Marketplace is Pro</div>
         <div style={{fontSize:14,color:"var(--muted)",lineHeight:1.7,marginBottom:24}}>Buy and sell books directly with other readers. Trade your shelf for something new.</div>
-        <button className="ls-list-submit" style={{maxWidth:240}} onClick={onRequirePro}>Go Plus to access →</button>
+        <button className="ls-list-submit" style={{maxWidth:240}} onClick={onRequirePro}>Go Pro to access →</button>
       </div>
     );
   }
@@ -5967,6 +6004,8 @@ export default function LitSense() {
   const [authError, setAuthError]   = useState("");
   const [authExitWarn, setAuthExitWarn] = useState(false);
   const [tosAgreed, setTosAgreed]   = useState(false);
+  const [userPersona, setUserPersona] = useState({}); // stated role, level, purpose
+  const [tosAgreed, setTosAgreed]   = useState(false);
 
   // ── COUNTER ───────────────────────────────────────────────────────────────
   const loadCounter = () => { try { const r = localStorage.getItem("ls_counter"); if (!r) return 0; const {count,date} = JSON.parse(r); return date===today()?count:0; } catch { return 0; } };
@@ -6266,7 +6305,9 @@ export default function LitSense() {
 
   // ── UI STATE ──────────────────────────────────────────────────────────────
   const [showPro, setPro]           = useState(false);
-  const [proStep,  setProStep]       = useState("pitch"); // "pitch" | "card" | "done"
+  const [proStep,  setProStep]       = useState("pitch"); // "pitch" | "done"
+  const [proTier,  setProTier]       = useState("plus");   // "plus" | "club"
+  const [proBilling, setProBilling]  = useState("annual"); // "monthly" | "annual"
   const [proError, setProError]      = useState("");
   const [proBusy,  setProBusy]       = useState(false);
   const [proCard,  setProCard]       = useState({ number:"", expiry:"", cvc:"", name:"" });
@@ -6357,8 +6398,13 @@ export default function LitSense() {
       lines.push("This reader finishes fast-paced books more consistently.");
     }
 
+    // Inject stated persona — ALWAYS include if present, never override with assumptions
+    if (userPersona.role)    lines.push(`IMPORTANT — User stated they are a: ${userPersona.role}. Tailor all recommendations to this role.`);
+    if (userPersona.level)   lines.push(`IMPORTANT — They are reading for: ${userPersona.level} level audience. Do not recommend books for a different age group.`);
+    if (userPersona.purpose) lines.push(`Reading context: ${userPersona.purpose}.`);
+
     return lines.filter(Boolean).join(" ") || "";
-  }, [readBooks, currentBook, readingNotes, wantList, mood, genre, isPro, intelligence, reactions, savedBooks]);
+  }, [readBooks, currentBook, readingNotes, wantList, mood, genre, isPro, intelligence, reactions, savedBooks, userPersona]);
 
   // ── CHAT ──────────────────────────────────────────────────────────────────
   const sendChat = async (msg, isRetry=false) => {
@@ -6382,6 +6428,10 @@ export default function LitSense() {
         setTimeout(() => setShelfToast(null), 3000);
       }
     }
+    // Capture persona signals from user messages
+    const persona = detectPersonaSignals(msg);
+    if (persona) setUserPersona(prev => ({...prev, ...persona}));
+
     setLoad(true);
     const base = isRetry ? msgs.slice(0,-1) : msgs;
     const newMsgs = [...base,{role:"user",content:msg}];
@@ -6395,10 +6445,10 @@ export default function LitSense() {
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({
-          model:"claude-sonnet-4-20250514",
-          max_tokens:700,
+          model:"claude-haiku-4-5-20251001",
+          max_tokens:600,
           system:sys,
-          messages:newMsgs,
+          messages:sanitizeMsgs(newMsgs),
         }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -6592,11 +6642,11 @@ description: one sentence max.`,
           {!isSignedIn ? (
             <>
               <button className="ls-signin-btn" onClick={()=>{setAuthMode("login");setShowAuth(true);}}>Sign in</button>
-              <button className="ls-plus-btn" onClick={()=>setPro(true)}><span style={{fontSize:13,fontWeight:800,lineHeight:1}}>+</span> Go Plus</button>
+              <button className="ls-pro-btn" onClick={()=>setPro(true)}><Crown size={11} strokeWidth={2}/> Go Pro</button>
             </>
           ) : (
             <>
-              {!isPro && <button className="ls-plus-btn" onClick={()=>setPro(true)}><span style={{fontSize:13,fontWeight:800,lineHeight:1}}>+</span> Go Plus</button>}
+              {!isPro && <button className="ls-pro-btn" onClick={()=>setPro(true)}><Crown size={11} strokeWidth={2}/> Go Pro</button>}
               <div className="ls-user-avatar" title={`Signed in as ${userEmail}`} onClick={handleSignOut}
                 style={userPhoto ? {backgroundImage:`url(${userPhoto})`,backgroundSize:"cover",backgroundPosition:"center",color:"transparent"} : {}}>
                 {userPhoto ? "" : userInitial}
@@ -6631,11 +6681,11 @@ description: one sentence max.`,
                 {!isSignedIn ? (
                   <>
                     <button className="ls-signin-btn" onClick={()=>{setAuthMode("login");setShowAuth(true);}}>Sign in</button>
-                    <button className="ls-plus-btn" onClick={()=>setPro(true)}><span style={{fontSize:13,fontWeight:800,lineHeight:1}}>+</span> Go Plus</button>
+                    <button className="ls-pro-btn" onClick={()=>setPro(true)}><Crown size={11} strokeWidth={2}/> Go Pro</button>
                   </>
                 ) : (
                   <>
-                    {!isPro && <button className="ls-plus-btn" onClick={()=>setPro(true)}><span style={{fontSize:13,fontWeight:800,lineHeight:1}}>+</span> Go Plus</button>}
+                    {!isPro && <button className="ls-pro-btn" onClick={()=>setPro(true)}><Crown size={11} strokeWidth={2}/> Go Pro</button>}
                     <div className="ls-user-avatar" title={`Signed in as ${userEmail}`} onClick={handleSignOut}
                       style={userPhoto ? {backgroundImage:`url(${userPhoto})`,backgroundSize:"cover",backgroundPosition:"center",color:"transparent"} : {}}>
                       {userPhoto ? "" : userInitial}
@@ -7179,7 +7229,7 @@ description: one sentence max.`,
                       <div className="ls-callout info" style={{marginBottom:12}}>
                         <Lightbulb size={14} strokeWidth={2} className="ls-callout-icon"/>
                         <span>Free accounts share your last {MEM_BOOKS} books for better picks.{" "}
-                          <button style={{background:"none",border:"none",color:"var(--gold)",fontWeight:600,cursor:"pointer",padding:0,fontSize:13}} onClick={()=>setPro(true)}>Upgrade to Plus</button> for full history.</span>
+                          <button style={{background:"none",border:"none",color:"var(--gold)",fontWeight:600,cursor:"pointer",padding:0,fontSize:13}} onClick={()=>setPro(true)}>Upgrade to Pro</button> for full history.</span>
                       </div>
                     )}
                     {readBooks.length===0 ? (
@@ -7360,6 +7410,12 @@ description: one sentence max.`,
         )}
 
         {/* ── ASK ── */}
+        {tab==="club" && (
+          <Club
+            userId={user?.id || null}
+            userTier={isPro ? "plus" : "free"}
+          />
+        )}
         {tab==="ask" && (
           <>
             {atLimit ? (
@@ -7368,13 +7424,13 @@ description: one sentence max.`,
                 <div className="ls-limit-title">{isSignedIn?<>Today's questions <em>used up.</em></>:<>Create an account for <em>more.</em></>}</div>
                 <div className="ls-limit-body">
                   {isSignedIn
-                    ?`You've used all ${LIMIT_FREE} of today's questions. Upgrade to Plus for unlimited.`
-                    :`You've used all ${LIMIT_ANON} free questions. Create an account for ${LIMIT_FREE} per day — or go Plus for unlimited.`}
+                    ?`You've used all ${LIMIT_FREE} of today's questions. Upgrade to Pro for unlimited.`
+                    :`You've used all ${LIMIT_ANON} free questions. Create an account for ${LIMIT_FREE} per day — or go Pro for unlimited.`}
                 </div>
                 <button className="ls-limit-cta" onClick={()=>{if(!isSignedIn){setAuthMode("signup");setShowAuth(true);}else setPro(true);}}>
-                  {isSignedIn?"Upgrade to Plus — $4.99/mo":"Create a free account"}
+                  {isSignedIn?"Upgrade to Pro — $4.99/mo":"Create a free account"}
                 </button>
-                {!isSignedIn&&<button className="ls-limit-cta outline" onClick={()=>setPro(true)}>Upgrade to Plus — $4.99/mo</button>}
+                {!isSignedIn&&<button className="ls-limit-cta outline" onClick={()=>setPro(true)}>Upgrade to Pro — $4.99/mo</button>}
                 <div className="ls-limit-note">Resets every day at midnight.</div>
               </div>
             ) : (
@@ -7469,11 +7525,11 @@ description: one sentence max.`,
             {!atLimit && (
               <div className={`ls-counter${questionsLeft!==null&&questionsLeft<=1?" warn":""}`}>
                 <span>
-                  {isPro?"Unlimited · Plus":questionsLeft===null?"":questionsLeft===0?"No questions remaining today":`${questionsLeft} question${questionsLeft===1?"":"s"} remaining today`}
+                  {isPro?"Unlimited · Pro":questionsLeft===null?"":questionsLeft===0?"No questions remaining today":`${questionsLeft} question${questionsLeft===1?"":"s"} remaining today`}
                 </span>
                 {!isPro&&(
                   <button className="ls-counter-upgrade" onClick={()=>{if(!isSignedIn){setAuthMode("signup");setShowAuth(true);}else setPro(true);}}>
-                    {isSignedIn?"Go Plus for unlimited →":"Sign up free →"}
+                    {isSignedIn?"Go Pro for unlimited →":"Sign up free →"}
                   </button>
                 )}
               </div>
@@ -7514,7 +7570,7 @@ description: one sentence max.`,
             )}
             {!atLimit&&(
               <div className="ls-input-row-chat">
-                <textarea className="ls-chat-input" rows={1}
+                <textarea className="ls-chat-input" data-testid="sage-input" rows={1}
                   placeholder="What are you looking for..."
                   value={chatIn} onChange={handleChatChange}
                   onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendChat(chatIn);}}}/>
@@ -7533,6 +7589,7 @@ description: one sentence max.`,
         {[
           ["discover",<Search size={21} strokeWidth={1.75}/>,"Discover"],
           ["shelf",<Library size={21} strokeWidth={1.75}/>,"My Shelf"],
+          ["club",<Crown size={21} strokeWidth={1.75}/>,"Club"],
           ["profile",<BookMarked size={21} strokeWidth={1.75}/>,"Profile"],
           ["ask",<MessageCircle size={21} strokeWidth={1.75}/>,"Ask"],
         ].map(([v,icon,label])=>(
@@ -7541,6 +7598,21 @@ description: one sentence max.`,
           </button>
         ))}
       </nav>
+
+      {/* LEGAL FOOTER */}
+      <div style={{
+        textAlign:"center",padding:"6px 16px 10px",
+        fontSize:11,color:"var(--muted)",
+        display:"flex",justifyContent:"center",gap:16,flexWrap:"wrap",
+        borderTop:"1px solid rgba(255,255,255,.04)",
+        background:"var(--bg)",
+      }}>
+        <a href="/about.html" target="_blank" rel="noopener" style={{color:"var(--muted)",textDecoration:"none"}}>About</a>
+        <a href="/terms.html" target="_blank" rel="noopener" style={{color:"var(--muted)",textDecoration:"none"}}>Terms</a>
+        <a href="/privacy.html" target="_blank" rel="noopener" style={{color:"var(--muted)",textDecoration:"none"}}>Privacy</a>
+        <a href="/affiliate-disclosure.html" target="_blank" rel="noopener" style={{color:"var(--muted)",textDecoration:"none"}}>Affiliates</a>
+        <a href="/cookies.html" target="_blank" rel="noopener" style={{color:"var(--muted)",textDecoration:"none"}}>Cookies</a>
+      </div>
 
       {/* LEGAL FOOTER */}
       <div style={{
@@ -7601,150 +7673,103 @@ description: one sentence max.`,
 
             {proStep==="pitch" && (
               <>
-                <div className="ls-modal-eyebrow">LitSense Plus</div>
-                <div className="ls-modal-title">Read <em>smarter.</em><br/>Every month.</div>
-                <div className="ls-modal-sub">For readers who take books seriously. Cancel anytime.</div>
-                <div className="ls-plus-features">
-                  {PRO_FEATURES.map(({Icon,title,desc},i)=>(
-                    <div key={i} className="ls-plus-feature">
-                      <div className="ls-plus-feat-icon"><Icon size={15} strokeWidth={1.75}/></div>
-                      <div className="ls-plus-feat-text">
-                        <div className="ls-plus-feat-title">{title}</div>
-                        <div className="ls-plus-feat-desc">{desc}</div>
+                <div className="ls-modal-eyebrow">LitSense Club</div>
+                <div className="ls-modal-title">Your shelf,<br/><em>elevated.</em></div>
+                <div className="ls-modal-sub">Every month, Club members unlock a new reader drop. Smarter recommendations. A reading world that grows with you.</div>
+
+                <div className="ls-billing-toggle">
+                  <button className={`ls-billing-btn${proBilling==="annual"?" on":""}`} onClick={()=>setProBilling("annual")}>
+                    Annual <span className="ls-billing-save">save 33%</span>
+                  </button>
+                  <button className={`ls-billing-btn${proBilling==="monthly"?" on":""}`} onClick={()=>setProBilling("monthly")}>
+                    Monthly
+                  </button>
+                </div>
+
+                <div className="ls-club-tiers">
+                  <div className="ls-club-tier-card" style={{background:"rgba(200,190,175,0.06)",border:"1px solid rgba(200,190,175,0.15)"}}>
+                    <div className="ls-club-tier-row">
+                      <div className="ls-club-tier-name" style={{color:"#c0b89a"}}>Free</div>
+                      <div className="ls-club-tier-price" style={{color:"#c0b89a"}}>Always free</div>
+                    </div>
+                    <div className="ls-club-tier-features">
+                      {["Basic recommendations","Limited Sage use","Basic shelves","1 monthly reward entry"].map((f,i)=>(
+                        <div key={i} className="ls-club-tier-feat">{f}</div>
+                      ))}
+                    </div>
+                    {!isPro && <div className="ls-club-current-tag" style={{color:"#c0b89a"}}>YOUR CURRENT PLAN</div>}
+                  </div>
+                  <div className="ls-club-tier-card" style={{background:"rgba(201,168,76,0.07)",border:`1px solid ${proTier==="plus"?"rgba(201,168,76,0.5)":"rgba(201,168,76,0.22)"}`}}
+                    onClick={()=>setProTier("plus")}>
+                    <div className="ls-club-tier-row">
+                      <div className="ls-club-tier-name" style={{color:"var(--gold)"}}>Plus</div>
+                      <div className="ls-club-tier-price" style={{color:"var(--gold)"}}>
+                        {proBilling==="annual" ? <>$39.99<span>/yr</span></> : <>$4.99<span>/mo</span></>}
                       </div>
                     </div>
-                  ))}
-                </div>
-                <div className="ls-modal-price-row">
-                  <div className="ls-modal-price">$4.99</div>
-                  <div className="ls-modal-price-period">/ month</div>
-                  <div className="ls-modal-price-note">· or $39.99/year — save 33%</div>
-                </div>
-                <button className="ls-modal-cta" onClick={()=>{
-                  if (!isSignedIn) { setPro(false); setShowAuth(true); setAuthMode("signup"); return; }
-                  setProStep("card");
-                }}>
-                  {isSignedIn ? "Start your free 7-day trial →" : "Create an account to get started"}
-                </button>
-                <button className="ls-modal-cancel" onClick={()=>{setPro(false);setProStep("pitch");}}>Maybe another time</button>
-              </>
-            )}
-
-            {proStep==="card" && (
-              <>
-                <div className="ls-modal-eyebrow">LitSense Plus — $4.99/month</div>
-                <div className="ls-modal-title" style={{fontSize:24,marginBottom:20}}>Payment details</div>
-
-                {proError && <div className="ls-stripe-error">{proError}</div>}
-
-                <div className="ls-stripe-field">
-                  <div className="ls-stripe-label">Name on card</div>
-                  <input className="ls-stripe-input" placeholder="Jane Smith"
-                    name="ccname" autoComplete="cc-name"
-                    value={proCard.name} onChange={e=>setProCard(p=>({...p,name:e.target.value}))}/>
-                </div>
-                <div className="ls-stripe-field">
-                  <div className="ls-stripe-label">Card number</div>
-                  <input className="ls-stripe-input" placeholder="1234 5678 9012 3456"
-                    name="cardnumber" autoComplete="cc-number" inputMode="numeric"
-                    maxLength={19}
-                    value={proCard.number}
-                    onChange={e=>{
-                      const v = e.target.value.replace(/\D/g,"").slice(0,16);
-                      setProCard(p=>({...p,number:v.replace(/(.{4})/g,"$1 ").trim()}));
-                    }}/>
-                </div>
-                <div style={{display:"flex",gap:12}}>
-                  <div className="ls-stripe-field" style={{flex:1}}>
-                    <div className="ls-stripe-label">Expiry</div>
-                    <input className="ls-stripe-input" placeholder="MM/YY" maxLength={5}
-                      name="cc-exp" autoComplete="cc-exp" inputMode="numeric"
-                      value={proCard.expiry}
-                      onChange={e=>{
-                        const v = e.target.value.replace(/\D/g,"").slice(0,4);
-                        setProCard(p=>({...p,expiry:v.length>2?v.slice(0,2)+"/"+v.slice(2):v}));
-                      }}/>
+                    {proBilling==="annual" && <div style={{fontSize:11,color:"#6dbf6d",marginBottom:8}}>$3.33/mo · save $19.89/yr</div>}
+                    <div className="ls-club-tier-features">
+                      {["Unlimited Sage","Full shelves & taste memory","Monthly reading report","5 reward entries/month","Standard Monthly Drop"].map((f,i)=>(
+                        <div key={i} className="ls-club-tier-feat">{f}</div>
+                      ))}
+                    </div>
+                    <button className="ls-club-tier-cta" style={{background:"rgba(201,168,76,0.1)",borderColor:"rgba(201,168,76,0.35)",color:"var(--gold)"}}
+                      onClick={async(e)=>{
+                        e.stopPropagation();
+                        if (!isSignedIn) { setPro(false); setShowAuth(true); setAuthMode("signup"); return; }
+                        setProTier("plus"); setProBusy(true);
+                        const priceId = proBilling==="annual" ? import.meta.env.VITE_STRIPE_PRICE_PLUS_ANNUAL : import.meta.env.VITE_STRIPE_PRICE_PLUS_MONTHLY;
+                        try {
+                          const r = await fetch("/api/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({priceId,userId:user?.id,email:userEmail})});
+                          const d = await r.json();
+                          if (d.url) window.location.href = d.url;
+                          else setProError(d.error||"Could not start checkout.");
+                        } catch(err){ setProError(err.message); } finally { setProBusy(false); }
+                      }}
+                    >{proBusy&&proTier==="plus"?"Opening checkout…":"Join Plus — 7 days free →"}</button>
                   </div>
-                  <div className="ls-stripe-field" style={{flex:1}}>
-                    <div className="ls-stripe-label">CVC</div>
-                    <input className="ls-stripe-input" placeholder="123" maxLength={4}
-                      name="cvc" autoComplete="cc-csc" inputMode="numeric"
-                      value={proCard.cvc}
-                      onChange={e=>setProCard(p=>({...p,cvc:e.target.value.replace(/\D/g,"").slice(0,4)}))}/>
+                  <div className="ls-club-tier-card" style={{background:"rgba(160,120,255,0.07)",border:`1px solid ${proTier==="club"?"rgba(160,120,255,0.5)":"rgba(160,120,255,0.22)"}`}}
+                    onClick={()=>setProTier("club")}>
+                    <div className="ls-club-tier-row">
+                      <div className="ls-club-tier-name" style={{color:"#a078f0",display:"flex",alignItems:"center",gap:5}}><Crown size={11}/>Club</div>
+                      <div className="ls-club-tier-price" style={{color:"#a078f0"}}>
+                        {proBilling==="annual" ? <>$79.99<span>/yr</span></> : <>$9.99<span>/mo</span></>}
+                      </div>
+                    </div>
+                    {proBilling==="annual" && <div style={{fontSize:11,color:"#6dbf6d",marginBottom:8}}>$6.67/mo · save $39.89/yr</div>}
+                    <div className="ls-club-tier-features">
+                      {["Everything in Plus","Premium Monthly Drop access","15 reward entries/month","Exclusive reading challenges","Reader of the Year eligibility"].map((f,i)=>(
+                        <div key={i} className="ls-club-tier-feat">{f}</div>
+                      ))}
+                    </div>
+                    <button className="ls-club-tier-cta" style={{background:"rgba(160,120,255,0.1)",borderColor:"rgba(160,120,255,0.35)",color:"#a078f0"}}
+                      onClick={async(e)=>{
+                        e.stopPropagation();
+                        if (!isSignedIn) { setPro(false); setShowAuth(true); setAuthMode("signup"); return; }
+                        setProTier("club"); setProBusy(true);
+                        const priceId = proBilling==="annual" ? import.meta.env.VITE_STRIPE_PRICE_CLUB_ANNUAL : import.meta.env.VITE_STRIPE_PRICE_CLUB_MONTHLY;
+                        try {
+                          const r = await fetch("/api/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({priceId,userId:user?.id,email:userEmail})});
+                          const d = await r.json();
+                          if (d.url) window.location.href = d.url;
+                          else setProError(d.error||"Could not start checkout.");
+                        } catch(err){ setProError(err.message); } finally { setProBusy(false); }
+                      }}
+                    >{proBusy&&proTier==="club"?"Opening checkout…":"Join Club — 7 days free →"}</button>
                   </div>
                 </div>
-
-                <div style={{fontSize:12,color:"var(--muted)",marginBottom:16,lineHeight:1.6}}>
-                  Secured by Stripe. Cancel anytime from your account settings. Free 7-day trial — card charged after trial ends.
-                </div>
-
-                <button className="ls-modal-cta" disabled={proBusy}
-                  onClick={async()=>{
-                    if (!proCard.name || !proCard.number || !proCard.expiry || !proCard.cvc) {
-                      setProError("Please fill in all card details."); return;
-                    }
-                    setProBusy(true); setProError("");
-                    try {
-                      // Load Stripe from CDN if not already loaded
-                      if (!window.Stripe) {
-                        await new Promise((resolve, reject) => {
-                          const script = document.createElement("script");
-                          script.src = "https://js.stripe.com/v3/";
-                          script.onload = resolve;
-                          script.onerror = reject;
-                          document.head.appendChild(script);
-                        });
-                      }
-                      const stripe = window.Stripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
-
-                      // Create subscription payment intent via API
-                      const res = await fetch("/api/subscribe", {
-                        method:"POST",
-                        headers:{"Content-Type":"application/json"},
-                        body:JSON.stringify({ email: userEmail, plan:"monthly" }),
-                      });
-                      const { client_secret } = await res.json();
-
-                      // Confirm card payment with Stripe
-                      const [month, year] = proCard.expiry.split("/");
-                      const { error } = await stripe.confirmCardPayment(client_secret, {
-                        payment_method: {
-                          card: {
-                            number:    proCard.number.replace(/\s/g,""),
-                            exp_month: parseInt(month),
-                            exp_year:  parseInt("20"+year),
-                            cvc:       proCard.cvc,
-                          },
-                          billing_details: { name: proCard.name, email: userEmail },
-                        },
-                      });
-
-                      if (error) { setProError(error.message); return; }
-
-                      // Success — grant Pro access
-                      localStorage.setItem("ls_pro","1");
-                      setIsPro(true);
-                      setProStep("done");
-                    } catch(err) {
-                      setProError(err.message || "Payment failed. Please try again.");
-                    } finally {
-                      setProBusy(false);
-                    }
-                  }}
-                >
-                  {proBusy ? "Processing…" : "Start free trial →"}
-                </button>
-                <button className="ls-modal-cancel" onClick={()=>{setProStep("pitch");setProError("");}}>← Back</button>
+                {proError && <div style={{fontSize:12,color:"#e05555",marginBottom:12,textAlign:"center"}}>{proError}</div>}
+                <button className="ls-modal-cancel" onClick={()=>{setPro(false);setProStep("pitch");setProError("");}}>Maybe another time</button>
               </>
             )}
 
             {proStep==="done" && (
               <div style={{textAlign:"center",padding:"20px 0"}}>
                 <CheckCircle size={44} style={{color:"var(--gold)",marginBottom:16}}/>
-                <div className="ls-modal-title" style={{fontSize:26,marginBottom:8}}>Welcome to Plus</div>
-                <div className="ls-modal-sub">Your 7-day free trial has started. Enjoy unlimited everything.</div>
-                <button className="ls-modal-cta" style={{marginTop:24}} onClick={()=>{setPro(false);setProStep("pitch");}}>
-                  Let's go →
+                <div className="ls-modal-title" style={{fontSize:26,marginBottom:8}}>Welcome to <em>Club.</em></div>
+                <div className="ls-modal-sub">Your 7-day free trial has started. Your first drop awaits.</div>
+                <button className="ls-modal-cta" style={{marginTop:24}} onClick={()=>{setPro(false);setProStep("pitch");setTab("club");}}>
+                  See your drop →
                 </button>
               </div>
             )}
@@ -7752,7 +7777,7 @@ description: one sentence max.`,
         </div>
       )}
 
-      {/* AUTH MODAL */}
+            {/* AUTH MODAL */}
       {showAuth&&(
         <div className="ls-auth-overlay" onClick={()=>{
           const hasInput = authEmail.trim() || authPass.trim();
