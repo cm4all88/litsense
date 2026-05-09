@@ -3214,6 +3214,16 @@ function detectBookMention(text) {
 }
 
 
+// ── SAGE OWL AVATAR ──────────────────────────────────────────────────────────
+function SageOwl({ size = 24, style = {} }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 739.81 655.62"
+      width={size} height={size} style={{display:"block",...style}}>
+      <path fill="var(--gold)" d="M678.56,195.55c10.67,15.53,17.87,31.8,24.79,48.82,14.08,34.63,20.13,70.25,19.06,107.88-2.42,85.17-42.92,159.08-106.94,213.91-32.13,27.52-67.45,48.86-107.2,63.98-55.21,21-114.6,29.49-173.78,23.71-53.16-5.19-104.55-21-151.2-46.36-74.73-40.62-135.62-111.4-156.78-194.25-19.52-74.82-5.76-151.29,34.42-217.53C32.83,173.06,11.13,143.03,0,107.88c17.38,21.05,36.27,42.95,60.79,55.56l-15.23-18.41C9.74,103.51-9.35,54.63,8.12,0c36.09,64.62,92.88,98.54,163.48,107.7,59.54-32.8,136.56-49.24,203.94-48.74,66.26.5,135.38,17.31,193.77,48.61l29.95-5.74c43.95-9.64,81.99-33.73,110.45-68.43,8.32-10.15,14.36-20.28,21.72-31.87l1.86.88c14.2,52.04-.12,95.5-33.09,136.39l-19.27,23.89c10.02-5.19,17.53-11.62,25.62-18.56,12.32-10.56,22.16-22.76,33.25-35.42-5.09,17.88-13.77,33.09-23.78,48.03-10.13,15.1-22.91,27.55-37.47,38.8ZM676.03,150.04c-14.35,4.24-26.12,10.39-41.11,12.28l17.33-12.5c26-19.75,46.68-45.55,58.24-77.24-39.13,37.08-69.37,51.08-120.67,63.05l-40.45,9.44c-20.13,4.7-38.67,11.71-57.13,20.79-26.16,12.88-48.51,29.29-68.57,50.56-15.04,15.94-26.61,33.83-36.39,53.54-8.44,17.01-13.12,34.26-17.09,53.82-3.08-11.47-4.37-22.51-8.63-33.84-13.34-35.49-35-67.23-63.93-91.78-38.34-32.55-79.78-46.94-128.1-57.97l-34.86-8.28c-40.13-9.53-74.47-29.81-104.59-59.55,8.93,28.68,27.34,51.52,48.9,70.25l26.9,19.68c-15.16-2.46-27.85-8.17-42.09-12.67,10.41,11.21,21.32,19.22,33.31,27.01,14.88,8.15,29.26,15.87,45.25,21.72l61.48,22.5c18.65,6.83,35.56,15.18,52.3,25.75,39.85,25.15,67.62,64.97,78.01,110.89l5.05,27.4c18.92-19.07,43.68-18.74,62.13-.45,3.14-19.15,6.36-37.36,13.61-54.77,15.44-37.12,41.4-66.79,75.99-87.11,22.1-12.98,44.95-22.65,69.42-30.53,40.47-13.04,86.06-30.39,115.7-61.96ZM504.02,129.87l18.39-6.49c-19.82-8.96-38.73-14.3-58.89-19.32-55.84-13.9-122.36-13.76-178.38-1.35-23.34,5.17-45.45,11.26-67.53,21.02,41.89,11.72,82.4,32.68,112.99,61.27,10.55,9.86,20.28,20.02,27.92,32.1l11.62,18.39c29.77-52.79,78.33-86.02,133.89-105.62ZM578.43,419.49c-49.31,34.98-115.88,26.16-155.27-20.07-2.52,19.18-4.62,37.25-9.86,55.56-8.47,29.55-21.97,56.58-42.79,80.29-33.07-38.32-49-85.7-53.04-135.22-30.08,32.99-70.05,47.86-114.47,37.61-23.84-5.5-44.35-18.02-60.85-36.25-32.52-35.92-38.26-84.57-17.62-128.2,6.03-12.75,14-23.54,24.91-33.18-21.16-7.9-40.77-15.71-60.25-25.68-44.44,71.49-50.4,159.49-13.82,234.86,8.55,17.61,17.94,33.77,29.91,49.22,30.04,38.75,68.91,68.03,112.98,88.89,106.65,50.49,232.4,44.64,333.87-15.73,53.7-31.95,96.7-80.2,120.05-138.6,17.76-44.42,20.98-92.27,11.7-139.07-6.42-28.47-17.5-54.78-32.82-79.19-19.96,9.56-39.14,17.4-59.52,25.08,38.4,36.07,47.64,92.25,23.93,138.41-9.2,16.43-21.28,30.11-37.04,41.29ZM284.82,319.94c-.84,17.59-8.59,32.85-23.41,42.33s-31.54,10.16-48.05,3.18c-12.95-5.47-25.07-17.32-29.19-32.97-7.07-26.84,8.14-53.12,34.62-62.8-14.36-4.99-29.4-9-44.96-8.42-7.15,4.56-12.24,11.74-16.44,18.78-21.8,36.57-13.96,83.31,20.53,110.06,20.96,16.26,48.35,22.27,75.65,14.44,22.09-6.33,43.25-22.84,53.06-45.95-5.16-14.34-12.39-26.49-21.8-38.65ZM456,319.14c-9.53,11.76-17.07,24.77-21.85,40.18,15.13,31.23,47.61,50.73,82.25,48.46,33.18-2.18,63.45-23.66,74.61-56.07,11.11-32.27,1.69-67.92-23.54-90.81-15.53-.08-29.47,3.09-44.48,8.94,12.37,5.14,22.32,13.04,28.99,24.87,10.75,19.07,8.27,42.02-6.58,58.63-11.61,12.98-29.13,18.82-47.07,15.98-15.31-2.42-30.44-12.91-37.73-28.25-3.26-6.85-4.11-14.28-4.6-21.94ZM203.06,310.26c8,11.5,25.12,11.58,33.8,1.86,9-10.07,7.15-25.42-3.79-33.05s-26.02-3.98-32.23,8.52c-3.42,6.89-2.61,15.72,2.22,22.67ZM541.74,301.81c2.35-12.57-5.3-23.46-16.74-25.76s-22.86,4.35-25.41,16.06c-2.74,12.57,4.42,24.16,16.61,26.65,11.09,2.27,23.21-4.52,25.54-16.96Z"/>
+    </svg>
+  );
+}
+
 // ── INLINE BOOK CARD ─────────────────────────────────────────────────────────
 // Renders inside Sage chat bubbles when a book recommendation is detected.
 function InlineBookCard({ title, author, onSave }) {
@@ -3269,45 +3279,52 @@ function InlineBookCard({ title, author, onSave }) {
 }
 
 function renderAI(text, onSaveBook) {
-  // Detect **Title** by **Author** or **Title** by Author Name patterns
-  const BOOK_RE = new RegExp("\\*\\*([^*]+)\\*\\*\\s+by\\s+(?:\\*\\*([^*]+)\\*\\*|([A-Z][^.,!?\\r\\n(]+))", "g");
-
-  // Split text into segments — regular text and book recommendation lines
-  const lines = text.split("\n");
   const elements = [];
+  const lines = text.split("\n");
 
   lines.forEach((line, i) => {
-    // Check if line contains a book recommendation
-    const bookMatches = [...line.matchAll(BOOK_RE)];
-    if (bookMatches.length > 0) {
-      // Render the line text normally first
-      if (line.trim()) {
-        elements.push(<p key={`l-${i}`} style={{marginBottom:4}}>{fmtLine(line)}</p>);
+    if (!line.trim()) { elements.push(<br key={i}/>); return; }
+
+    // Detect book recommendations: **Title** by Author or **Title** by **Author**
+    // Use simple indexOf approach for reliability
+    const boldByIdx = line.indexOf("** by ");
+    const hasBoldTitle = line.indexOf("**") !== -1 && boldByIdx !== -1;
+
+    if (hasBoldTitle) {
+      // Extract title between first ** pair
+      const t1 = line.indexOf("**");
+      const t2 = line.indexOf("**", t1 + 2);
+      if (t1 !== -1 && t2 !== -1 && t2 > t1) {
+        const title = line.slice(t1 + 2, t2).trim();
+        // Extract author after "by "
+        const byIdx = line.indexOf("** by ", t2 - 2) + 6;
+        let authorRaw = line.slice(byIdx).trim();
+        // Author ends at period, comma, or ** (if bolded)
+        if (authorRaw.startsWith("**")) {
+          const ae = authorRaw.indexOf("**", 2);
+          authorRaw = ae !== -1 ? authorRaw.slice(2, ae) : authorRaw.slice(2);
+        } else {
+          const ae = authorRaw.search(/[.,!?]/);
+          authorRaw = ae !== -1 ? authorRaw.slice(0, ae) : authorRaw.split(" ").slice(0, 3).join(" ");
+        }
+        const author = authorRaw.trim();
+
+        if (title.length > 1 && title.length < 80) {
+          // Render the full line as text first
+          elements.push(<p key={`t-${i}`} style={{marginBottom:4}}>{fmtLine(line)}</p>);
+          // Then render the book card
+          elements.push(
+            <InlineBookCard key={`bc-${i}`} title={title} author={author} onSave={onSaveBook}/>
+          );
+          return;
+        }
       }
-      // Then render a card for each book found
-      bookMatches.forEach((m, j) => {
-        const bookTitle  = m[1].trim();
-        const bookAuthor = (m[2] || m[3] || "").trim();
-        elements.push(
-          <InlineBookCard
-            key={`bc-${i}-${j}`}
-            title={bookTitle}
-            author={bookAuthor}
-            onSave={onSaveBook}
-          />
-        );
-      });
-    } else if (/^#{1,3} /.test(line)) {
-      elements.push(<h4 key={i}>{line.replace(/^#{1,3} /,"")}</h4>);
-    } else if (/^\*\*[^*]+\*\*$/.test(line.trim())) {
-      elements.push(<h4 key={i}>{line.trim().slice(2,-2)}</h4>);
-    } else if (/^[-•] /.test(line)) {
-      elements.push(<li key={i}>{fmtLine(line.slice(2))}</li>);
-    } else if (!line.trim()) {
-      elements.push(<br key={i}/>);
-    } else {
-      elements.push(<p key={i} style={{marginBottom:3}}>{fmtLine(line)}</p>);
     }
+
+    if (/^#{1,3} /.test(line)) { elements.push(<h4 key={i}>{line.replace(/^#{1,3} /,"")}</h4>); return; }
+    if (/^\*\*[^*]+\*\*$/.test(line.trim())) { elements.push(<h4 key={i}>{line.trim().slice(2,-2)}</h4>); return; }
+    if (/^[-•] /.test(line)) { elements.push(<li key={i}>{fmtLine(line.slice(2))}</li>); return; }
+    elements.push(<p key={i} style={{marginBottom:3}}>{fmtLine(line)}</p>);
   });
 
   return elements;
@@ -7775,7 +7792,7 @@ description: one sentence max.`,
                       <>
                         <div className="ls-ask-glow"/>
                         <div className="ls-ask-sage-avatar">
-                          <BookOpen size={24} strokeWidth={1.5} style={{color:"var(--gold)"}}/>
+                          <SageOwl size={32}/>
                         </div>
                         <div className="ls-ask-greeting">{getSageGreeting()} I'm Sage.</div>
                         <div className="ls-ask-entry-headline"><em>{getSageMood()}</em></div>
@@ -7810,7 +7827,7 @@ description: one sentence max.`,
                         ) : (
                           <div style={{display:"flex",flexDirection:"column",gap:6,width:"100%"}}>
                             <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:2}}>
-                              <div className="ls-av ai"><BookOpen size={14} strokeWidth={1.5}/></div>
+                              <div className="ls-av ai"><SageOwl size={18}/></div>
                               <span style={{fontFamily:"'Cinzel',serif",fontSize:"9px",letterSpacing:".2em",color:"rgba(201,168,76,.5)"}}>SAGE</span>
                             </div>
                             <div className={`ls-bubble ai${m.isError?" error":""}`} style={{maxWidth:"100%",borderRadius:"4px 16px 16px 16px"}}>
@@ -7826,7 +7843,7 @@ description: one sentence max.`,
                     ))}
                     {chatLoad&&(
                       <div className="ls-msg">
-                        <div className="ls-av ai"><BookOpen size={14} strokeWidth={2}/></div>
+                        <div className="ls-av ai"><SageOwl size={18}/></div>
                         <div className="ls-bubble ai"><div className="ls-dots"><div className="ls-dot"/><div className="ls-dot"/><div className="ls-dot"/></div></div>
                       </div>
                     )}
