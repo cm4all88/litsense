@@ -6686,6 +6686,14 @@ description: one sentence max.`,
           backgroundSize: "cover", backgroundPosition: "center",
           filter: "brightness(0.52)",
         }}/>
+        {/* Solid overlay for all non-discover tabs — keeps background from bleeding through */}
+        {tab !== "discover" && (
+          <div style={{
+            position:"absolute", inset:0,
+            background:"#0f0c07",
+            opacity: 0.92,
+          }}/>
+        )}
       </div>
       {/* Grain — paper/leather tactile texture */}
       <div className="ls-grain"/>
