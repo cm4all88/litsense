@@ -166,6 +166,16 @@ export default async function handler(req, res) {
         if (session.customer_email || session.customer_details?.email) {
           await sendEmail("welcome", session.customer_email || session.customer_details?.email, {});
         }
+        // Seed initial reward entries for this month
+        if (userId) {
+          const monthKey = new Date().toISOString().slice(0, 7);
+          const entryCount = tier === "club" ? 15 : 5;
+          await supabase.from("reward_entries").upsert({
+            user_id: userId, month_key: monthKey,
+            source: "subscription", entries: entryCount,
+            note: `${tier} subscription`,
+          }, { onConflict: "user_id,month_key,source" });
+        }
         break;
       }
 

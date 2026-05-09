@@ -126,6 +126,10 @@ const CSS = `
   max-width: 480px;
   margin: 0 auto;
   font-family: 'Cormorant Garamond', Georgia, serif;
+  background: #0f0c07;
+  min-height: 100vh;
+  position: relative;
+  z-index: 1;
 }
 .club-hero {
   padding: 32px 20px 24px;
@@ -135,7 +139,7 @@ const CSS = `
 .club-hero-eyebrow {
   font-size: 10px;
   letter-spacing: 0.28em;
-  color: var(--muted);
+  color: rgba(201,168,76,0.7);
   font-family: 'Cinzel', serif;
   margin-bottom: 10px;
 }
@@ -143,18 +147,20 @@ const CSS = `
   font-size: clamp(28px, 7vw, 38px);
   font-weight: 300;
   font-style: italic;
-  color: var(--text);
+  color: #f0e8d8;
   line-height: 1.2;
   margin-bottom: 10px;
+  text-shadow: 0 2px 20px rgba(0,0,0,0.8);
 }
 .club-hero-title em { font-style: normal; color: var(--gold); }
 .club-hero-sub {
   font-size: 16px;
-  color: var(--text2);
+  color: rgba(240,232,216,0.85);
   line-height: 1.65;
   max-width: 340px;
   margin: 0 auto;
   font-weight: 300;
+  text-shadow: 0 1px 12px rgba(0,0,0,0.9);
 }
 .club-rule {
   width: 32px; height: 1px;
@@ -163,12 +169,12 @@ const CSS = `
 }
 
 /* ── CURRENT DROP ── */
-.club-drop-section { padding: 0 16px 24px; }
+.club-drop-section { padding: 0 16px 24px; background: #0f0c07; }
 .club-section-label {
   font-family: 'Cinzel', serif;
   font-size: 9px;
   letter-spacing: 0.25em;
-  color: var(--muted);
+  color: rgba(201,168,76,0.6);
   margin-bottom: 12px;
   padding: 0 4px;
 }
@@ -316,8 +322,8 @@ const CSS = `
 /* ── DASHBOARD CARD ── */
 .club-dashboard { padding: 0 16px 8px; }
 .club-dash-card {
-  background: rgba(15,12,7,0.6);
-  border: 1px solid rgba(255,255,255,0.07);
+  background: rgba(20,16,10,0.95);
+  border: 1px solid rgba(201,168,76,0.15);
   border-radius: 14px;
   padding: 18px;
   display: flex;
@@ -331,7 +337,7 @@ const CSS = `
 }
 .club-dash-label {
   font-size: 11px;
-  color: var(--muted);
+  color: rgba(201,168,76,0.55);
   font-family: 'Cinzel', serif;
   letter-spacing: 0.12em;
 }
@@ -431,10 +437,10 @@ const CSS = `
 /* ── READER OF THE YEAR ── */
 .club-grand-prize {
   margin: 0 16px 24px;
-  border: 1px solid rgba(160,120,255,0.2);
+  border: 1px solid rgba(160,120,255,0.25);
   border-radius: 14px;
   padding: 20px;
-  background: rgba(160,120,255,0.04);
+  background: rgba(15,10,30,0.95);
   text-align: center;
 }
 .club-grand-title {
@@ -672,10 +678,13 @@ export default function Club({ userId, userTier: initialTier }) {
               </div>
               <div className="club-dash-row">
                 <span className="club-dash-label">REWARD ENTRIES THIS MONTH</span>
-                <div className="club-entries-dots">
-                  {Array.from({ length: maxEntries }).map((_, i) => (
-                    <span key={i} className={`club-dot${i < entries ? " filled" : ""}`} />
-                  ))}
+                <div style={{textAlign:"right"}}>
+                  <div className="club-entries-dots">
+                    {Array.from({ length: maxEntries }).map((_, i) => (
+                      <span key={i} className={`club-dot${i < entries ? " filled" : ""}`} />
+                    ))}
+                  </div>
+                  {entries === 0 && <div style={{fontSize:10,color:"var(--muted)",marginTop:4}}>Added on the 1st</div>}
                 </div>
               </div>
               {userTier !== "club" && (
@@ -684,7 +693,7 @@ export default function Club({ userId, userTier: initialTier }) {
                   style={{ alignSelf: "flex-start" }}
                   onClick={() => setView(view === "pricing" ? "home" : "pricing")}
                 >
-                  {view === "pricing" ? "← Back" : "Upgrade membership →"}
+                  {view === "pricing" ? "← Back" : userTier === "plus" ? "Upgrade to Club →" : "Upgrade membership →"}
                 </button>
               )}
             </div>
