@@ -657,7 +657,9 @@ const CSS = `
 .ls-prompt-btn:hover{background:rgba(212,148,26,.10);border-color:rgba(212,148,26,.35);color:var(--gold);transform:translateX(3px);}
 .ls-prompt-btn:active{transform:scale(.98);}
 /* ── ASK ENTRY — Phase 19 ── */
-.ls-ask-entry{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 24px 16px;animation:fadeIn .5s var(--ease) both;text-align:center;position:relative;}
+.ls-ask-wrap{flex:1;display:flex;flex-direction:column;background:#0f0c07;min-height:0;}
+.ls-ask-msgs{flex:1;overflow-y:auto;padding:20px 16px 8px;display:flex;flex-direction:column;gap:16px;background:#0f0c07;}
+.ls-ask-entry{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 24px 16px;animation:fadeIn .5s var(--ease) both;text-align:center;position:relative;background:#0f0c07;}
 .ls-ask-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-60%);width:300px;height:300px;background:radial-gradient(circle,rgba(201,168,76,.06) 0%,transparent 70%);pointer-events:none;z-index:0;}
 .ls-ask-sage-avatar{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,rgba(201,168,76,.18),rgba(201,168,76,.06));border:1px solid rgba(201,168,76,.3);display:flex;align-items:center;justify-content:center;margin-bottom:16px;position:relative;z-index:1;box-shadow:0 0 32px rgba(201,168,76,.1);}
 .ls-ask-greeting{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.25em;color:rgba(201,168,76,.65);margin-bottom:6px;position:relative;z-index:1;}
@@ -7607,7 +7609,7 @@ description: one sentence max.`,
         {tab==="ask" && (
           <>
             {atLimit ? (
-              <div className="ls-limit-wall">
+              <div className="ls-limit-wall" style={{background:"#0f0c07"}}>
                 <div style={{color:"var(--gold)"}}><BookOpen size={48} strokeWidth={1}/></div>
                 <div className="ls-limit-title">{isSignedIn?<>Today's questions <em>used up.</em></>:<>Create an account for <em>more.</em></>}</div>
                 <div className="ls-limit-body">
@@ -7622,7 +7624,7 @@ description: one sentence max.`,
                 <div className="ls-limit-note">Resets every day at midnight.</div>
               </div>
             ) : (
-              <div className="ls-ask-msgs">
+              <div className="ls-ask-msgs" style={{background:"#0f0c07",flex:1,display:"flex",flexDirection:"column"}}>
                 {msgs.length===0&&!chatLoad ? (
                   <div className="ls-ask-entry">
                     {currentBook ? (
