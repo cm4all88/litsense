@@ -122,12 +122,11 @@ async function startCheckout(priceId, userId) {
 // ── CSS ───────────────────────────────────────────────────────────────────────
 const CSS = `
 .club-wrap {
-  padding: 0 0 140px;
+  padding: 0 0 160px;
   max-width: 480px;
   margin: 0 auto;
   font-family: 'Cormorant Garamond', Georgia, serif;
   background: #0f0c07;
-  min-height: 100vh;
   position: relative;
   z-index: 1;
 }

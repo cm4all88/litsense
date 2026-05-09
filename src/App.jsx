@@ -7558,10 +7558,12 @@ description: one sentence max.`,
         {/* ── ASK ── */}
         {tab==="club" && (
           isPro ? (
-            <Club
-              userId={userId || null}
-              userTier={isPro ? "plus" : "free"}
-            />
+            <div style={{flex:1,overflowY:"auto",overscrollBehavior:"none",WebkitOverflowScrolling:"touch"}}>
+              <Club
+                userId={userId || null}
+                userTier={isPro ? "plus" : "free"}
+              />
+            </div>
           ) : (
             <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"60px 24px",textAlign:"center",gap:16}}>
               <Crown size={36} strokeWidth={1} style={{color:"var(--gold)",opacity:.6}}/>
