@@ -6523,7 +6523,7 @@ export default function LitSense() {
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({
-          model:"claude-haiku-4-5-20251001",
+          model:"claude-sonnet-4-20250514",
           max_tokens:600,
           stream:true,
           system:sys,
