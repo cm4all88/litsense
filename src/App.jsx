@@ -637,22 +637,38 @@ const CSS = `
 /* ── ASK / CHAT ── */
 .ls-ask{flex:1;overflow:hidden;display:flex;flex-direction:column;}
 .ls-chat{flex:1;overflow-y:auto;padding:16px 16px 8px;display:flex;flex-direction:column;gap:14px;}
-.ls-msg{display:flex;gap:10px;align-items:flex-start;animation:fadeIn .22s ease;}
-.ls-av{width:30px;height:30px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
-.ls-av.ai{background:rgba(212,148,26,.12);border:1px solid rgba(212,148,26,.22);color:var(--gold);font-size:10px;}
-.ls-av.user{background:rgba(255,255,255,.08);color:var(--text2);font-size:10.5px;font-weight:700;}
-.ls-bubble{padding:12px 16px;border-radius:16px;font-size:10px;line-height:1.75;max-width:calc(100% - 44px);}
-.ls-bubble.ai{background:rgba(255,255,255,.06);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.09);color:var(--text2);border-radius:4px 16px 16px 16px;}
-.ls-bubble.ai strong{color:var(--text);font-weight:600;}
-.ls-bubble.ai h4{font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;color:var(--text2);margin:12px 0 5px;padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,.07);}
-.ls-bubble.ai ul{margin:6px 0;padding-left:0;list-style:none;}
-.ls-bubble.ai li{margin-bottom:5px;padding-left:14px;color:var(--text2);}
-.ls-bubble.user{background:rgba(212,148,26,.12);border:1px solid rgba(212,148,26,.18);color:var(--text);border-radius:16px 4px 16px 16px;}
+.ls-msg{display:flex;gap:12px;align-items:flex-start;animation:fadeIn .28s ease;}
+.ls-msg.assistant{flex-direction:column;gap:6px;}
+.ls-av{width:34px;height:34px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.ls-av.ai{background:linear-gradient(135deg,rgba(201,168,76,.18),rgba(201,168,76,.06));border:1px solid rgba(201,168,76,.3);color:var(--gold);font-size:12px;box-shadow:0 0 16px rgba(201,168,76,.08);}
+.ls-av.user{background:rgba(255,255,255,.08);color:var(--text2);font-size:11px;font-weight:700;letter-spacing:.03em;}
+.ls-bubble{padding:16px 20px;border-radius:16px;line-height:1.85;max-width:calc(100% - 46px);}
+.ls-bubble.ai{background:rgba(20,16,10,.7);border:1px solid rgba(255,255,255,.08);color:var(--text2);border-radius:4px 16px 16px 16px;font-family:'Cormorant Garamond',Georgia,serif;font-size:17px;font-weight:400;}
+.ls-bubble.ai strong{color:var(--text);font-weight:500;font-style:italic;}
+.ls-bubble.ai em{color:var(--gold);font-style:italic;}
+.ls-bubble.ai h4{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.18em;font-weight:400;color:rgba(201,168,76,.6);margin:16px 0 6px;text-transform:uppercase;}
+.ls-bubble.ai ul{margin:8px 0;padding-left:0;list-style:none;}
+.ls-bubble.ai li{margin-bottom:8px;padding-left:16px;color:var(--text2);font-size:16px;position:relative;}
+.ls-bubble.ai li::before{content:'—';position:absolute;left:0;color:rgba(201,168,76,.4);}
+.ls-bubble.user{background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.15);color:var(--text);border-radius:16px 4px 16px 16px;font-size:16px;font-family:'Inter',sans-serif;}
 .ls-typing{display:flex;gap:5px;align-items:center;padding:12px 16px;}
 .ls-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:ldot 1.2s ease-in-out infinite;}
 .ls-dot:nth-child(2){animation-delay:.2s;}.ls-dot:nth-child(3){animation-delay:.4s;}
 @keyframes ldot{0%,60%,100%{transform:translateY(0);opacity:.3}30%{transform:translateY(-6px);opacity:1}}
 .ls-retry-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 11px;border-radius:6px;border:1px solid rgba(184,64,40,.3);background:transparent;color:var(--rust);font-size:10px;font-weight:600;cursor:pointer;transition:all .15s;align-self:flex-start;}
+/* ── INLINE BOOK CARD — appears inside Sage responses ── */
+.ls-ibc{display:flex;gap:14px;background:rgba(15,12,7,.8);border:1px solid rgba(201,168,76,.2);border-radius:12px;padding:14px;margin:12px 0;align-items:flex-start;}
+.ls-ibc-cover{width:64px;min-width:64px;height:96px;border-radius:6px;object-fit:cover;background:rgba(255,255,255,.05);}
+.ls-ibc-cover-placeholder{width:64px;min-width:64px;height:96px;border-radius:6px;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.12);display:flex;align-items:center;justify-content:center;}
+.ls-ibc-body{flex:1;min-width:0;}
+.ls-ibc-title{font-family:'Lora',serif;font-size:16px;font-weight:700;color:var(--text);margin-bottom:2px;line-height:1.25;}
+.ls-ibc-author{font-size:12px;color:var(--gold);margin-bottom:8px;font-style:italic;}
+.ls-ibc-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.ls-ibc-btn{display:inline-flex;align-items:center;padding:6px 12px;border-radius:7px;font-size:11.5px;font-weight:600;text-decoration:none;cursor:pointer;border:1px solid;transition:opacity .2s;}
+.ls-ibc-btn:hover{opacity:.75;}
+.ls-ibc-btn-amazon{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.12);color:var(--text2);}
+.ls-ibc-btn-audible{background:rgba(255,170,0,.07);border-color:rgba(255,170,0,.2);color:#ffaa00;}
+.ls-ibc-btn-shelf{background:rgba(201,168,76,.08);border-color:rgba(201,168,76,.25);color:var(--gold);}
 .ls-prompt-btn{width:100%;padding:13px 16px;border-radius:var(--r-md);border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.06);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);color:var(--text2);font-size:13.5px;font-weight:500;font-family:'Inter',sans-serif;text-align:left;cursor:pointer;transition:all .22s var(--ease);line-height:1.4;}
 .ls-prompt-btn:hover{background:rgba(212,148,26,.10);border-color:rgba(212,148,26,.35);color:var(--gold);transform:translateX(3px);}
 .ls-prompt-btn:active{transform:scale(.98);}
@@ -3198,7 +3214,106 @@ function detectBookMention(text) {
 }
 
 
-function renderAI(text) {
+// ── INLINE BOOK CARD ─────────────────────────────────────────────────────────
+// Renders inside Sage chat bubbles when a book recommendation is detected.
+function InlineBookCard({ title, author, onSave }) {
+  const [cover, setCover] = useState(null);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    if (!title) return;
+    const q = encodeURIComponent(title + (author ? " " + author : ""));
+    fetch(`https://openlibrary.org/search.json?q=${q}&limit=1&fields=cover_i,isbn`)
+      .then(r => r.json())
+      .then(d => {
+        const doc = d.docs?.[0];
+        const coverId = doc?.cover_i;
+        if (coverId) setCover(`https://covers.openlibrary.org/b/id/${coverId}-M.jpg`);
+      })
+      .catch(() => {});
+  }, [title, author]);
+
+  const amzUrl = `https://www.amazon.com/s?k=${encodeURIComponent(title + " " + (author||""))}&tag=litsense-20`;
+  const audUrl = audibleUrl(title, author);
+
+  return (
+    <div className="ls-ibc">
+      {cover ? (
+        <img className="ls-ibc-cover" src={cover} alt={title}
+          onError={e => { e.target.style.display="none"; }}/>
+      ) : (
+        <div className="ls-ibc-cover-placeholder">
+          <BookOpen size={22} strokeWidth={1} style={{color:"var(--gold)",opacity:.4}}/>
+        </div>
+      )}
+      <div className="ls-ibc-body">
+        <div className="ls-ibc-title">{title}</div>
+        {author && <div className="ls-ibc-author">{author}</div>}
+        <div className="ls-ibc-actions">
+          <a className="ls-ibc-btn ls-ibc-btn-amazon" href={amzUrl} target="_blank" rel="noopener noreferrer sponsored">
+            Buy →
+          </a>
+          <a className="ls-ibc-btn ls-ibc-btn-audible" href={audUrl} target="_blank" rel="noopener noreferrer sponsored">
+            🎧 Audible
+          </a>
+          <button className="ls-ibc-btn ls-ibc-btn-shelf" onClick={() => {
+            setSaved(true);
+            onSave?.({ title, author });
+          }}>
+            {saved ? "✓ Saved" : "+ My Shelf"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function renderAI(text, onSaveBook) {
+  // Detect **Title** by **Author** or **Title** by Author Name patterns
+  const BOOK_RE = /\*\*([^*]+)\*\*\s+by\s+(?:\*\*([^*]+)\*\*|([A-Z][^.,!?
+(]+))/g;
+
+  // Split text into segments — regular text and book recommendation lines
+  const lines = text.split("\n");
+  const elements = [];
+
+  lines.forEach((line, i) => {
+    // Check if line contains a book recommendation
+    const bookMatches = [...line.matchAll(BOOK_RE)];
+    if (bookMatches.length > 0) {
+      // Render the line text normally first
+      if (line.trim()) {
+        elements.push(<p key={`l-${i}`} style={{marginBottom:4}}>{fmtLine(line)}</p>);
+      }
+      // Then render a card for each book found
+      bookMatches.forEach((m, j) => {
+        const bookTitle  = m[1].trim();
+        const bookAuthor = (m[2] || m[3] || "").trim();
+        elements.push(
+          <InlineBookCard
+            key={`bc-${i}-${j}`}
+            title={bookTitle}
+            author={bookAuthor}
+            onSave={onSaveBook}
+          />
+        );
+      });
+    } else if (/^#{1,3} /.test(line)) {
+      elements.push(<h4 key={i}>{line.replace(/^#{1,3} /,"")}</h4>);
+    } else if (/^\*\*[^*]+\*\*$/.test(line.trim())) {
+      elements.push(<h4 key={i}>{line.trim().slice(2,-2)}</h4>);
+    } else if (/^[-•] /.test(line)) {
+      elements.push(<li key={i}>{fmtLine(line.slice(2))}</li>);
+    } else if (!line.trim()) {
+      elements.push(<br key={i}/>);
+    } else {
+      elements.push(<p key={i} style={{marginBottom:3}}>{fmtLine(line)}</p>);
+    }
+  });
+
+  return elements;
+}
+function _renderAI_unused(text) {
   return text.split("\n").map((line, i) => {
     if (/^#{1,3} /.test(line))               return <h4 key={i}>{line.replace(/^#{1,3} /,"")}</h4>;
     if (/^\*\*[^*]+\*\*$/.test(line.trim())) return <h4 key={i}>{line.trim().slice(2,-2)}</h4>;
@@ -3207,6 +3322,7 @@ function renderAI(text) {
     return <p key={i} style={{marginBottom:3}}>{fmtLine(line)}</p>;
   });
 }
+/* end _unused */
 function fmtLine(t) {
   return t.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g).map((p,i) => {
     if (p.startsWith("**")&&p.endsWith("**")) return <strong key={i}>{p.slice(2,-2)}</strong>;
@@ -7696,16 +7812,26 @@ description: one sentence max.`,
                   <>
                     {msgs.map((m,i)=>(
                       <div key={i} className={`ls-msg ${m.role}`}>
-                        <div className={`ls-av ${m.role==="assistant"?"ai":"user"}`}>
-                          {m.role==="assistant"?<BookOpen size={14} strokeWidth={2}/>:"ME"}
-                        </div>
-                        <div className={`ls-bubble ${m.isError?"error":m.role==="assistant"?"ai":"user"}`}>
-                          {m.isError?(
-                            <><span>{m.content}</span><button className="ls-retry-btn" onClick={()=>sendChat(m.retryMsg,true)}><RotateCcw size={12} strokeWidth={2}/> Try again</button></>
-                          ):m.role==="assistant"?(
-                            <>{renderAI(m.content)}{m.streaming && <span className="ls-cursor"/>}</>
-                          ):m.content}
-                        </div>
+                        {m.role==="user" ? (
+                          <>
+                            <div className="ls-av user">ME</div>
+                            <div className="ls-bubble user">{m.content}</div>
+                          </>
+                        ) : (
+                          <div style={{display:"flex",flexDirection:"column",gap:6,width:"100%"}}>
+                            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:2}}>
+                              <div className="ls-av ai"><BookOpen size={14} strokeWidth={1.5}/></div>
+                              <span style={{fontFamily:"'Cinzel',serif",fontSize:"9px",letterSpacing:".2em",color:"rgba(201,168,76,.5)"}}>SAGE</span>
+                            </div>
+                            <div className={`ls-bubble ai${m.isError?" error":""}`} style={{maxWidth:"100%",borderRadius:"4px 16px 16px 16px"}}>
+                              {m.isError?(
+                                <><span>{m.content}</span><button className="ls-retry-btn" onClick={()=>sendChat(m.retryMsg,true)}><RotateCcw size={12} strokeWidth={2}/> Try again</button></>
+                              ):(
+                                <>{renderAI(m.content, (book) => { const id=Date.now(); setReadBooks(p=>[...p,{id,...book,rating:0}]); })}{m.streaming && <span className="ls-cursor"/>}</>
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     ))}
                     {chatLoad&&(
