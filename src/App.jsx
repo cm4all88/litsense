@@ -5994,7 +5994,6 @@ export default function LitSense() {
   const [authExitWarn, setAuthExitWarn] = useState(false);
   const [tosAgreed, setTosAgreed]   = useState(false);
   const [userPersona, setUserPersona] = useState({}); // stated role, level, purpose
-  const [tosAgreed, setTosAgreed]   = useState(false);
 
   // ── COUNTER ───────────────────────────────────────────────────────────────
   const loadCounter = () => { try { const r = localStorage.getItem("ls_counter"); if (!r) return 0; const {count,date} = JSON.parse(r); return date===today()?count:0; } catch { return 0; } };
