@@ -7877,7 +7877,7 @@ description: one sentence max.`,
               <>
                 <div className="ls-modal-eyebrow">LitSense Club</div>
                 <div className="ls-modal-title">Your shelf,<br/><em>elevated.</em></div>
-                <div className="ls-modal-sub">Every month, Club members unlock a new reader drop. Smarter recommendations. A reading world that grows with you.</div>
+                <div className="ls-modal-sub">{isPro ? "Switch plans anytime. Your new tier activates immediately." : "Every month, Club members unlock a new reader drop. Smarter recommendations. A reading world that grows with you."}</div>
 
                 <div className="ls-billing-toggle">
                   <button className={`ls-billing-btn${proBilling==="annual"?" on":""}`} onClick={()=>setProBilling("annual")}>
@@ -7924,11 +7924,12 @@ description: one sentence max.`,
                         try {
                           const r = await fetch("/api/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({priceId,userId:userId,email:userEmail})});
                           const d = await r.json();
-                          if (d.url) window.location.href = d.url;
+                          if (d.upgraded) { setProStep("done"); }
+                          else if (d.url) window.location.href = d.url;
                           else setProError(d.error||"Could not start checkout.");
                         } catch(err){ setProError(err.message); } finally { setProBusy(false); }
                       }}
-                    >{proBusy&&proTier==="plus"?"Opening checkout…":"Join Plus — 7 days free →"}</button>
+                    >{proBusy&&proTier==="plus"?"Opening checkout…":isPro?"Upgrade to Plus →":"Join Plus — 7 days free →"}</button>
                   </div>
                   <div className="ls-club-tier-card" style={{background:"rgba(160,120,255,0.07)",border:`1px solid ${proTier==="club"?"rgba(160,120,255,0.5)":"rgba(160,120,255,0.22)"}`}}
                     onClick={()=>setProTier("club")}>
@@ -7953,11 +7954,12 @@ description: one sentence max.`,
                         try {
                           const r = await fetch("/api/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({priceId,userId:userId,email:userEmail})});
                           const d = await r.json();
-                          if (d.url) window.location.href = d.url;
+                          if (d.upgraded) { setProStep("done"); }
+                          else if (d.url) window.location.href = d.url;
                           else setProError(d.error||"Could not start checkout.");
                         } catch(err){ setProError(err.message); } finally { setProBusy(false); }
                       }}
-                    >{proBusy&&proTier==="club"?"Opening checkout…":"Join Club — 7 days free →"}</button>
+                    >{proBusy&&proTier==="club"?"Opening checkout…":isPro?"Upgrade to Club →":"Join Club — 7 days free →"}</button>
                   </div>
                 </div>
                 {proError && <div style={{fontSize:12,color:"#e05555",marginBottom:12,textAlign:"center"}}>{proError}</div>}
@@ -7969,7 +7971,7 @@ description: one sentence max.`,
               <div style={{textAlign:"center",padding:"20px 0"}}>
                 <CheckCircle size={44} style={{color:"var(--gold)",marginBottom:16}}/>
                 <div className="ls-modal-title" style={{fontSize:26,marginBottom:8}}>Welcome to <em>Club.</em></div>
-                <div className="ls-modal-sub">Your 7-day free trial has started. Your first drop awaits.</div>
+                <div className="ls-modal-sub">{isPro ? "You're all set. Your new plan is active." : "Your 7-day free trial has started. Your first drop awaits."}</div>
                 <button className="ls-modal-cta" style={{marginTop:24}} onClick={()=>{setPro(false);setProStep("pitch");setTab("club");}}>
                   See your drop →
                 </button>

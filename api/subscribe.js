@@ -1,14 +1,28 @@
-// api/subscribe.js — Vercel serverless function
-// Creates a Stripe Checkout Session for LitSense Plus or Club.
-// Redirects user to Stripe-hosted checkout with 7-day free trial.
-//
-// POST /api/subscribe
-// Body: { priceId, userId, email }
-// Returns: { url } — redirect browser to this URL
+// api/subscribe.js
+// Handles both new subscriptions and upgrades.
+// New users → Stripe Checkout Session (with optional trial)
+// Existing subscribers → Stripe Subscription Update (prorated immediately)
 
 import Stripe from "stripe";
+import { createClient } from "@supabase/supabase-js";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const stripe   = new Stripe(process.env.STRIPE_SECRET_KEY);
+const supabase = createClient(
+  process.env.VITE_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
+
+function isValidPrice(priceId) {
+  const valid = [
+    process.env.VITE_STRIPE_PRICE_PLUS_MONTHLY,
+    process.env.VITE_STRIPE_PRICE_PLUS_ANNUAL,
+    process.env.VITE_STRIPE_PRICE_CLUB_MONTHLY,
+    process.env.VITE_STRIPE_PRICE_CLUB_ANNUAL,
+    process.env.STRIPE_PRICE_MONTHLY,
+    process.env.STRIPE_PRICE_YEARLY,
+  ].filter(Boolean);
+  return valid.length === 0 || valid.includes(priceId);
+}
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -17,20 +31,48 @@ export default async function handler(req, res) {
 
   const { priceId, userId, email } = req.body || {};
   if (!priceId) return res.status(400).json({ error: "priceId required" });
+  if (!isValidPrice(priceId)) return res.status(400).json({ error: "Invalid price ID" });
 
-  // Validate priceId is one of our known prices (security)
-  const validPrices = [
-    process.env.STRIPE_PRICE_MONTHLY,
-    process.env.STRIPE_PRICE_YEARLY,
-    process.env.VITE_STRIPE_PRICE_PLUS,
-    process.env.VITE_STRIPE_PRICE_CLUB,
-  ].filter(Boolean);
-
-  if (validPrices.length > 0 && !validPrices.includes(priceId)) {
-    return res.status(400).json({ error: "Invalid price ID" });
-  }
+  const origin = req.headers.origin || "https://www.litsense.app";
 
   try {
+    // Look up existing subscription from our DB
+    const { data: existingSub } = await supabase
+      .from("subscriptions")
+      .select("stripe_customer_id, stripe_sub_id, tier")
+      .eq("user_id", userId)
+      .single();
+
+    // ── UPGRADE PATH: existing active subscription ────────────────────────────
+    if (existingSub?.stripe_sub_id) {
+      try {
+        const stripeSub = await stripe.subscriptions.retrieve(existingSub.stripe_sub_id);
+
+        if (stripeSub.status === "active" || stripeSub.status === "trialing") {
+          // Update subscription item to new price — proration applied automatically
+          const updated = await stripe.subscriptions.update(existingSub.stripe_sub_id, {
+            items: [{
+              id: stripeSub.items.data[0].id,
+              price: priceId,
+            }],
+            proration_behavior: "create_prorations",
+            trial_end: stripeSub.status === "trialing" ? "now" : undefined,
+          });
+
+          // Return success — webhook will sync the DB
+          return res.status(200).json({
+            upgraded: true,
+            tier: updated.items.data[0].price.id,
+            url: `${origin}/?checkout=success`,
+          });
+        }
+      } catch (err) {
+        // Subscription may have been deleted — fall through to new checkout
+        console.warn("Upgrade attempt failed, falling back to checkout:", err.message);
+      }
+    }
+
+    // ── NEW SUBSCRIPTION PATH ─────────────────────────────────────────────────
     let customer;
     if (email) {
       const existing = await stripe.customers.list({ email, limit: 1 });
@@ -38,8 +80,6 @@ export default async function handler(req, res) {
         ? existing.data[0]
         : await stripe.customers.create({ email, metadata: { userId: userId || "" } });
     }
-
-    const origin = req.headers.origin || "https://www.litsense.app";
 
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
@@ -58,8 +98,9 @@ export default async function handler(req, res) {
     });
 
     return res.status(200).json({ url: session.url });
+
   } catch (err) {
-    console.error("Stripe subscribe error:", err.message);
+    console.error("subscribe error:", err.message);
     return res.status(500).json({ error: err.message });
   }
 }
