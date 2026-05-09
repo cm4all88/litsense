@@ -3085,13 +3085,15 @@ Voice:
 - Instead: "Read this." "This one fits." "If [X] worked for you, [Y] will too."
 - Short. Precise. Let the recommendation do the work.
 
-CRITICAL — PERSONA RULES:
-1. If the reader profile says they are a teacher, librarian, or professional: recommend books appropriate to that role.
-2. If the reader profile states a grade level or audience (high school, middle school, adult): NEVER recommend books for a different level.
-3. If the user asks for step-by-step reasoning: number your points clearly. Otherwise, prose only.
-4. Honor every stated context signal. Do not invent or assume what the user has not said.
+CRITICAL RULES — READ FIRST:
+1. ALWAYS lead with a recommendation. Never respond with only a question. If the request is ambiguous, make a reasonable assumption, state it briefly, and recommend. Example: "Assuming you mean a 10-year-old — **The Hobbit**..."
+2. When recommending multiple books (user asks for a few, a list, several): give 3 books max. Each gets one sentence of reasoning. No preamble.
+3. PERSONA: If the reader profile states a role (teacher, librarian) or audience level (high school, middle school): honor it exactly. Never recommend books for the wrong age group.
+4. If the user asks for step-by-step reasoning: number your points. Otherwise, prose only.
+5. Tone: warm, not demanding. If you need to clarify something, do it after giving a first recommendation — not before.
+6. Busy readers with limited time: emphasize pace, hooks, and momentum.
 
-Format: **bold** titles and author names. Prose only unless numbered reasoning is requested. Ask one question at most — only when you need the answer to say something useful.`;
+Format: **bold** titles and author names. Prose only unless numbered reasoning is requested. Ask one question at most — and only after giving at least one recommendation.`;
 
 const today = () => new Date().toISOString().slice(0,10);
 
@@ -6428,7 +6430,6 @@ export default function LitSense() {
     setQuestionsUsed(next); saveCounter(next);
     const sys = `${AI_SYSTEM}\n\nReader profile: ${buildProfile()||"No reading history yet."}`;
     try {
-      // ⚠️ PRODUCTION: Replace with "/api/ai" (streaming endpoint)
       const res = await fetch("/api/ai",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
@@ -6436,7 +6437,7 @@ export default function LitSense() {
           model:"claude-haiku-4-5-20251001",
           max_tokens:600,
           system:sys,
-          messages:sanitizeMsgs(newMsgs),
+          messages:sanitizeMsgs(newMsgs).slice(-16), // cap at 8 exchanges
         }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -6459,7 +6460,7 @@ export default function LitSense() {
           return msgs;
         });
         // Small delay between words — feels natural, not robotic
-        await new Promise(r => setTimeout(r, 18));
+        await new Promise(r => setTimeout(r, 12));
       }
 
       // Finalise
