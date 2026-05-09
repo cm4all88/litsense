@@ -122,7 +122,7 @@ async function startCheckout(priceId, userId) {
 // ── CSS ───────────────────────────────────────────────────────────────────────
 const CSS = `
 .club-wrap {
-  padding: 0 0 100px;
+  padding: 0 0 140px;
   max-width: 480px;
   margin: 0 auto;
   font-family: 'Cormorant Garamond', Georgia, serif;
@@ -677,10 +677,16 @@ export default function Club({ userId, userTier: initialTier }) {
                 </span>
               </div>
               <div className="club-dash-row">
-                <span className="club-dash-label">REWARD ENTRIES THIS MONTH</span>
+                <div>
+                  <span className="club-dash-label">REWARD ENTRIES</span>
+                  <div style={{fontSize:11,color:"var(--muted)",marginTop:3,lineHeight:1.5,maxWidth:150}}>
+                    Each entry = one chance at the yearly Reader of the Year prize.
+                  </div>
+                </div>
                 <div style={{textAlign:"right"}}>
+                  <div style={{fontSize:18,color:"var(--gold)",fontWeight:400,marginBottom:4}}>{entries}<span style={{fontSize:11,color:"var(--muted)"}}> / {maxEntries}</span></div>
                   <div className="club-entries-dots">
-                    {Array.from({ length: maxEntries }).map((_, i) => (
+                    {Array.from({ length: Math.min(maxEntries,15) }).map((_, i) => (
                       <span key={i} className={`club-dot${i < entries ? " filled" : ""}`} />
                     ))}
                   </div>
@@ -768,18 +774,25 @@ export default function Club({ userId, userTier: initialTier }) {
 
         {/* ── READER OF THE YEAR ── */}
         {view === "home" && (
-          <div className="club-grand-prize">
+          <div className="club-grand-prize" style={{marginBottom:24}}>
             <div className="club-grand-title">✦ READER OF THE YEAR</div>
-            <div className="club-grand-body">
-              Club members earn entries every month. At year's end, one reader takes home the grand prize — announced to the full LitSense community.
+            <div className="club-grand-body" style={{marginBottom:12}}>
+              Every month you're a Club member, you earn entries into the annual drawing. More months, more entries. At the end of the year, one reader wins the grand prize — announced to the entire LitSense community.
             </div>
-            {userTier !== "club" && (
+            <div style={{fontSize:13,color:"rgba(160,120,255,0.7)",fontStyle:"italic",marginBottom:16}}>
+              The more you read, the more chances you have.
+            </div>
+            {userTier === "club" ? (
+              <div style={{fontSize:12,color:"rgba(160,120,255,0.6)",letterSpacing:"0.1em",fontFamily:"'Cinzel',serif"}}>
+                ✓ YOU'RE ELIGIBLE
+              </div>
+            ) : (
               <button
                 className="club-upgrade-inline"
-                style={{ marginTop: 14, borderColor: "rgba(160,120,255,0.3)", color: "#a078f0", background: "rgba(160,120,255,0.07)" }}
+                style={{ marginTop: 4, borderColor: "rgba(160,120,255,0.3)", color: "#a078f0", background: "rgba(160,120,255,0.07)" }}
                 onClick={() => setView("pricing")}
               >
-                Become a Club member →
+                Upgrade to Club to enter →
               </button>
             )}
           </div>

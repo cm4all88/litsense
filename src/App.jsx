@@ -7322,11 +7322,13 @@ description: one sentence max.`,
               </div>
             ) : (
               <>
-                {/* Referral card — shown to signed-in users */}
-                <ReferralCard
-                  userEmail={userEmail}
-                  referralCount={referralCount}
-                />
+                {/* Referral card — only for free users, questions bonus irrelevant when paid */}
+                {!isPro && (
+                  <ReferralCard
+                    userEmail={userEmail}
+                    referralCount={referralCount}
+                  />
+                )}
 
                 <div className="ls-status-tabs">
                   {[["read","Finished"],["reading","Reading"],["want","Want to Read"],["saved","Saved"]].map(([v,l])=>(
