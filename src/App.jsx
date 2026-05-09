@@ -7922,7 +7922,7 @@ description: one sentence max.`,
           ["shelf",<Library size={21} strokeWidth={1.75}/>,"My Shelf"],
           ...(isPro ? [["club",<Crown size={21} strokeWidth={1.75}/>,"Club"]] : []),
           ["profile",<BookMarked size={21} strokeWidth={1.75}/>,"Profile"],
-          ["ask",<MessageCircle size={21} strokeWidth={1.75}/>,"Sage"],
+          ["ask",<SageOwl size={21} style={{opacity:0.85}}/>,"Sage"],
         ].map(([v,icon,label])=>(
           <button key={v} className={`ls-nav-btn${tab===v?" on":""}`} onClick={()=>setTab(v)}>
             {icon}<span className="ls-nav-label">{label}</span>
