@@ -7547,10 +7547,19 @@ description: one sentence max.`,
 
         {/* ── ASK ── */}
         {tab==="club" && (
-          <Club
-            userId={userId || null}
-            userTier={isPro ? "plus" : "free"}
-          />
+          isPro ? (
+            <Club
+              userId={userId || null}
+              userTier={isPro ? "plus" : "free"}
+            />
+          ) : (
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"60px 24px",textAlign:"center",gap:16}}>
+              <Crown size={36} strokeWidth={1} style={{color:"var(--gold)",opacity:.6}}/>
+              <div style={{fontFamily:"'Lora',serif",fontSize:22,fontWeight:700,color:"var(--text)"}}>LitSense <em style={{color:"var(--gold)"}}>Club</em></div>
+              <div style={{fontSize:15,color:"var(--text2)",maxWidth:280,lineHeight:1.7}}>Monthly drops, reading challenges, and a reading world that grows with you.</div>
+              <button className="ls-modal-cta" style={{maxWidth:260,marginTop:8}} onClick={()=>setPro(true)}>Join Club — 7 days free →</button>
+            </div>
+          )
         )}
         {tab==="ask" && (
           <>
@@ -7725,7 +7734,7 @@ description: one sentence max.`,
         {[
           ["discover",<Search size={21} strokeWidth={1.75}/>,"Discover"],
           ["shelf",<Library size={21} strokeWidth={1.75}/>,"My Shelf"],
-          ["club",<Crown size={21} strokeWidth={1.75}/>,"Club"],
+          ...(isPro ? [["club",<Crown size={21} strokeWidth={1.75}/>,"Club"]] : []),
           ["profile",<BookMarked size={21} strokeWidth={1.75}/>,"Profile"],
           ["ask",<MessageCircle size={21} strokeWidth={1.75}/>,"Ask"],
         ].map(([v,icon,label])=>(
