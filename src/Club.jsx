@@ -585,7 +585,7 @@ function TierCard({ tierKey, userTier, userId, onUpgradeStart }) {
 }
 
 // ── MAIN CLUB COMPONENT ───────────────────────────────────────────────────────
-export default function Club({ userId, userTier: initialTier }) {
+export default function Club({ userId, userTier: initialTier, onUpgrade }) {
   const [view, setView] = useState("home");            // "home" | "pricing"
   const [dropData, setDropData] = useState(null);       // { drop, revealed, eligible, claimed, tier, entries }
   const [loading, setLoading] = useState(true);
@@ -696,30 +696,16 @@ export default function Club({ userId, userTier: initialTier }) {
                 <button
                   className="club-upgrade-inline"
                   style={{ alignSelf: "flex-start" }}
-                  onClick={() => setView(view === "pricing" ? "home" : "pricing")}
+                  onClick={() => onUpgrade ? onUpgrade() : onUpgrade ? onUpgrade() : setView("pricing")}
                 >
-                  {view === "pricing" ? "← Back" : userTier === "plus" ? "Upgrade to Club →" : "Upgrade membership →"}
+                  {userTier === "plus" ? "Upgrade to Club →" : "Upgrade membership →"}
                 </button>
               )}
             </div>
           </div>
         )}
 
-        {/* ── PRICING TOGGLE ── */}
-        {view === "pricing" && (
-          <div className="club-pricing" style={{ marginTop: 20 }}>
-            <div className="club-section-label">MEMBERSHIP TIERS</div>
-            {["free","plus","club"].map(k => (
-              <TierCard
-                key={k}
-                tierKey={k}
-                userTier={userTier}
-                userId={userId}
-                onUpgradeStart={handleUpgrade}
-              />
-            ))}
-          </div>
-        )}
+
 
         {/* ── MONTHLY DROP ── */}
         {view === "home" && (
@@ -738,7 +724,7 @@ export default function Club({ userId, userTier: initialTier }) {
                 claimed={dropData.claimed}
                 claiming={claiming}
                 onClaim={handleClaim}
-                onUpgrade={() => setView("pricing")}
+                onUpgrade={() => onUpgrade ? onUpgrade() : setView("pricing")}
               />
             ) : (
               <div style={{
@@ -755,19 +741,13 @@ export default function Club({ userId, userTier: initialTier }) {
           </div>
         )}
 
-        {/* ── PRICING (non-member, no dashboard) ── */}
-        {!userId && view === "home" && (
-          <div className="club-pricing" style={{ marginTop: 24 }}>
-            <div className="club-section-label">MEMBERSHIP TIERS</div>
-            {["free","plus","club"].map(k => (
-              <TierCard
-                key={k}
-                tierKey={k}
-                userTier="free"
-                userId={null}
-                onUpgradeStart={() => {}}
-              />
-            ))}
+        {/* ── CTA for non-members ── */}
+        {!userId && (
+          <div style={{padding:"0 16px 24px",textAlign:"center"}}>
+            <button className="ls-modal-cta" style={{width:"100%",maxWidth:340,margin:"0 auto",display:"block"}}
+              onClick={() => onUpgrade && onUpgrade()}>
+              Join Club — 7 days free →
+            </button>
           </div>
         )}
 
@@ -789,7 +769,7 @@ export default function Club({ userId, userTier: initialTier }) {
               <button
                 className="club-upgrade-inline"
                 style={{ marginTop: 4, borderColor: "rgba(160,120,255,0.3)", color: "#a078f0", background: "rgba(160,120,255,0.07)" }}
-                onClick={() => setView("pricing")}
+                onClick={() => onUpgrade ? onUpgrade() : setView("pricing")}
               >
                 Upgrade to Club to enter →
               </button>

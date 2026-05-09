@@ -657,22 +657,25 @@ const CSS = `
 .ls-prompt-btn:hover{background:rgba(212,148,26,.10);border-color:rgba(212,148,26,.35);color:var(--gold);transform:translateX(3px);}
 .ls-prompt-btn:active{transform:scale(.98);}
 /* ── ASK ENTRY — Phase 19 ── */
-.ls-ask-entry{flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 28px 40px;animation:fadeIn .4s var(--ease) both;}
-.ls-ask-sage-avatar{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,rgba(201,168,76,.15),rgba(201,168,76,.05));border:1px solid rgba(201,168,76,.25);display:flex;align-items:center;justify-content:center;margin-bottom:20px;}
-.ls-ask-entry-eyebrow{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.25em;color:rgba(201,168,76,.6);margin-bottom:10px;text-transform:uppercase;}
-.ls-ask-entry-headline{font-family:'Lora',serif;font-size:22px;font-weight:700;color:var(--text);line-height:1.22;margin-bottom:8px;letter-spacing:-.3px;}
+.ls-ask-entry{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 24px 16px;animation:fadeIn .5s var(--ease) both;text-align:center;position:relative;}
+.ls-ask-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-60%);width:300px;height:300px;background:radial-gradient(circle,rgba(201,168,76,.06) 0%,transparent 70%);pointer-events:none;z-index:0;}
+.ls-ask-sage-avatar{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,rgba(201,168,76,.18),rgba(201,168,76,.06));border:1px solid rgba(201,168,76,.3);display:flex;align-items:center;justify-content:center;margin-bottom:16px;position:relative;z-index:1;box-shadow:0 0 32px rgba(201,168,76,.1);}
+.ls-ask-greeting{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.25em;color:rgba(201,168,76,.65);margin-bottom:6px;position:relative;z-index:1;}
+.ls-ask-entry-headline{font-family:'Lora',serif;font-size:24px;font-weight:700;color:var(--text);line-height:1.2;margin-bottom:6px;letter-spacing:-.3px;position:relative;z-index:1;}
 .ls-ask-entry-headline em{color:var(--gold);font-style:italic;}
-.ls-ask-entry-sub{font-size:13px;color:rgba(240,232,216,.5);line-height:1.7;margin-bottom:36px;font-style:italic;}
-.ls-ask-nudge-list{display:flex;flex-direction:column;gap:4px;}
-.ls-ask-nudge{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:13px 16px;cursor:pointer;text-align:left;display:flex;align-items:center;gap:12px;transition:all .2s var(--ease);-webkit-tap-highlight-color:transparent;}
-.ls-ask-nudge:hover{background:rgba(201,168,76,.07);border-color:rgba(201,168,76,.2);transform:translateX(3px);}
-.ls-ask-nudge:active{opacity:.7;}
+.ls-ask-entry-sub{font-size:13px;color:rgba(240,232,216,.45);line-height:1.65;margin-bottom:28px;font-style:italic;max-width:280px;position:relative;z-index:1;}
+.ls-ask-nudge-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;max-width:420px;position:relative;z-index:1;}
+.ls-ask-nudge{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:14px 12px;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:6px;transition:all .2s var(--ease);-webkit-tap-highlight-color:transparent;}
+.ls-ask-nudge:hover{background:rgba(201,168,76,.08);border-color:rgba(201,168,76,.25);transform:translateY(-2px);box-shadow:0 4px 20px rgba(0,0,0,.3);}
+.ls-ask-nudge:active{opacity:.7;transform:translateY(0);}
+.ls-ask-nudge-last{grid-column:1/-1;}
 .ls-counter{display:flex;align-items:center;justify-content:space-between;padding:6px 16px;font-size:11px;color:var(--muted);gap:12px;}
 .ls-counter.warn{color:rgba(224,85,85,.8);}
 .ls-counter-upgrade{background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);color:var(--gold);padding:5px 12px;border-radius:20px;font-size:11px;cursor:pointer;white-space:nowrap;transition:background .2s;}
 .ls-counter-upgrade:hover{background:rgba(201,168,76,.2);}
-.ls-ask-nudge-icon{font-size:16px;flex-shrink:0;opacity:.7;}
-.ls-ask-nudge-text{font-family:'Lora',serif;font-style:italic;font-size:14px;font-weight:400;color:rgba(240,232,216,.85);line-height:1.3;transition:color .2s;letter-spacing:-.1px;}
+.ls-ask-nudge-icon{font-size:20px;line-height:1;margin-bottom:2px;}
+.ls-ask-nudge-text{font-family:'Lora',serif;font-style:italic;font-size:13px;font-weight:400;color:rgba(240,232,216,.9);line-height:1.3;letter-spacing:-.1px;}
+.ls-ask-nudge-desc{font-size:10px;color:var(--muted);line-height:1.4;font-family:'Inter',sans-serif;margin-top:2px;}
 
 /* ── CHAT INPUT — glass ── */
 .ls-input-row-chat{display:flex;gap:9px;padding:10px 16px;border-top:1px solid rgba(255,255,255,.07);background:rgba(18,14,10,.75);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);flex-shrink:0;}
@@ -3066,6 +3069,27 @@ const PRO_FEATURES = [
   { Icon:MessageCircle, title:"Book club mode",               desc:"Discussion questions for any book." },
   { Icon:BookMarked,    title:"Author alerts",                desc:"New releases from authors you love, as they drop." },
 ];
+// ── TIME-AWARE GREETING ──────────────────────────────────────────────────────
+function getSageGreeting() {
+  const h = new Date().getHours();
+  if (h >= 5  && h < 12) return "Good morning.";
+  if (h >= 12 && h < 17) return "Good afternoon.";
+  if (h >= 17 && h < 21) return "Good evening.";
+  return "Still up?";
+}
+
+const SAGE_MOODS = [
+  "What are you in the mood for?",
+  "What kind of story do you need right now?",
+  "What would make tonight worth staying up for?",
+  "Where do you want a book to take you?",
+  "What do you feel like reading?",
+];
+
+function getSageMood() {
+  return SAGE_MOODS[new Date().getDate() % SAGE_MOODS.length];
+}
+
 // ── MESSAGE SANITIZER ─────────────────────────────────────────────────────────
 // Strips browser extension artifacts (inputSel, data-gb-target, visibleText)
 // and truncates oversized messages before sending to the API.
@@ -7563,6 +7587,7 @@ description: one sentence max.`,
               <Club
                 userId={userId || null}
                 userTier={isPro ? "plus" : "free"}
+                onUpgrade={() => setPro(true)}
               />
             </div>
           ) : (
@@ -7635,23 +7660,25 @@ description: one sentence max.`,
                       </>
                     ) : (
                       <>
+                        <div className="ls-ask-glow"/>
                         <div className="ls-ask-sage-avatar">
-                          <BookOpen size={22} strokeWidth={1.5} style={{color:"var(--gold)"}}/>
+                          <BookOpen size={24} strokeWidth={1.5} style={{color:"var(--gold)"}}/>
                         </div>
-                        <div className="ls-ask-entry-eyebrow">Sage · Your reading companion</div>
-                        <div className="ls-ask-entry-headline">What are you<em> looking for?</em></div>
-                        <div className="ls-ask-entry-sub">Tell me what you've loved, what you're in the mood for, or just ask anything about books.</div>
-                        <div className="ls-ask-nudge-list">
+                        <div className="ls-ask-greeting">{getSageGreeting()} I'm Sage.</div>
+                        <div className="ls-ask-entry-headline"><em>{getSageMood()}</em></div>
+                        <div className="ls-ask-entry-sub">Tell me what you've loved, what you're in the mood for, or just ask about a book.</div>
+                        <div className="ls-ask-nudge-grid">
                           {[
-                            { icon: "🔥", label: "Something I can't put down",     prompt: "I want something genuinely unputdownable. Not a thriller necessarily — just propulsive. What fits?" },
-                            { icon: "🌑", label: "Dark but not depressing",         prompt: "Something dark and atmospheric but not hopeless. The kind of dark you can sit with." },
-                            { icon: "📖", label: "A book that will stay with me",   prompt: "Recommend me a book I'll still be thinking about a year from now." },
-                            { icon: "✨", label: "Surprise me completely",          prompt: "Surprise me — something I'd never pick for myself but would love. Make it specific." },
-                            { icon: "💬", label: "Help me find my next book",       prompt: "Ask me a few questions and find my next book." },
+                            { icon: "🔥", label: "Can't put down",     desc: "Propulsive, gripping, fast",      prompt: "I want something genuinely unputdownable. Not necessarily a thriller — just propulsive. What fits?" },
+                            { icon: "🌑", label: "Dark, not bleak",     desc: "Atmospheric without hopelessness", prompt: "Something dark and atmospheric but not hopeless. The kind of dark you can sit with." },
+                            { icon: "📖", label: "Stays with me",       desc: "Meaningful, lasting",              prompt: "Recommend a book I'll still be thinking about a year from now." },
+                            { icon: "✨", label: "Surprise me",         desc: "Something unexpected I'd love",   prompt: "Surprise me — something I'd never pick for myself but would love. Be specific." },
+                            { icon: "🎯", label: "Find my next book",   desc: "Ask me questions first",          prompt: "Ask me a few questions and find my perfect next book.", last: true },
                           ].map((o,i) => (
-                            <button key={i} className="ls-ask-nudge" onClick={() => sendChat(o.prompt)}>
+                            <button key={i} className={`ls-ask-nudge${o.last?" ls-ask-nudge-last":""}`} onClick={() => sendChat(o.prompt)}>
                               <span className="ls-ask-nudge-icon">{o.icon}</span>
                               <span className="ls-ask-nudge-text">{o.label}</span>
+                              <span className="ls-ask-nudge-desc">{o.desc}</span>
                             </button>
                           ))}
                         </div>
