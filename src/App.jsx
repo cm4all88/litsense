@@ -5693,7 +5693,7 @@ function MarketplaceTab({ isPro, savedBooks, wantList, onRequirePro, userEmail }
         <Lock size={36} strokeWidth={1.5} style={{color:"var(--gold)",opacity:.6,marginBottom:16}}/>
         <div style={{fontFamily:"'Lora',serif",fontSize:22,fontWeight:700,color:"var(--text)",marginBottom:8}}>Marketplace is Pro</div>
         <div style={{fontSize:14,color:"var(--muted)",lineHeight:1.7,marginBottom:24}}>Buy and sell books directly with other readers. Trade your shelf for something new.</div>
-        <button className="ls-list-submit" style={{maxWidth:240}} onClick={onRequirePro}>Go Pro to access →</button>
+        <button className="ls-list-submit" style={{maxWidth:240}} onClick={onRequirePro}>Join Club to access →</button>
       </div>
     );
   }
@@ -6706,11 +6706,11 @@ description: one sentence max.`,
           {!isSignedIn ? (
             <>
               <button className="ls-signin-btn" onClick={()=>{setAuthMode("login");setShowAuth(true);}}>Sign in</button>
-              <button className="ls-pro-btn" onClick={()=>setPro(true)}><Crown size={11} strokeWidth={2}/> Go Pro</button>
+              <button className="ls-pro-btn" onClick={()=>setPro(true)}><Crown size={11} strokeWidth={2}/> Join Club</button>
             </>
           ) : (
             <>
-              {!isPro && <button className="ls-pro-btn" onClick={()=>setPro(true)}><Crown size={11} strokeWidth={2}/> Go Pro</button>}
+              {!isPro && <button className="ls-pro-btn" onClick={()=>setPro(true)}><Crown size={11} strokeWidth={2}/> Join Club</button>}
               <div className="ls-user-avatar" title={`Signed in as ${userEmail}`} onClick={handleSignOut}
                 style={userPhoto ? {backgroundImage:`url(${userPhoto})`,backgroundSize:"cover",backgroundPosition:"center",color:"transparent"} : {}}>
                 {userPhoto ? "" : userInitial}
@@ -6745,11 +6745,11 @@ description: one sentence max.`,
                 {!isSignedIn ? (
                   <>
                     <button className="ls-signin-btn" onClick={()=>{setAuthMode("login");setShowAuth(true);}}>Sign in</button>
-                    <button className="ls-pro-btn" onClick={()=>setPro(true)}><Crown size={11} strokeWidth={2}/> Go Pro</button>
+                    <button className="ls-pro-btn" onClick={()=>setPro(true)}><Crown size={11} strokeWidth={2}/> Join Club</button>
                   </>
                 ) : (
                   <>
-                    {!isPro && <button className="ls-pro-btn" onClick={()=>setPro(true)}><Crown size={11} strokeWidth={2}/> Go Pro</button>}
+                    {!isPro && <button className="ls-pro-btn" onClick={()=>setPro(true)}><Crown size={11} strokeWidth={2}/> Join Club</button>}
                     <div className="ls-user-avatar" title={`Signed in as ${userEmail}`} onClick={handleSignOut}
                       style={userPhoto ? {backgroundImage:`url(${userPhoto})`,backgroundSize:"cover",backgroundPosition:"center",color:"transparent"} : {}}>
                       {userPhoto ? "" : userInitial}
@@ -7180,7 +7180,7 @@ description: one sentence max.`,
                       </div>
                       <button className="ls-acct-btn ls-acct-btn-manage"
                         onClick={async()=>{
-                          if (!user?.id) return;
+                          if (!userId) return;
                           try {
                             const r = await fetch("/api/billing-portal",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:user.id})});
                             const d = await r.json();
@@ -7213,7 +7213,7 @@ description: one sentence max.`,
                         if (!window.confirm("Permanently delete your LitSense account? This cannot be undone.")) return;
                         if (!window.confirm("Are you sure? Your shelf, reading history, and subscription will all be deleted.")) return;
                         try {
-                          await fetch("/api/delete-account",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:user?.id})});
+                          await fetch("/api/delete-account",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:userId})});
                           await handleSignOut();
                         } catch(e){ alert("Deletion failed. Please contact hello@litsense.app."); }
                       }}
@@ -7544,7 +7544,7 @@ description: one sentence max.`,
         {/* ── ASK ── */}
         {tab==="club" && (
           <Club
-            userId={user?.id || null}
+            userId={userId || null}
             userTier={isPro ? "plus" : "free"}
           />
         )}
@@ -7661,7 +7661,7 @@ description: one sentence max.`,
                 </span>
                 {!isPro&&(
                   <button className="ls-counter-upgrade" onClick={()=>{if(!isSignedIn){setAuthMode("signup");setShowAuth(true);}else setPro(true);}}>
-                    {isSignedIn?"Go Pro for unlimited →":"Sign up free →"}
+                    {isSignedIn?"Join Club for unlimited →":"Sign up free →"}
                   </button>
                 )}
               </div>
@@ -7757,20 +7757,6 @@ description: one sentence max.`,
       )}
 
       {/* LEGAL FOOTER */}
-      <div style={{
-        textAlign:"center",padding:"6px 16px 10px",
-        fontSize:11,color:"var(--muted)",
-        display:"flex",justifyContent:"center",gap:16,flexWrap:"wrap",
-        borderTop:"1px solid rgba(255,255,255,.04)",
-        background:"var(--bg)",
-      }}>
-        <a href="/about.html" target="_blank" rel="noopener" style={{color:"var(--muted)",textDecoration:"none"}}>About</a>
-        <a href="/terms.html" target="_blank" rel="noopener" style={{color:"var(--muted)",textDecoration:"none"}}>Terms</a>
-        <a href="/privacy.html" target="_blank" rel="noopener" style={{color:"var(--muted)",textDecoration:"none"}}>Privacy</a>
-        <a href="/affiliate-disclosure.html" target="_blank" rel="noopener" style={{color:"var(--muted)",textDecoration:"none"}}>Affiliates</a>
-        <a href="/cookies.html" target="_blank" rel="noopener" style={{color:"var(--muted)",textDecoration:"none"}}>Cookies</a>
-      </div>
-
       {/* LEGAL FOOTER */}
       <div style={{
         textAlign:"center",padding:"6px 16px 10px",
@@ -7877,7 +7863,7 @@ description: one sentence max.`,
                         setProTier("plus"); setProBusy(true);
                         const priceId = proBilling==="annual" ? import.meta.env.VITE_STRIPE_PRICE_PLUS_ANNUAL : import.meta.env.VITE_STRIPE_PRICE_PLUS_MONTHLY;
                         try {
-                          const r = await fetch("/api/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({priceId,userId:user?.id,email:userEmail})});
+                          const r = await fetch("/api/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({priceId,userId:userId,email:userEmail})});
                           const d = await r.json();
                           if (d.url) window.location.href = d.url;
                           else setProError(d.error||"Could not start checkout.");
@@ -7906,7 +7892,7 @@ description: one sentence max.`,
                         setProTier("club"); setProBusy(true);
                         const priceId = proBilling==="annual" ? import.meta.env.VITE_STRIPE_PRICE_CLUB_ANNUAL : import.meta.env.VITE_STRIPE_PRICE_CLUB_MONTHLY;
                         try {
-                          const r = await fetch("/api/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({priceId,userId:user?.id,email:userEmail})});
+                          const r = await fetch("/api/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({priceId,userId:userId,email:userEmail})});
                           const d = await r.json();
                           if (d.url) window.location.href = d.url;
                           else setProError(d.error||"Could not start checkout.");

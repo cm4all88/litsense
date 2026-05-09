@@ -143,7 +143,7 @@ const CSS = `
   font-size: clamp(28px, 7vw, 38px);
   font-weight: 300;
   font-style: italic;
-  color: var(--text1);
+  color: var(--text);
   line-height: 1.2;
   margin-bottom: 10px;
 }
@@ -211,7 +211,7 @@ const CSS = `
 .club-drop-title {
   font-size: 20px;
   font-weight: 400;
-  color: var(--text1);
+  color: var(--text);
   margin-bottom: 8px;
   line-height: 1.3;
 }
@@ -267,7 +267,7 @@ const CSS = `
 .club-countdown-num {
   font-size: 24px;
   font-weight: 300;
-  color: var(--text1);
+  color: var(--text);
   display: block;
   line-height: 1;
 }
@@ -337,7 +337,7 @@ const CSS = `
 }
 .club-dash-value {
   font-size: 15px;
-  color: var(--text1);
+  color: var(--text);
 }
 .club-tier-badge {
   display: inline-flex;
