@@ -3270,8 +3270,7 @@ function InlineBookCard({ title, author, onSave }) {
 
 function renderAI(text, onSaveBook) {
   // Detect **Title** by **Author** or **Title** by Author Name patterns
-  const BOOK_RE = /\*\*([^*]+)\*\*\s+by\s+(?:\*\*([^*]+)\*\*|([A-Z][^.,!?
-(]+))/g;
+  const BOOK_RE = new RegExp("\\*\\*([^*]+)\\*\\*\\s+by\\s+(?:\\*\\*([^*]+)\\*\\*|([A-Z][^.,!?\\r\\n(]+))", "g");
 
   // Split text into segments — regular text and book recommendation lines
   const lines = text.split("\n");
@@ -3313,16 +3312,7 @@ function renderAI(text, onSaveBook) {
 
   return elements;
 }
-function _renderAI_unused(text) {
-  return text.split("\n").map((line, i) => {
-    if (/^#{1,3} /.test(line))               return <h4 key={i}>{line.replace(/^#{1,3} /,"")}</h4>;
-    if (/^\*\*[^*]+\*\*$/.test(line.trim())) return <h4 key={i}>{line.trim().slice(2,-2)}</h4>;
-    if (/^[-•] /.test(line))                 return <li key={i}>{fmtLine(line.slice(2))}</li>;
-    if (!line.trim())                        return <br key={i}/>;
-    return <p key={i} style={{marginBottom:3}}>{fmtLine(line)}</p>;
-  });
-}
-/* end _unused */
+
 function fmtLine(t) {
   return t.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g).map((p,i) => {
     if (p.startsWith("**")&&p.endsWith("**")) return <strong key={i}>{p.slice(2,-2)}</strong>;
@@ -7740,7 +7730,7 @@ description: one sentence max.`,
                 <div className="ls-limit-note">Resets every day at midnight.</div>
               </div>
             ) : (
-              <div className="ls-ask-msgs" style={{background:"#0f0c07",flex:1,display:"flex",flexDirection:"column"}}>
+              <div className="ls-ask-msgs" style={{background:"#0f0c07",flex:1,display:"flex",flexDirection:"column",justifyContent:"flex-start"}}>
                 {msgs.length===0&&!chatLoad ? (
                   <div className="ls-ask-entry">
                     {currentBook ? (
