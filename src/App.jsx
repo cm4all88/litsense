@@ -751,6 +751,19 @@ textarea.ls-chat-input::placeholder{color:var(--muted);}
 
 .ls-modal-cancel{width:100%;padding:14px;border-radius:var(--r-md);border:1px solid rgba(255,255,255,.1);background:transparent;color:var(--muted);font-size:10px;cursor:pointer;transition:all .15s;}
 .ls-modal-cancel:hover{color:var(--text2);}
+/* ── ACCOUNT MANAGEMENT ── */
+.ls-acct-section{margin:24px 20px 0;border:1px solid rgba(255,255,255,.07);border-radius:14px;overflow:hidden;}
+.ls-acct-header{padding:14px 16px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.06);}
+.ls-acct-header-title{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.2em;color:var(--muted);}
+.ls-acct-row{display:flex;justify-content:space-between;align-items:center;padding:13px 16px;border-bottom:1px solid rgba(255,255,255,.04);}
+.ls-acct-row:last-child{border-bottom:none;}
+.ls-acct-label{font-size:13px;color:var(--text2);}
+.ls-acct-value{font-size:13px;color:var(--text1);font-weight:500;}
+.ls-acct-btn{padding:6px 14px;border-radius:8px;font-size:11px;cursor:pointer;border:1px solid;transition:opacity .2s;font-family:'Cinzel',serif;letter-spacing:.1em;}
+.ls-acct-btn:hover{opacity:.75;}
+.ls-acct-btn-manage{background:rgba(201,168,76,.08);border-color:rgba(201,168,76,.3);color:var(--gold);}
+.ls-acct-btn-danger{background:rgba(224,85,85,.08);border-color:rgba(224,85,85,.25);color:#e05555;}
+.ls-acct-tier-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-family:'Cinzel',serif;font-size:9px;letter-spacing:.12em;}
 /* ── CLUB TIER CARDS (upgrade modal) ── */
 .ls-club-tiers{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
 .ls-club-tier-card{border-radius:12px;padding:16px;transition:all .2s;}
@@ -768,6 +781,13 @@ textarea.ls-chat-input::placeholder{color:var(--muted);}
 .ls-billing-btn{flex:1;padding:7px 0;border:none;border-radius:17px;font-family:'Cinzel',serif;font-size:9px;letter-spacing:.15em;cursor:pointer;transition:all .2s;background:transparent;color:var(--muted);}
 .ls-billing-btn.on{background:rgba(201,168,76,.15);color:var(--gold);}
 .ls-billing-save{display:inline-block;font-size:8px;letter-spacing:.08em;color:#6dbf6d;margin-left:5px;font-family:'Inter',sans-serif;}
+.ls-pwa-banner{position:fixed;bottom:76px;left:12px;right:12px;background:var(--bg2);border:1px solid rgba(201,168,76,.3);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;z-index:200;box-shadow:0 4px 24px rgba(0,0,0,.4);}
+.ls-pwa-icon{width:40px;height:40px;border-radius:10px;background:rgba(201,168,76,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ls-pwa-body{flex:1;}
+.ls-pwa-title{font-size:14px;font-weight:600;color:var(--text1);margin-bottom:2px;}
+.ls-pwa-sub{font-size:12px;color:var(--text2);}
+.ls-pwa-btn{padding:7px 14px;background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.35);color:var(--gold);border-radius:8px;font-size:12px;cursor:pointer;white-space:nowrap;}
+.ls-pwa-close{background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;font-size:18px;line-height:1;flex-shrink:0;}
 
 /* ── AUTH MODAL — glass ── */
 .ls-auth-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(20px);display:flex;align-items:flex-end;justify-content:center;z-index:300;animation:fadeIn .22s ease;}
@@ -3085,15 +3105,17 @@ Voice:
 - Instead: "Read this." "This one fits." "If [X] worked for you, [Y] will too."
 - Short. Precise. Let the recommendation do the work.
 
-CRITICAL RULES — READ FIRST:
-1. ALWAYS lead with a recommendation. Never respond with only a question. If the request is ambiguous, make a reasonable assumption, state it briefly, and recommend. Example: "Assuming you mean a 10-year-old — **The Hobbit**..."
-2. When recommending multiple books (user asks for a few, a list, several): give 3 books max. Each gets one sentence of reasoning. No preamble.
-3. PERSONA: If the reader profile states a role (teacher, librarian) or audience level (high school, middle school): honor it exactly. Never recommend books for the wrong age group.
-4. If the user asks for step-by-step reasoning: number your points. Otherwise, prose only.
-5. Tone: warm, not demanding. If you need to clarify something, do it after giving a first recommendation — not before.
-6. Busy readers with limited time: emphasize pace, hooks, and momentum.
+CRITICAL RULES — READ ALL:
+1. ALWAYS lead with a recommendation. Never open with only a question. If ambiguous, make a reasonable assumption, state it in one clause, then recommend. "Assuming you mean a middle-grade reader — **The Hobbit**..."
+2. Multiple books requested (a few, several, a list): give exactly 3. One sentence of reasoning each. No preamble.
+3. ACCURACY: You must be certain of author names before stating them. If unsure of an author, omit the author name rather than guess. Never fabricate an author. Double-check: Legendborn is by Tracy Deonn. The Long Take is by Robin Robertson.
+4. NEVER recommend a book by the same author the user just mentioned, unless they explicitly ask for more from that author.
+5. PERSONA: If the reader profile states a role (teacher, librarian) or audience (high school, middle school): honor it exactly. Never recommend the wrong level.
+6. FOLLOW-UP QUESTIONS: Ask at most one. Make it conversational and warm — never interrogative. Place it after the recommendation, never before. If asking about preference, offer 2-3 concrete options inline: "Was it the romance, the fae world, or Feyre's arc that pulled you in most?"
+7. Tone: warm, curious, not demanding. Busy readers: emphasize pace and momentum.
+8. Never repeat the user's query back to them verbatim.
 
-Format: **bold** titles and author names. Prose only unless numbered reasoning is requested. Ask one question at most — and only after giving at least one recommendation.`;
+Format: **bold** titles and author names. Prose only. One follow-up question max — after giving at least one recommendation.`;
 
 const today = () => new Date().toISOString().slice(0,10);
 
@@ -5949,13 +5971,41 @@ function DiscussionThread({ book, userEmail, userId, onClose }) {
 }
 
 export default function LitSense() {
+  // ── PWA install prompt ──────────────────────────────────────────────────────
   useEffect(() => {
-    // Check for referral param — store so signup flow can credit referrer
-    // In production: send to Supabase to credit the referrer's account
+    const handler = (e) => {
+      e.preventDefault();
+      setPwaPrompt(e);
+      // Only show banner if not already installed and not dismissed this session
+      const dismissed = sessionStorage.getItem("ls_pwa_dismissed");
+      if (!dismissed) setShowPwaBanner(true);
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+
+    // Referral tracking
     const refCode = params.get("ref");
     if (refCode) {
       try { localStorage.setItem("ls_ref_from", refCode); } catch {}
+    }
+
+    // Stripe checkout return
+    const checkout = params.get("checkout");
+    if (checkout === "success") {
+      // Clean URL without reloading
+      window.history.replaceState({}, "", window.location.pathname);
+      // Subscription is activated via webhook — show success and prompt to Club tab
+      setProStep("done");
+      setPro(true);
+      // Set isPro optimistically — webhook will confirm within seconds
+      setIsPro(true);
+      try { localStorage.setItem("ls_pro", "1"); } catch {}
+    } else if (checkout === "cancelled") {
+      window.history.replaceState({}, "", window.location.pathname);
     }
   }, []);
 
@@ -5996,6 +6046,8 @@ export default function LitSense() {
   const [authExitWarn, setAuthExitWarn] = useState(false);
   const [tosAgreed, setTosAgreed]   = useState(false);
   const [userPersona, setUserPersona] = useState({}); // stated role, level, purpose
+  const [pwaPrompt,   setPwaPrompt]   = useState(null); // deferred install prompt event
+  const [showPwaBanner, setShowPwaBanner] = useState(false);
 
   // ── COUNTER ───────────────────────────────────────────────────────────────
   const loadCounter = () => { try { const r = localStorage.getItem("ls_counter"); if (!r) return 0; const {count,date} = JSON.parse(r); return date===today()?count:0; } catch { return 0; } };
@@ -6429,6 +6481,9 @@ export default function LitSense() {
     const next = questionsUsed+1;
     setQuestionsUsed(next); saveCounter(next);
     const sys = `${AI_SYSTEM}\n\nReader profile: ${buildProfile()||"No reading history yet."}`;
+    // Add streaming placeholder immediately so user sees activity
+    setMsgs(prev => [...prev, {role:"assistant", content:"", streaming:true}]);
+
     try {
       const res = await fetch("/api/ai",{
         method:"POST",
@@ -6436,45 +6491,61 @@ export default function LitSense() {
         body:JSON.stringify({
           model:"claude-haiku-4-5-20251001",
           max_tokens:600,
+          stream:true,
           system:sys,
-          messages:sanitizeMsgs(newMsgs).slice(-16), // cap at 8 exchanges
+          messages:sanitizeMsgs(newMsgs).slice(-16),
         }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-      const d = await res.json();
-      const fullText = d.content?.[0]?.text;
-      if (!fullText) throw new Error("Empty");
+      // ── READ SSE STREAM ──────────────────────────────────────────────────
+      // Anthropic streams SSE events. We decode and accumulate the text.
+      const reader  = res.body.getReader();
+      const decoder = new TextDecoder();
+      let   buffer  = "";
+      let   full    = "";
 
-      // Typewriter effect — types the full response word by word
-      // More reliable than true streaming on Safari iOS
-      const words = fullText.split(" ");
-      setMsgs(prev => [...prev, {role:"assistant", content:"", streaming:true}]);
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop(); // keep incomplete line
 
-      for (let i = 0; i < words.length; i++) {
-        const partial = words.slice(0, i + 1).join(" ");
-        setMsgs(prev => {
-          const msgs = [...prev];
-          const last = msgs[msgs.length - 1];
-          if (last?.streaming) msgs[msgs.length - 1] = {...last, content: partial};
-          return msgs;
-        });
-        // Small delay between words — feels natural, not robotic
-        await new Promise(r => setTimeout(r, 12));
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          const data = line.slice(6).trim();
+          if (data === "[DONE]") continue;
+          try {
+            const evt = JSON.parse(data);
+            // Anthropic streaming: content_block_delta with text delta
+            if (evt.type === "content_block_delta" && evt.delta?.type === "text_delta") {
+              full += evt.delta.text;
+              setMsgs(prev => {
+                const next = [...prev];
+                const last = next[next.length - 1];
+                if (last?.streaming) next[next.length - 1] = {...last, content: full};
+                return next;
+              });
+            }
+          } catch { /* ignore malformed chunks */ }
+        }
       }
 
-      // Finalise
+      if (!full) throw new Error("Empty response");
+
+      // Finalise — remove streaming flag
       setMsgs(prev => {
-        const msgs = [...prev];
-        const last = msgs[msgs.length - 1];
-        if (last?.streaming) msgs[msgs.length - 1] = {role:"assistant", content: fullText};
-        return msgs;
+        const next = [...prev];
+        const last = next[next.length - 1];
+        if (last?.streaming) next[next.length - 1] = {role:"assistant", content: full};
+        return next;
       });
 
-    } catch {
+    } catch(err) {
+      console.error("sendChat error:", err.message);
       setQuestionsUsed(questionsUsed); saveCounter(questionsUsed);
       setMsgs(prev => {
-        // Remove the empty streaming placeholder if it exists
         const cleaned = prev[prev.length-1]?.streaming ? prev.slice(0,-1) : prev;
         return [...cleaned, {role:"assistant",content:"Something went quiet — check your connection and try again.",isError:true,retryMsg:msg}];
       });
@@ -6565,9 +6636,13 @@ description: one sentence max.`,
     try {
       if (authMode === "signup") {
         await signUp(authEmail.trim(), authPass.trim());
-        // Supabase sends a confirmation email by default
-        // For now we auto-sign-in after signup
         await signIn(authEmail.trim(), authPass.trim());
+        // Send welcome email (fire and forget)
+        fetch("/api/send-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: "welcome", to: authEmail.trim(), data: {} }),
+        }).catch(() => {});
       } else {
         await signIn(authEmail.trim(), authPass.trim());
       }
@@ -7078,8 +7153,76 @@ description: one sentence max.`,
                   </div>
                 )}
 
+                {/* ── Account Management ── */}
+                <div className="ls-acct-section">
+                  <div className="ls-acct-header">
+                    <div className="ls-acct-header-title">MEMBERSHIP & ACCOUNT</div>
+                  </div>
+
+                  {/* Current tier */}
+                  <div className="ls-acct-row">
+                    <span className="ls-acct-label">Current plan</span>
+                    <span className="ls-acct-tier-badge" style={{
+                      background: isPro ? "rgba(201,168,76,0.1)" : "rgba(200,190,175,0.08)",
+                      border: `1px solid ${isPro ? "rgba(201,168,76,0.3)" : "rgba(200,190,175,0.15)"}`,
+                      color: isPro ? "var(--gold)" : "#c0b89a",
+                    }}>
+                      {isPro ? "Plus" : "Free"}
+                    </span>
+                  </div>
+
+                  {/* Manage billing — only if subscribed */}
+                  {isPro && (
+                    <div className="ls-acct-row">
+                      <div>
+                        <div className="ls-acct-label">Billing & subscription</div>
+                        <div style={{fontSize:11,color:"var(--muted)",marginTop:2}}>Update card, view invoices, cancel</div>
+                      </div>
+                      <button className="ls-acct-btn ls-acct-btn-manage"
+                        onClick={async()=>{
+                          if (!user?.id) return;
+                          try {
+                            const r = await fetch("/api/billing-portal",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:user.id})});
+                            const d = await r.json();
+                            if (d.url) window.location.href = d.url;
+                            else alert(d.error || "Could not open billing portal.");
+                          } catch(e){ alert("Something went wrong. Please try again."); }
+                        }}
+                      >Manage →</button>
+                    </div>
+                  )}
+
+                  {/* Upgrade if free */}
+                  {!isPro && (
+                    <div className="ls-acct-row">
+                      <div className="ls-acct-label">Unlock Plus or Club</div>
+                      <button className="ls-acct-btn ls-acct-btn-manage" onClick={()=>setPro(true)}>
+                        Upgrade →
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Delete account */}
+                  <div className="ls-acct-row">
+                    <div>
+                      <div className="ls-acct-label">Delete account</div>
+                      <div style={{fontSize:11,color:"var(--muted)",marginTop:2}}>Permanently removes all your data</div>
+                    </div>
+                    <button className="ls-acct-btn ls-acct-btn-danger"
+                      onClick={async()=>{
+                        if (!window.confirm("Permanently delete your LitSense account? This cannot be undone.")) return;
+                        if (!window.confirm("Are you sure? Your shelf, reading history, and subscription will all be deleted.")) return;
+                        try {
+                          await fetch("/api/delete-account",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:user?.id})});
+                          await handleSignOut();
+                        } catch(e){ alert("Deletion failed. Please contact hello@litsense.app."); }
+                      }}
+                    >Delete</button>
+                  </div>
+                </div>
+
                 {/* ── Sign out ── */}
-                <div style={{padding:"28px 20px 0",textAlign:"center"}}>
+                <div style={{padding:"24px 20px 0",textAlign:"center"}}>
                   <button onClick={handleSignOut} style={{background:"none",border:"none",color:"var(--muted)",fontSize:14,cursor:"pointer",textDecoration:"underline"}}>
                     Sign out
                   </button>
@@ -7587,6 +7730,31 @@ description: one sentence max.`,
           </button>
         ))}
       </nav>
+
+      {/* PWA INSTALL BANNER */}
+      {showPwaBanner && (
+        <div className="ls-pwa-banner">
+          <div className="ls-pwa-icon">
+            <BookOpen size={20} style={{color:"var(--gold)"}}/> 
+          </div>
+          <div className="ls-pwa-body">
+            <div className="ls-pwa-title">Add to home screen</div>
+            <div className="ls-pwa-sub">Read faster. Works offline.</div>
+          </div>
+          <button className="ls-pwa-btn" onClick={async()=>{
+            if (!pwaPrompt) return;
+            pwaPrompt.prompt();
+            const { outcome } = await pwaPrompt.userChoice;
+            setPwaPrompt(null);
+            setShowPwaBanner(false);
+            sessionStorage.setItem("ls_pwa_dismissed","1");
+          }}>Install</button>
+          <button className="ls-pwa-close" onClick={()=>{
+            setShowPwaBanner(false);
+            sessionStorage.setItem("ls_pwa_dismissed","1");
+          }}>×</button>
+        </div>
+      )}
 
       {/* LEGAL FOOTER */}
       <div style={{

@@ -9,29 +9,64 @@
     <meta name="theme-color" content="#080604" />
     <meta name="mobile-web-app-capable" content="yes" />
 
-    <!-- ── iOS specific ── -->
+    <!-- ── iOS ── -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="LitSense" />
     <link rel="apple-touch-icon" href="/icons/icon-192.png" />
 
-    <!-- ── SEO / Share ── -->
-    <title>LitSense — Books worth your time</title>
-    <meta name="description" content="Your personal reading intelligence. Books recommended for you, with a real explanation why." />
-    <meta property="og:title" content="LitSense" />
-    <meta property="og:description" content="Books recommended for you, with a real explanation why." />
-    <meta property="og:image" content="/icons/icon-512.png" />
+    <!-- ── SEO ── -->
+    <title>LitSense — Your Personal Book Recommendation App</title>
+    <meta name="description" content="LitSense is a smart reading companion that recommends books based on your taste, mood, and reading history. Meet Sage — your AI-powered book advisor." />
+    <meta name="keywords" content="book recommendations, what to read next, book discovery, reading app, personalized books, AI book recommendations" />
+    <link rel="canonical" href="https://litsense.app" />
+
+    <!-- ── Open Graph ── -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="LitSense" />
+    <meta property="og:title" content="LitSense — Find your next great read" />
+    <meta property="og:description" content="Personalized book recommendations that actually fit you. Tell Sage what you've loved. Get one perfect recommendation, with a real reason why." />
+    <meta property="og:image" content="https://litsense.app/icons/icon-512.png" />
+    <meta property="og:image:width" content="512" />
+    <meta property="og:image:height" content="512" />
     <meta property="og:url" content="https://litsense.app" />
+
+    <!-- ── Twitter / X ── -->
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@litsenseapp" />
+    <meta name="twitter:title" content="LitSense — Find your next great read" />
+    <meta name="twitter:description" content="Personalized book recommendations that actually fit you. Meet Sage, your reading companion." />
+    <meta name="twitter:image" content="https://litsense.app/icons/icon-512.png" />
 
     <!-- ── Favicon ── -->
     <link rel="icon" type="image/png" href="/icons/icon-192.png" />
+
+    <!-- ── Structured data ── -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "LitSense",
+      "description": "Personalized book recommendations powered by Sage, your AI reading companion.",
+      "url": "https://litsense.app",
+      "applicationCategory": "EntertainmentApplication",
+      "operatingSystem": "Web, iOS, Android",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
+    }
+    </script>
+
+    <!-- ── Vercel Analytics ── -->
+    <script defer src="/_vercel/insights/script.js"></script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
 
-    <!-- ── Register service worker ── -->
+    <!-- ── Service worker ── -->
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
