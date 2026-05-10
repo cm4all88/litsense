@@ -115,7 +115,7 @@
     <h2>1. Information We Collect</h2>
     <h3>Information You Provide</h3>
     <ul>
-      <li><strong>Account information:</strong> Name, email address, and password (managed via Clerk authentication)</li>
+      <li><strong>Account information:</strong> Name, email address, and password (managed via Supabase authentication)</li>
       <li><strong>Reading preferences:</strong> Genres, moods, favorite books, and reading history you provide during onboarding or while using the Service</li>
       <li><strong>Shelf data:</strong> Books you add to your reading lists, shelves, and collections</li>
       <li><strong>User content:</strong> Reviews, ratings, community thread posts, and other content you submit</li>
@@ -209,9 +209,9 @@
       </thead>
       <tbody>
         <tr>
-          <td><strong>Clerk</strong></td>
+          <td><strong>Supabase Auth</strong></td>
           <td>Authentication & identity management</td>
-          <td>Name, email, password (hashed)</td>
+          <td>Email, password (hashed)</td>
         </tr>
         <tr>
           <td><strong>Supabase</strong></td>
@@ -274,7 +274,7 @@
     <h2>6. Cookies & Local Storage</h2>
     <p>LitSense uses browser storage technologies including cookies and localStorage for the following purposes:</p>
     <ul>
-      <li><strong>Essential:</strong> Authentication session tokens (managed by Clerk), security tokens. These are required for the Service to function.</li>
+      <li><strong>Essential:</strong> Authentication session tokens (managed by Supabase), security tokens. These are required for the Service to function.</li>
       <li><strong>Functional:</strong> Your app preferences, onboarding completion status, welcome screen display state, usage counter for rate limiting, and UI state.</li>
       <li><strong>Analytics:</strong> Aggregated, non-personally-identifying usage patterns to help us understand how the Service is used.</li>
     </ul>
@@ -339,7 +339,7 @@
     <p>We implement industry-standard security measures to protect your personal information, including:</p>
     <ul>
       <li>Encrypted data transmission via HTTPS/TLS</li>
-      <li>Authentication tokens managed by Clerk with industry-standard security practices</li>
+      <li>Authentication tokens managed by Supabase with industry-standard security practices</li>
       <li>Payment data isolation through Stripe's PCI-compliant infrastructure</li>
       <li>Access controls limiting employee access to personal data</li>
       <li>Regular security reviews of our application and infrastructure</li>
