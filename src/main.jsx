@@ -1,6 +1,5 @@
 import React, { lazy, Suspense } from 'react'
 import ReactDOM from 'react-dom/client'
-import { ClerkProvider } from '@clerk/clerk-react'
 import * as Sentry from '@sentry/react'
 
 // ── Sentry error monitoring ───────────────────────────────────────────────────
@@ -16,13 +15,11 @@ if (import.meta.env.VITE_SENTRY_DSN) {
   });
 }
 
-const publishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || "pk_test_dHJ1ZS1kaW5nby04OC5jbGVyay5hY2NvdW50cy5kZXYk"
-
 // React.lazy defers App.jsx evaluation until after React is ready to render it.
-// Without this, React 18 + ClerkProvider flushes the initial render synchronously
-// inside root.render(), before App.jsx's module-level const declarations have
-// finished evaluating — causing "Cannot access 'X' before initialization" TDZ errors.
-const App           = lazy(() => import('./App.jsx'))
+// Without this, React 18 flushes the initial render synchronously inside
+// root.render(), before App.jsx's module-level const declarations have finished
+// evaluating — causing "Cannot access 'X' before initialization" TDZ errors.
+const App            = lazy(() => import('./App.jsx'))
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard.jsx'))
 
 // If the URL is /admin (or /admin/anything), show the admin dashboard.
@@ -31,10 +28,8 @@ const isAdmin = window.location.pathname.startsWith('/admin')
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <ClerkProvider publishableKey={publishableKey}>
-      <Suspense fallback={null}>
-        {isAdmin ? <AdminDashboard /> : <App />}
-      </Suspense>
-    </ClerkProvider>
+    <Suspense fallback={null}>
+      {isAdmin ? <AdminDashboard /> : <App />}
+    </Suspense>
   </React.StrictMode>,
 )
