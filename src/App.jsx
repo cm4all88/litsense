@@ -79,6 +79,28 @@ function audibleUrl(title, author) {
 }
 
 
+// ── ADMIN CONFIG LOADER ───────────────────────────────────────────────────────
+// Fetches feature flags, site content, and app settings from Supabase on load.
+// Changes made in the admin panel take effect on the next page load.
+const _SB_URL = import.meta.env.VITE_SUPABASE_URL  || "";
+const _SB_KEY = import.meta.env.VITE_SUPABASE_ANON || import.meta.env.VITE_SUPABASE_ANON_KEY || "";
+async function loadAdminConfig() {
+  const H = { apikey: _SB_KEY, Authorization: `Bearer ${_SB_KEY}` };
+  const q = (path) =>
+    fetch(`${_SB_URL}/rest/v1/${path}`, { headers: H })
+      .then(r => r.ok ? r.json() : []).catch(() => []);
+  const [flags, settings, content] = await Promise.all([
+    q("feature_flags?select=key,enabled"),
+    q("app_settings?select=key,value"),
+    q("app_content?select=key,value"),
+  ]);
+  return {
+    flags:    new Set((Array.isArray(flags)    ? flags    : []).filter(f => f.enabled).map(f => f.key)),
+    settings: Object.fromEntries((Array.isArray(settings) ? settings : []).map(s => [s.key, s.value])),
+    content:  Object.fromEntries((Array.isArray(content)  ? content  : []).map(c => [c.key, c.value])),
+  };
+}
+
 // ── SAFE AMAZON LINK ──────────────────────────────────────────────────────────
 // Validates the ISBN-based URL before navigation. Falls back to search silently.
 // Pre-validates on hover so the result is ready by the time the user clicks.
@@ -3226,7 +3248,7 @@ function SageOwl({ size = 24, style = {} }) {
 
 // ── INLINE BOOK CARD ─────────────────────────────────────────────────────────
 // Renders inside Sage chat bubbles when a book recommendation is detected.
-function InlineBookCard({ title, author, onSave }) {
+function InlineBookCard({ title, author, onSave, affiliateEnabled = true }) {
   const [cover, setCover] = useState(null);
   const [saved, setSaved] = useState(false);
 
@@ -3260,18 +3282,22 @@ function InlineBookCard({ title, author, onSave }) {
         <div className="ls-ibc-title">{title}</div>
         {author && <div className="ls-ibc-author">{author}</div>}
         <div className="ls-ibc-actions">
-          <a className="ls-ibc-btn ls-ibc-btn-amazon" href={amzUrl} target="_blank" rel="noopener noreferrer sponsored">
-            Buy →
-          </a>
-          <a className="ls-ibc-btn ls-ibc-btn-audible" href={audUrl} target="_blank" rel="noopener noreferrer sponsored">
-            🎧 Audible
-          </a>
           <button className="ls-ibc-btn ls-ibc-btn-shelf" onClick={() => {
             setSaved(true);
             onSave?.({ title, author });
           }}>
             {saved ? "✓ Saved" : "+ My Shelf"}
           </button>
+          {affiliateEnabled && (
+            <a className="ls-ibc-btn ls-ibc-btn-amazon" href={amzUrl} target="_blank" rel="noopener noreferrer sponsored">
+              Buy →
+            </a>
+          )}
+          {affiliateEnabled && (
+            <a className="ls-ibc-btn ls-ibc-btn-audible" href={audUrl} target="_blank" rel="noopener noreferrer sponsored">
+              🎧 Audible
+            </a>
+          )}
         </div>
       </div>
     </div>
@@ -3314,7 +3340,7 @@ function renderAI(text, onSaveBook) {
           elements.push(<p key={`t-${i}`} style={{marginBottom:4}}>{fmtLine(line)}</p>);
           // Then render the book card
           elements.push(
-            <InlineBookCard key={`bc-${i}`} title={title} author={author} onSave={onSaveBook}/>
+            <InlineBookCard key={`bc-${i}`} title={title} author={author} onSave={onSaveBook} affiliateEnabled={flags.has("affiliate_links")}/>
           );
           return;
         }
@@ -5539,7 +5565,7 @@ function QuickRateCard({ onRate, onSkip }) {
 }
 
 // ── TILE MODAL (mobile tap replacement for hover overlay) ─────────────────────
-function TileModal({ book: b, onClose, onAsk, isSaved, onSave, onDismiss, userState, onDiscuss }) {
+function TileModal({ book: b, onClose, onAsk, isSaved, onSave, onDismiss, userState, onDiscuss, affiliateEnabled = true }) {
   if (!b) return null;
 
   const handleDismiss = () => {
@@ -5597,26 +5623,30 @@ function TileModal({ book: b, onClose, onAsk, isSaved, onSave, onDismiss, userSt
         <button className="ls-tile-modal-cta" onClick={() => { onDiscuss?.(b); onClose(); }} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:7}}>
           <MessageSquare size={14}/> Join the discussion
         </button>
-        <SafeAmazonLink
-          title={b.title} author={b.author} isbn={b.isbn}
-          style={{
-            display:"block",width:"100%",padding:"13px",borderRadius:10,
-            background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.1)",
-            color:"var(--text2)",textAlign:"center",textDecoration:"none",
-            fontSize:15,fontWeight:600,marginBottom:8,boxSizing:"border-box",
-          }}
-        >Buy on Amazon →</SafeAmazonLink>
-        <a
-          href={audibleUrl(b.title, b.author)}
-          target="_blank"
-          rel="noopener noreferrer sponsored"
-          style={{
-            display:"block",width:"100%",padding:"13px",borderRadius:10,
-            background:"rgba(255,170,0,.07)",border:"1px solid rgba(255,170,0,.2)",
-            color:"#ffaa00",textAlign:"center",textDecoration:"none",
-            fontSize:15,fontWeight:600,marginBottom:10,boxSizing:"border-box",
-          }}
-        >🎧 Listen on Audible →</a>
+        {affiliateEnabled && (
+          <SafeAmazonLink
+            title={b.title} author={b.author} isbn={b.isbn}
+            style={{
+              display:"block",width:"100%",padding:"13px",borderRadius:10,
+              background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.1)",
+              color:"var(--text2)",textAlign:"center",textDecoration:"none",
+              fontSize:15,fontWeight:600,marginBottom:8,boxSizing:"border-box",
+            }}
+          >Buy on Amazon →</SafeAmazonLink>
+        )}
+        {affiliateEnabled && (
+          <a
+            href={audibleUrl(b.title, b.author)}
+            target="_blank"
+            rel="noopener noreferrer sponsored"
+            style={{
+              display:"block",width:"100%",padding:"13px",borderRadius:10,
+              background:"rgba(255,170,0,.07)",border:"1px solid rgba(255,170,0,.2)",
+              color:"#ffaa00",textAlign:"center",textDecoration:"none",
+              fontSize:15,fontWeight:600,marginBottom:10,boxSizing:"border-box",
+            }}
+          >🎧 Listen on Audible →</a>
+        )}
         <button className="ls-tile-modal-cancel" onClick={onClose}>Close</button>
       </div>
     </div>
@@ -6171,6 +6201,11 @@ export default function LitSense() {
   // ── AUTH ──────────────────────────────────────────────────────────────────
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [isPro, setIsPro]           = useState(() => { try { return localStorage.getItem("ls_pro") === "1"; } catch { return false; } });
+
+  // ── ADMIN CONFIG — feature flags, site content, app settings ─────────────
+  const [flags,       setFlags]       = useState(new Set());
+  const [siteContent, setSiteContent] = useState({});
+  const [appSettings, setAppSettings] = useState({});
   const [userEmail, setUserEmail]   = useState("");
   const [userId,    setUserId]      = useState(null);
 
@@ -6198,6 +6233,15 @@ export default function LitSense() {
     return () => subscription.unsubscribe();
   }, []);
   const [showAuth, setShowAuth]     = useState(false);
+
+  // Load admin-controlled config (flags, content, settings) once on mount
+  useEffect(() => {
+    loadAdminConfig().then(({ flags: f, settings: s, content: c }) => {
+      setFlags(f);
+      setAppSettings(s);
+      setSiteContent(c);
+    });
+  }, []);
   const [authMode, setAuthMode]     = useState("signup");
   const [authEmail, setAuthEmail]   = useState("");
   const [authPass, setAuthPass]     = useState("");
@@ -6833,6 +6877,22 @@ description: one sentence max.`,
     <div style={{ position:"relative", height:"100dvh", overflow:"hidden", background:"#12100E" }}>
       <style>{CSS}</style>
 
+      {/* ── MAINTENANCE MODE — toggle in Admin → Feature Flags ── */}
+      {flags.has("maintenance_mode") && userEmail.toLowerCase() !== (import.meta.env.VITE_ADMIN_EMAIL || "").toLowerCase() && (
+        <div style={{
+          position:"fixed", inset:0, background:"rgba(10,8,6,0.97)",
+          zIndex:9999, display:"flex", flexDirection:"column",
+          alignItems:"center", justifyContent:"center",
+          gap:16, padding:40, textAlign:"center",
+        }}>
+          <div style={{fontSize:36, marginBottom:4}}>📚</div>
+          <div style={{fontFamily:"'Lora',serif", fontSize:22, color:"#f0e8d8", lineHeight:1.4, maxWidth:340}}>
+            {siteContent.maintenance_msg || "We're doing some updates. Back soon!"}
+          </div>
+          <div style={{fontSize:12, color:"#6a5a40", marginTop:8}}>LitSense · Tahoma Industries LLC</div>
+        </div>
+      )}
+
       {/* ── BACKGROUND — static library bookshelf ── */}
       <div style={{ position:"absolute", inset:0, zIndex:0, pointerEvents:"none", overflow:"hidden" }}>
         <div style={{
@@ -6996,11 +7056,23 @@ description: one sentence max.`,
               </div>
             )}
 
+            {/* Announcement banner — set in Admin → Site Content → Announcement */}
+              {siteContent.announcement && (
+                <div style={{
+                  width:"calc(100% - 40px)", margin:"0 20px 16px",
+                  background:"rgba(201,168,76,0.12)", border:"1px solid rgba(201,168,76,0.3)",
+                  borderRadius:10, padding:"11px 16px",
+                  fontSize:13, color:"var(--gold)", textAlign:"center", lineHeight:1.55,
+                }}>
+                  {siteContent.announcement}
+                </div>
+              )}
+
             {/* Cinematic Hero */}
             <div className="ls-hero">
               <div className="ls-hero-eyebrow">Taste-matched. Explained. Personal.</div>
-              <div className="ls-hero-title">Stop abandoning books.<br/><em>Start finishing them.</em></div>
-              <div className="ls-hero-body">LitSense learns exactly how you read — pace, tone, emotional weight — and recommends with a real explanation of why each book is right for you. Not an algorithm. A considered opinion.</div>
+              <div className="ls-hero-title" dangerouslySetInnerHTML={{__html: siteContent.hero_headline || "Stop abandoning books.<br/><em>Start finishing them.</em>"}}/>
+              <div className="ls-hero-body">{siteContent.hero_subtext || "LitSense learns exactly how you read — pace, tone, emotional weight — and recommends with a real explanation of why each book is right for you. Not an algorithm. A considered opinion."}</div>
               <button className="ls-hero-cta" onClick={()=>goAsk("Based on my reading history and taste, what's the single best book I should read next? Tell me exactly why it's right for me — be specific about tone, pacing, and what I'll get from it.")}>
                 Find my next book <ChevronRight size={16} strokeWidth={2.5}/>
               </button>
@@ -7994,6 +8066,7 @@ description: one sentence max.`,
           onDismiss={(id) => { handleDismissBook(id); setTappedBook(null); }}
           userState={adaptedUserState}
           onDiscuss={(b) => { setTappedBook(null); setDiscBook(b); }}
+          affiliateEnabled={flags.has("affiliate_links")}
         />
       )}
 

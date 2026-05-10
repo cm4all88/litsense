@@ -102,12 +102,18 @@
  */
 
 import { useState, useEffect, useCallback } from "react";
-import { useUser } from "@clerk/clerk-react";
+import { createClient } from "@supabase/supabase-js";
 
 // ── ENV ───────────────────────────────────────────────────────────────────────
 const SB_URL       = import.meta.env.VITE_SUPABASE_URL      || "";
 const SB_KEY       = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
 const ADMIN_SECRET = import.meta.env.VITE_ADMIN_SECRET       || "";
+// VITE_ADMIN_EMAIL — comma-separated list of admin emails, e.g. "chris@example.com"
+const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAIL || "")
+  .toLowerCase().split(",").map(e => e.trim()).filter(Boolean);
+
+// Supabase client for auth checks
+const _supabase = createClient(SB_URL, SB_KEY);
 
 // ── SUPABASE REST ─────────────────────────────────────────────────────────────
 const H = () => ({ apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, "Content-Type": "application/json", Prefer: "return=representation" });
@@ -170,13 +176,27 @@ async function hashPw(pw) {
   return btoa(String.fromCharCode(...new Uint8Array(buf)));
 }
 
-// ── ADMIN GATE — Clerk ────────────────────────────────────────────────────────
-// Set role in Clerk Dashboard → Users → your account → Metadata → Public:
-//   { "role": "admin" }
+// ── ADMIN GATE — Supabase Auth ────────────────────────────────────────────────
+// Sign in via the main LitSense app first (same Supabase session).
+// Then set VITE_ADMIN_EMAIL=youremail@example.com in Vercel env vars.
+// null = loading, false = denied/not signed in, true = allowed
 function useIsAdmin() {
-  const { user, isLoaded } = useUser();
-  if (!isLoaded) return null; // null = still loading
-  return user?.publicMetadata?.role === "admin";
+  const [isAdmin, setIsAdmin] = useState(null);
+
+  useEffect(() => {
+    const check = (session) => {
+      if (!session) { setIsAdmin(false); return; }
+      const email = (session.user?.email || "").toLowerCase();
+      setIsAdmin(ADMIN_EMAILS.length > 0 ? ADMIN_EMAILS.includes(email) : false);
+    };
+
+    _supabase.auth.getSession().then(({ data: { session } }) => check(session));
+
+    const { data: { subscription } } = _supabase.auth.onAuthStateChange((_e, session) => check(session));
+    return () => subscription.unsubscribe();
+  }, []);
+
+  return isAdmin;
 }
 
 // ── THEME ─────────────────────────────────────────────────────────────────────
@@ -1391,15 +1411,21 @@ export default function AdminDashboard() {
     </div>
   );
 
-  // Access denied
+  // Access denied / not signed in
   if (!isAdmin) return (
-    <div style={{ minHeight:"100vh", background:T.bg, display:"flex", alignItems:"center", justifyContent:"center" }}>
-      <div style={{ textAlign:"center" }}>
-        <Ic d={P.lock} size={48} col={T.low}/>
-        <p style={{ color:T.low, marginTop:14, fontSize:14 }}>Admin access only.</p>
-        <p style={{ color:T.low, fontSize:12, maxWidth:320, margin:"6px auto 0", lineHeight:1.6 }}>
-          Set <code style={{ background:T.border, padding:"1px 5px", borderRadius:3, fontFamily:"monospace", fontSize:11 }}>{"role: admin"}</code> in your Clerk public metadata to gain access.
+    <div style={{ minHeight:"100vh", background:T.bg, display:"flex", alignItems:"center", justifyContent:"center", padding:20 }}>
+      <div style={{ textAlign:"center", maxWidth:380 }}>
+        <Ic d={P.lock} size={44} col={T.low}/>
+        <p style={{ color:T.text, marginTop:14, fontSize:16, fontWeight:600, fontFamily:"'Fraunces',Georgia,serif" }}>Admin access only.</p>
+        <p style={{ color:T.mid, fontSize:13, lineHeight:1.6, marginTop:8 }}>
+          Sign in to LitSense with your admin account, then return to this page.
         </p>
+        <p style={{ color:T.low, fontSize:12, marginTop:12, lineHeight:1.6 }}>
+          Make sure <code style={{ background:T.border, padding:"1px 5px", borderRadius:3, fontFamily:"monospace" }}>VITE_ADMIN_EMAIL</code> in Vercel matches your sign-in email.
+        </p>
+        <a href="/" style={{ display:"inline-block", marginTop:20, padding:"10px 20px", background:T.amber, color:T.bg, borderRadius:8, fontSize:13, fontWeight:700, textDecoration:"none" }}>
+          Go sign in →
+        </a>
       </div>
       <style>{`@keyframes ls-spin{to{transform:rotate(360deg)}}`}</style>
     </div>
