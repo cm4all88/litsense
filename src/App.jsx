@@ -49,7 +49,10 @@ import {
   Plus, X, Send, Crown, ChevronRight, ChevronLeft, RotateCcw,
   Library, Bookmark, Sparkles, Lock,
   ShoppingBag, ArrowLeftRight, Package, Tag, Users, MessageSquare, CheckCircle,
+  MapPin,
 } from "lucide-react";
+
+import ReadLocal from "./ReadLocal.jsx";
 
 // ── QUESTION LIMITS ─────────────────────────────────────────────────────────
 // Set to Infinity during free launch period.
@@ -89,15 +92,17 @@ async function loadAdminConfig() {
   const q = (path) =>
     fetch(`${_SB_URL}/rest/v1/${path}`, { headers: H })
       .then(r => r.ok ? r.json() : []).catch(() => []);
-  const [flags, settings, content] = await Promise.all([
+  const [flags, settings, content, tiers] = await Promise.all([
     q("feature_flags?select=key,enabled"),
     q("app_settings?select=key,value"),
     q("app_content?select=key,value"),
+    q("subscription_tiers?select=*&active=eq.true&order=sort_order.asc"),
   ]);
   return {
     flags:    new Set((Array.isArray(flags)    ? flags    : []).filter(f => f.enabled).map(f => f.key)),
     settings: Object.fromEntries((Array.isArray(settings) ? settings : []).map(s => [s.key, s.value])),
     content:  Object.fromEntries((Array.isArray(content)  ? content  : []).map(c => [c.key, c.value])),
+    tiers:    Array.isArray(tiers) ? tiers : [],
   };
 }
 
@@ -576,6 +581,29 @@ const CSS = `
 .ls-list-submit{width:100%;padding:14px;border-radius:var(--r-lg);border:none;background:var(--gold);color:#060402;font-size:10px;font-weight:700;cursor:pointer;margin-top:8px;transition:all .2s;}
 .ls-list-submit:hover{background:var(--gold-r);}
 .ls-list-submit:disabled{opacity:.4;cursor:not-allowed;}
+.ls-market-search{width:100%;padding:11px 14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:var(--r-md);color:var(--text);font-size:14px;font-family:'Inter',sans-serif;box-sizing:border-box;outline:none;margin:0 0 10px;}
+.ls-market-search:focus{border-color:rgba(212,148,26,.4);}
+.ls-market-search::placeholder{color:var(--muted);}
+.ls-market-filter-row{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;}
+.ls-market-filter-row::-webkit-scrollbar{display:none;}
+.ls-tag-filter{padding:5px 12px;border-radius:99px;border:1px solid rgba(255,255,255,.12);background:transparent;color:var(--text2);font-size:10.5px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .15s;flex-shrink:0;}
+.ls-tag-filter.on{background:rgba(212,148,26,.15);border-color:rgba(212,148,26,.4);color:var(--gold);}
+.ls-sort-row{display:flex;gap:6px;margin:10px 0 0;}
+.ls-sort-btn{padding:4px 10px;border-radius:99px;border:1px solid rgba(255,255,255,.10);background:transparent;color:var(--muted);font-size:10px;font-weight:600;cursor:pointer;transition:all .15s;}
+.ls-sort-btn.on{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.2);color:var(--text2);}
+.ls-listing-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}
+.ls-listing-tag{font-size:9px;font-weight:700;padding:2px 6px;border-radius:99px;background:rgba(212,148,26,.1);border:1px solid rgba(212,148,26,.22);color:var(--gold);letter-spacing:.02em;}
+.ls-photo-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;}
+.ls-photo-row::-webkit-scrollbar{display:none;}
+.ls-photo-slot{width:80px;height:80px;min-width:80px;border-radius:10px;border:1.5px dashed rgba(255,255,255,.18);background:rgba(255,255,255,.05);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden;transition:border-color .15s;}
+.ls-photo-slot:hover{border-color:rgba(212,148,26,.4);}
+.ls-photo-slot img{width:100%;height:100%;object-fit:cover;}
+.ls-photo-slot .ls-photo-rm{position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.75);border:none;color:#fff;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;}
+.ls-photo-add{width:80px;height:80px;min-width:80px;border-radius:10px;border:1.5px dashed rgba(255,255,255,.18);background:rgba(255,255,255,.05);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;color:var(--muted);gap:4px;}
+.ls-photo-add:hover{border-color:rgba(212,148,26,.4);color:var(--gold);}
+.ls-detail-photos{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:16px;scrollbar-width:none;}
+.ls-detail-photos::-webkit-scrollbar{display:none;}
+.ls-detail-photo{height:180px;width:auto;min-width:120px;max-width:240px;object-fit:cover;border-radius:10px;flex-shrink:0;}
 
 /* ── DISCUSSION ── */
 .ls-disc{flex:1;overflow-y:auto;padding-bottom:80px;}
@@ -3118,6 +3146,51 @@ function getSageGreeting() {
   return "Still up?";
 }
 
+// Generates a personal return greeting from Sage based on reading history.
+// No API call — purely local. Replaces the generic greeting for returning users.
+function composeReturnGreeting({ currentBook, readBooks, reactions, wantList }) {
+  const trim = (s, n=38) => s?.length > n ? s.slice(0, n-1) + "…" : s;
+
+  // Currently mid-book — most specific thing Sage would notice
+  if (currentBook) {
+    const t = trim(currentBook, 42);
+    const opts = [
+      `"${t}" is still waiting for you.`,
+      `Still in "${t}"? Pick up where you left off.`,
+      `Good to have you back. How's "${t}" treating you?`,
+    ];
+    return opts[new Date().getDate() % opts.length];
+  }
+
+  // Most recent reaction
+  const recentPairs = Object.entries(reactions).slice(-5).reverse();
+  for (const [bookId, { reaction }] of recentPairs) {
+    const book = readBooks.find(b => String(b.id) === bookId);
+    if (!book) continue;
+    const t = trim(book.title, 35);
+    if (reaction === "loved" || reaction === "finished")
+      return `You loved "${t}." I've been thinking about what comes next for you.`;
+    if (reaction === "abandoned" || reaction === "too slow")
+      return `"${t}" didn't land — that happens. Let's find something that will.`;
+  }
+
+  // Reading history volume
+  if (readBooks.length >= 10)
+    return `${readBooks.length} books so far. You're on a real streak — let's keep it going.`;
+  if (readBooks.length >= 3)
+    return `Good to have you back. Ready to find what's next?`;
+  if (readBooks.length >= 1)
+    return `You've started building your taste. Let's keep going.`;
+
+  // Want list signal
+  if (wantList.length >= 3) {
+    const t = trim(typeof wantList[0] === "string" ? wantList[0] : wantList[0]?.title || "", 35);
+    return `${wantList.length} books on your list — "${t}" is at the top. Ready to start?`;
+  }
+
+  return ""; // fall back to generic greeting
+}
+
 const SAGE_MOODS = [
   "What are you in the mood for?",
   "What kind of story do you need right now?",
@@ -3265,7 +3338,7 @@ function InlineBookCard({ title, author, onSave, affiliateEnabled = true }) {
       .catch(() => {});
   }, [title, author]);
 
-  const amzUrl = `https://www.amazon.com/s?k=${encodeURIComponent(title + " " + (author||""))}&tag=litsense-20`;
+  const amzUrl = `https://www.amazon.com/s?k=${encodeURIComponent(title + " " + (author||""))}&tag=litsense-20`tag=${AMAZON_TAG}`;
   const audUrl = audibleUrl(title, author);
 
   return (
@@ -5033,6 +5106,56 @@ function TopMoment({ intelligence, signalCandidates, recCandidates, behavioral, 
   );
 }
 
+// ── WANT LIST MARKETPLACE ALERT ───────────────────────────────────────────────
+// Shown at top of discover when a marketplace listing matches the user's want
+// list. Reads as a message from Sage — personal, specific, actionable.
+function WantListAlert({ listing, onSee, onDismiss }) {
+  return (
+    <div style={{
+      margin: "0 20px 16px",
+      padding: "14px 16px",
+      background: "rgba(212,148,26,.08)",
+      border: "1px solid rgba(212,148,26,.28)",
+      borderRadius: 14,
+      position: "relative",
+      animation: "fadeIn .35s ease",
+    }}>
+      <button onClick={onDismiss}
+        style={{ position:"absolute", top:10, right:12, background:"none", border:"none", color:"var(--muted)", fontSize:18, cursor:"pointer", padding:0, lineHeight:1 }}>
+        ×
+      </button>
+      <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:10 }}>
+        <SageOwl size={14}/>
+        <span style={{ fontSize:10, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", color:"var(--gold)" }}>
+          Sage noticed
+        </span>
+      </div>
+      <div style={{ display:"flex", gap:12, alignItems:"flex-start" }}>
+        <div style={{ width:48, height:68, borderRadius:7, overflow:"hidden", flexShrink:0 }}>
+          {listing.images?.length > 0
+            ? <img src={listing.images[0]} alt={listing.title} style={{ width:"100%", height:"100%", objectFit:"cover" }}/>
+            : <BookCover isbn={listing.isbn} title={listing.title} author={listing.author} className="fill"/>
+          }
+        </div>
+        <div style={{ flex:1, minWidth:0 }}>
+          <div style={{ fontSize:13, color:"var(--text2)", lineHeight:1.65, marginBottom:10 }}>
+            <em style={{ color:"var(--text)", fontFamily:"'Lora',serif", fontStyle:"italic" }}>
+              {listing.title.length > 40 ? listing.title.slice(0,38)+"…" : listing.title}
+            </em>
+            {" "}is on your want list — someone just listed it{" "}
+            <strong style={{ color:"var(--gold)" }}>for ${listing.price}</strong>
+            {" "}({listing.condition}).
+          </div>
+          <button onClick={onSee}
+            style={{ padding:"7px 16px", borderRadius:99, border:"none", background:"var(--gold)", color:"#060402", fontSize:11, fontWeight:700, cursor:"pointer" }}>
+            See listing →
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function FriendNudge({ nudge, memory, onAct, onDismiss }) {
   const [visible, setVisible] = useState(true);
   if (!visible) return null;
@@ -5793,20 +5916,134 @@ function ReferralCard({ userEmail, referralCount }) {
 }
 
 // ── MARKETPLACE ──────────────────────────────────────────────────────────────
-// Local state only for now — wires to Supabase listings table when ready.
-// Sellers list books, buyers pay through Stripe escrow.
+// Peer-to-peer book buying/selling for Club members.
+// Run marketplace-schema.sql in Supabase before enabling.
+// Toggle on: Admin → Feature Flags → marketplace.
+// ─────────────────────────────────────────────────────────────────────────────
 
-const MOCK_LISTINGS = [
-  { id:"l1", title:"The Covenant of Water", author:"Abraham Verghese", isbn:"9780802162175", price:14, condition:"Like New", seller:"sarah_reads", color:["#1a2430","#0e1820"] },
-  { id:"l2", title:"Demon Copperhead", author:"Barbara Kingsolver", isbn:"9780063250550", price:11, condition:"Good", seller:"bookworm_jo", color:["#2a1808","#1a1004"] },
-  { id:"l3", title:"Piranesi", author:"Susanna Clarke", isbn:"9781635575644", price:9, condition:"Like New", seller:"nightreader", color:["#181428","#100c1c"] },
+const PRESET_TAGS = [
+  "First Edition","Signed","Rare","Textbook",
+  "Hardcover","Paperback","Out of Print","Vintage",
+  "Ex-Library","Annotated","Advance Copy","With Dust Jacket",
+  "Numbered","Collector's Edition",
 ];
 
+// Look up book metadata by ISBN via Open Library
+async function lookupISBNData(rawIsbn) {
+  const isbn = rawIsbn.replace(/[-\s]/g, "");
+  if (isbn.length < 10) return null;
+  try {
+    const res  = await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&format=json&jscmd=data`);
+    const data = await res.json();
+    const book = data[`ISBN:${isbn}`];
+    if (!book) return null;
+    return {
+      title:     book.title || "",
+      author:    book.authors?.[0]?.name || "",
+      cover_url: book.cover?.large || book.cover?.medium || null,
+      isbn,
+    };
+  } catch { return null; }
+}
+
+// Upload a listing image to Supabase Storage, return the public URL
+async function uploadListingImage(file, userId) {
+  // Resize to 1200px max to keep storage reasonable
+  const b64   = await resizeImageToBase64(file, 1200);
+  const bytes = atob(b64);
+  const arr   = new Uint8Array(bytes.length);
+  for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+  const blob  = new Blob([arr], { type: "image/jpeg" });
+  const path  = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`;
+
+  const { data, error } = await supabase.storage
+    .from("marketplace-images")
+    .upload(path, blob, { contentType:"image/jpeg", upsert:false });
+
+  if (error) throw new Error(`Photo upload failed: ${error.message}`);
+
+  const { data: { publicUrl } } = supabase.storage
+    .from("marketplace-images")
+    .getPublicUrl(data.path);
+
+  return publicUrl;
+}
+
+// ── BARCODE CAMERA ────────────────────────────────────────────────────────────
+// Live camera scanner using BarcodeDetector API (Chrome/Android).
+// Safari iOS does not support BarcodeDetector — falls back to ISBN input.
+function BarcodeCamera({ onDetect, onClose }) {
+  const videoRef  = useRef(null);
+  const streamRef = useRef(null);
+  const timerRef  = useRef(null);
+  const [camErr, setCamErr] = useState("");
+
+  useEffect(() => {
+    let detector;
+    try { detector = new window.BarcodeDetector({ formats: ["ean_13","ean_8","upc_a","upc_e"] }); }
+    catch { onClose(); return; }
+
+    navigator.mediaDevices
+      .getUserMedia({ video: { facingMode:"environment" }, audio:false })
+      .then(stream => {
+        streamRef.current = stream;
+        if (videoRef.current) videoRef.current.srcObject = stream;
+      })
+      .catch(() => setCamErr("Camera access denied. Enable camera access in your browser settings and try again."));
+
+    timerRef.current = setInterval(async () => {
+      if (!videoRef.current || videoRef.current.readyState < 2) return;
+      try {
+        const codes = await detector.detect(videoRef.current);
+        if (codes.length > 0) { stopCam(); onDetect(codes[0].rawValue); }
+      } catch {}
+    }, 400);
+
+    return () => stopCam();
+  }, []);
+
+  const stopCam = () => {
+    clearInterval(timerRef.current);
+    streamRef.current?.getTracks().forEach(t => t.stop());
+  };
+
+  return (
+    <div style={{ position:"fixed", inset:0, background:"#000", zIndex:2000, display:"flex", flexDirection:"column" }}>
+      <video ref={videoRef} autoPlay playsInline muted style={{ width:"100%", flex:1, objectFit:"cover" }}/>
+      {/* Targeting overlay */}
+      <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", pointerEvents:"none", gap:20 }}>
+        <div style={{ width:260, height:130, border:"2px solid rgba(212,148,26,.85)", borderRadius:10, boxShadow:"0 0 0 9999px rgba(0,0,0,.52)" }}/>
+        <div style={{ color:"rgba(240,232,216,.8)", fontSize:13, textAlign:"center", letterSpacing:"0.01em" }}>
+          Point at the barcode on the back cover
+        </div>
+      </div>
+      {camErr && (
+        <div style={{ position:"absolute", top:"35%", left:24, right:24, textAlign:"center", color:"#f0c8b8", fontSize:14, lineHeight:1.6, background:"rgba(0,0,0,.7)", padding:"16px 20px", borderRadius:10 }}>
+          {camErr}
+        </div>
+      )}
+      <button onClick={() => { stopCam(); onClose(); }}
+        style={{ position:"absolute", top:20, right:20, background:"rgba(0,0,0,.55)", border:"1px solid rgba(255,255,255,.25)", color:"#f0e8d8", borderRadius:8, padding:"8px 18px", fontSize:14, cursor:"pointer" }}>
+        Cancel
+      </button>
+    </div>
+  );
+}
+
+// ── LISTING CARD ──────────────────────────────────────────────────────────────
 function ListingCard({ listing, onTap }) {
   return (
     <div className="ls-listing-card" onClick={() => onTap(listing)}>
-      <div className="ls-listing-cover" style={{position:"relative"}}>
-        <BookCover isbn={listing.isbn} title={listing.title} author={listing.author} color={listing.color} className="fill"/>
+      <div className="ls-listing-cover" style={{ position:"relative" }}>
+        {listing.images?.length > 0
+          ? <img src={listing.images[0]} alt={listing.title} style={{ width:"100%", height:"100%", objectFit:"cover" }}/>
+          : <BookCover isbn={listing.isbn} title={listing.title} author={listing.author} className="fill"/>
+        }
+        {listing.images?.length > 1 && (
+          <div style={{ position:"absolute", bottom:4, right:4, background:"rgba(0,0,0,.65)", color:"#fff", fontSize:8, fontWeight:700, padding:"2px 5px", borderRadius:4, letterSpacing:"0.03em" }}>
+            +{listing.images.length - 1}
+          </div>
+        )}
       </div>
       <div className="ls-listing-body">
         <div className="ls-listing-title">{listing.title}</div>
@@ -5814,233 +6051,788 @@ function ListingCard({ listing, onTap }) {
         <div className="ls-listing-meta">
           <span className="ls-listing-price">${listing.price}</span>
           <span className="ls-listing-condition">{listing.condition}</span>
-          <span className="ls-listing-seller">by {listing.seller}</span>
         </div>
+        {listing.tags?.length > 0 && (
+          <div className="ls-listing-tags">
+            {listing.tags.slice(0,3).map(t => <span key={t} className="ls-listing-tag">{t}</span>)}
+            {listing.tags.length > 3 && <span style={{ fontSize:9, color:"var(--muted)" }}>+{listing.tags.length-3}</span>}
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-function ListBookModal({ onClose, onSubmit }) {
-  const [title,     setTitle]     = useState("");
-  const [author,    setAuthor]    = useState("");
-  const [price,     setPrice]     = useState("");
-  const [condition, setCondition] = useState("Good");
+// ── LIST BOOK MODAL ───────────────────────────────────────────────────────────
+function ListBookModal({ onClose, onSubmit, userId }) {
+  const canScan   = typeof window !== "undefined" && "BarcodeDetector" in window;
+  const fileRef   = useRef(null);
+  const [inputMode,   setInputMode]   = useState("isbn");
+  const [showCamera,  setShowCamera]  = useState(false);
+  const [isbnInput,   setIsbnInput]   = useState("");
+  const [looking,     setLooking]     = useState(false);
+  const [lookupErr,   setLookupErr]   = useState("");
+  const [coverUrl,    setCoverUrl]    = useState(null);
+  const [title,       setTitle]       = useState("");
+  const [author,      setAuthor]      = useState("");
+  const [isbn,        setIsbn]        = useState("");
+  const [price,       setPrice]       = useState("");
+  const [condition,   setCondition]   = useState("Good");
+  const [tags,        setTags]        = useState(new Set());
+  const [description, setDescription] = useState("");
+  const [photos,      setPhotos]      = useState([]); // [{file, previewUrl}]
+  const [uploading,   setUploading]   = useState(false);
+  const [uploadStep,  setUploadStep]  = useState("");
+  const [submitting,  setSubmitting]  = useState(false);
+  const [err,         setErr]         = useState("");
+
   const conditions = ["New","Like New","Good","Fair","Poor"];
-  const ready = title.trim() && price && Number(price) > 0;
+  const MAX_PHOTOS = 5;
+  const ready = title.trim() && price && Number(price) >= 1;
+
+  const doLookup = async (rawIsbn) => {
+    const val = (rawIsbn || isbnInput).replace(/[-\s]/g,"");
+    if (!val) { setLookupErr("Enter an ISBN first."); return; }
+    setLooking(true); setLookupErr("");
+    const data = await lookupISBNData(val);
+    setLooking(false);
+    if (!data) { setLookupErr("No book found for that ISBN. Try entering details manually."); return; }
+    setTitle(data.title); setAuthor(data.author); setIsbn(data.isbn);
+    if (data.cover_url) setCoverUrl(data.cover_url);
+    setInputMode("manual");
+  };
+
+  const toggleTag = (tag) => {
+    setTags(prev => { const n = new Set(prev); n.has(tag) ? n.delete(tag) : n.add(tag); return n; });
+  };
+
+  const handlePhotoSelect = (e) => {
+    const files = Array.from(e.target.files || []);
+    const remaining = MAX_PHOTOS - photos.length;
+    const toAdd = files.slice(0, remaining).map(file => ({
+      file,
+      previewUrl: URL.createObjectURL(file),
+    }));
+    setPhotos(prev => [...prev, ...toAdd]);
+    e.target.value = "";
+  };
+
+  const removePhoto = (i) => {
+    setPhotos(prev => {
+      URL.revokeObjectURL(prev[i].previewUrl);
+      return prev.filter((_, idx) => idx !== i);
+    });
+  };
+
+  const handleSubmit = async () => {
+    if (!ready) return;
+    setSubmitting(true); setErr("");
+    try {
+      // Upload photos to Supabase Storage
+      const imageUrls = [];
+      if (photos.length > 0) {
+        setUploading(true);
+        for (let i = 0; i < photos.length; i++) {
+          setUploadStep(`Uploading photo ${i+1} of ${photos.length}…`);
+          const url = await uploadListingImage(photos[i].file, userId);
+          imageUrls.push(url);
+        }
+        setUploading(false);
+        setUploadStep("");
+      }
+      await onSubmit({
+        title: title.trim(),
+        author: author.trim() || null,
+        isbn: isbn.trim() || null,
+        price: Number(price),
+        condition,
+        tags: [...tags],
+        description: description.trim() || null,
+        cover_url: coverUrl || null,
+        images: imageUrls,
+      });
+      // Cleanup preview URLs
+      photos.forEach(p => URL.revokeObjectURL(p.previewUrl));
+      onClose();
+    } catch(e) {
+      setErr(e.message || "Could not create listing. Please try again.");
+      setUploading(false); setUploadStep("");
+    } finally { setSubmitting(false); }
+  };
+
+  if (showCamera) {
+    return (
+      <BarcodeCamera
+        onDetect={code => { setShowCamera(false); setIsbnInput(code); doLookup(code); }}
+        onClose={() => setShowCamera(false)}
+      />
+    );
+  }
 
   return (
     <div className="ls-list-modal">
       <div className="ls-list-modal-bg" onClick={onClose}/>
       <div className="ls-list-modal-sheet">
         <div className="ls-list-modal-handle"/>
-        <div className="ls-list-modal-title">List a book</div>
+        <div className="ls-list-modal-title">List a Book</div>
+        {err && <div style={{padding:"8px 12px",background:"rgba(220,50,50,.1)",border:"1px solid rgba(220,50,50,.3)",borderRadius:8,fontSize:13,color:"#e06060",marginBottom:12}}>{err}</div>}
 
+        {/* ── Input method ── */}
+        <div style={{ display:"flex", gap:6, marginBottom:16 }}>
+          {canScan && (
+            <button onClick={()=>setShowCamera(true)}
+              style={{ flex:1, padding:"10px 6px", borderRadius:8, border:"1px solid rgba(212,148,26,.35)", background:"rgba(212,148,26,.08)", color:"var(--gold)", fontSize:11, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:5 }}>
+              📷 Scan
+            </button>
+          )}
+          <button onClick={()=>setInputMode("isbn")}
+            style={{ flex:1, padding:"10px 6px", borderRadius:8, border:`1px solid ${inputMode==="isbn"?"rgba(212,148,26,.4)":"rgba(255,255,255,.12)"}`, background:inputMode==="isbn"?"rgba(212,148,26,.1)":"transparent", color:inputMode==="isbn"?"var(--gold)":"var(--muted)", fontSize:11, fontWeight:700, cursor:"pointer" }}>
+            Enter ISBN
+          </button>
+          <button onClick={()=>setInputMode("manual")}
+            style={{ flex:1, padding:"10px 6px", borderRadius:8, border:`1px solid ${inputMode==="manual"&&!coverUrl?"rgba(212,148,26,.4)":"rgba(255,255,255,.12)"}`, background:inputMode==="manual"&&!coverUrl?"rgba(212,148,26,.1)":"transparent", color:inputMode==="manual"&&!coverUrl?"var(--gold)":"var(--muted)", fontSize:11, fontWeight:700, cursor:"pointer" }}>
+            Manual
+          </button>
+        </div>
+
+        {/* ── ISBN lookup ── */}
+        {inputMode==="isbn" && (
+          <div style={{ marginBottom:16 }}>
+            <div style={{ display:"flex", gap:8 }}>
+              <input className="ls-list-input" style={{ flex:1 }} placeholder="9780307474728" value={isbnInput}
+                onChange={e=>{setIsbnInput(e.target.value);setLookupErr("");}}
+                onKeyDown={e=>e.key==="Enter"&&doLookup()} inputMode="numeric"/>
+              <button onClick={()=>doLookup()} disabled={!isbnInput.trim()||looking}
+                style={{ padding:"12px 14px", borderRadius:8, border:"none", background:"var(--gold)", color:"#060402", fontSize:12, fontWeight:700, cursor:"pointer", whiteSpace:"nowrap", opacity:!isbnInput.trim()||looking?0.5:1 }}>
+                {looking?"…":"Look up →"}
+              </button>
+            </div>
+            {lookupErr
+              ? <div style={{fontSize:12,color:"#e06060",marginTop:6}}>{lookupErr}</div>
+              : <div style={{fontSize:11,color:"var(--muted)",marginTop:6,lineHeight:1.5}}>13-digit number on the back cover, usually starting with 978.</div>
+            }
+          </div>
+        )}
+
+        {/* ── Lookup preview ── */}
+        {coverUrl && title && (
+          <div style={{ display:"flex", gap:12, marginBottom:16, padding:"12px 14px", background:"rgba(212,148,26,.07)", border:"1px solid rgba(212,148,26,.2)", borderRadius:10 }}>
+            <img src={coverUrl} alt={title} style={{ width:44, height:64, objectFit:"cover", borderRadius:6, flexShrink:0 }} onError={e=>e.target.style.display="none"}/>
+            <div>
+              <div style={{ fontSize:14, fontWeight:700, color:"var(--text)", fontFamily:"'Lora',serif", lineHeight:1.3, marginBottom:3 }}>{title}</div>
+              {author && <div style={{ fontSize:12, color:"var(--muted)" }}>{author}</div>}
+              <div style={{ fontSize:10, color:"var(--gold)", marginTop:5, fontWeight:700 }}>✓ Book found — details filled in</div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Book details ── */}
         <div className="ls-list-field">
-          <div className="ls-list-label">Title</div>
+          <div className="ls-list-label">Title *</div>
           <input className="ls-list-input" placeholder="Book title" value={title} onChange={e=>setTitle(e.target.value)}/>
         </div>
-        <div className="ls-list-field">
-          <div className="ls-list-label">Author</div>
-          <input className="ls-list-input" placeholder="Author name" value={author} onChange={e=>setAuthor(e.target.value)}/>
+        <div style={{ display:"flex", gap:10 }}>
+          <div className="ls-list-field" style={{ flex:2 }}>
+            <div className="ls-list-label">Author</div>
+            <input className="ls-list-input" placeholder="Author name" value={author} onChange={e=>setAuthor(e.target.value)}/>
+          </div>
+          <div className="ls-list-field" style={{ flex:1 }}>
+            <div className="ls-list-label">ISBN</div>
+            <input className="ls-list-input" placeholder="Optional" value={isbn} onChange={e=>setIsbn(e.target.value)} inputMode="numeric"/>
+          </div>
         </div>
-        <div className="ls-list-field">
-          <div className="ls-list-label">Your asking price (USD)</div>
-          <input className="ls-list-input" placeholder="$0.00" type="number" min="1" value={price} onChange={e=>setPrice(e.target.value)}/>
+        <div className="ls-list-field" style={{ maxWidth:140 }}>
+          <div className="ls-list-label">Price (USD) *</div>
+          <input className="ls-list-input" placeholder="0.00" type="number" min="1" step="0.01" value={price} onChange={e=>setPrice(e.target.value)}/>
         </div>
+
+        {/* ── Condition ── */}
         <div className="ls-list-field">
-          <div className="ls-list-label">Condition</div>
+          <div className="ls-list-label">Condition *</div>
           <div className="ls-condition-btns">
-            {conditions.map(c => (
+            {conditions.map(c=>(
               <button key={c} className={`ls-condition-btn${condition===c?" on":""}`} onClick={()=>setCondition(c)}>{c}</button>
             ))}
           </div>
         </div>
-        <div style={{fontSize:12,color:"var(--muted)",lineHeight:1.6,marginBottom:16}}>
-          LitSense holds payment in escrow until the buyer confirms delivery. We take a 10% platform fee. You keep the rest.
+
+        {/* ── Photos ── */}
+        <div className="ls-list-field">
+          <div className="ls-list-label" style={{ marginBottom:8 }}>
+            Photos — show the actual copy
+            <span style={{ color:"var(--muted)", fontWeight:400, letterSpacing:0, textTransform:"none", fontSize:11, marginLeft:6 }}>up to {MAX_PHOTOS}</span>
+          </div>
+          <div className="ls-photo-row">
+            {/* Existing photo thumbnails */}
+            {photos.map((p, i) => (
+              <div key={i} className="ls-photo-slot">
+                <img src={p.previewUrl} alt={`Photo ${i+1}`}/>
+                <button className="ls-photo-rm" onClick={e=>{e.stopPropagation();removePhoto(i);}}>×</button>
+              </div>
+            ))}
+            {/* Add photo slot */}
+            {photos.length < MAX_PHOTOS && (
+              <div className="ls-photo-add" onClick={()=>fileRef.current?.click()}>
+                <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                <span style={{ fontSize:9, fontWeight:700, letterSpacing:"0.04em" }}>ADD</span>
+              </div>
+            )}
+          </div>
+          <input ref={fileRef} type="file" accept="image/*" multiple onChange={handlePhotoSelect} style={{ display:"none" }}/>
+          <div style={{ fontSize:11, color:"var(--muted)", marginTop:6, lineHeight:1.5 }}>
+            Show the spine, cover, and any notable condition details. Buyers trust listings with real photos.
+          </div>
         </div>
-        <button className="ls-list-submit" disabled={!ready} onClick={()=>{ onSubmit({title,author,price:Number(price),condition}); onClose(); }}>
-          List for ${price||"0"} →
+
+        {/* ── Tags ── */}
+        <div className="ls-list-field">
+          <div className="ls-list-label">Tags</div>
+          <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
+            {PRESET_TAGS.map(t => {
+              const on = tags.has(t);
+              return (
+                <button key={t} onClick={()=>toggleTag(t)}
+                  style={{ padding:"5px 11px", borderRadius:99, border:`1px solid ${on?"rgba(212,148,26,.5)":"rgba(255,255,255,.12)"}`, background:on?"rgba(212,148,26,.15)":"transparent", color:on?"var(--gold)":"var(--text2)", fontSize:11, fontWeight:600, cursor:"pointer", transition:"all .15s" }}>
+                  {t}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ── Description ── */}
+        <div className="ls-list-field">
+          <div className="ls-list-label">Description (optional)</div>
+          <textarea className="ls-list-input" placeholder="Edition details, condition notes, provenance, personal note to the buyer…" rows={3}
+            value={description} onChange={e=>setDescription(e.target.value)} style={{ resize:"vertical" }}/>
+        </div>
+
+        <div style={{ fontSize:12, color:"var(--muted)", lineHeight:1.65, marginBottom:16 }}>
+          LitSense holds payment in escrow until delivery is confirmed. We email a prepaid USPS Media Mail label when your book sells. <strong style={{ color:"var(--text2)" }}>10% platform fee</strong>.
+        </div>
+
+        <button className="ls-list-submit" disabled={!ready||submitting} onClick={handleSubmit}>
+          {uploading ? uploadStep : submitting ? "Listing…" : `List for $${price||"0"} →`}
+        </button>
+      </div>
+    </div>
+  );
+}
+  const canScan = typeof window !== "undefined" && "BarcodeDetector" in window;
+  const [inputMode,   setInputMode]   = useState("isbn");
+  const [showCamera,  setShowCamera]  = useState(false);
+  const [isbnInput,   setIsbnInput]   = useState("");
+  const [looking,     setLooking]     = useState(false);
+  const [lookupErr,   setLookupErr]   = useState("");
+  const [coverUrl,    setCoverUrl]    = useState(null);
+  const [title,       setTitle]       = useState("");
+  const [author,      setAuthor]      = useState("");
+  const [isbn,        setIsbn]        = useState("");
+  const [price,       setPrice]       = useState("");
+  const [condition,   setCondition]   = useState("Good");
+  const [tags,        setTags]        = useState(new Set());
+  const [description, setDescription] = useState("");
+  const [submitting,  setSubmitting]  = useState(false);
+  const [err,         setErr]         = useState("");
+
+  const conditions = ["New","Like New","Good","Fair","Poor"];
+  const ready = title.trim() && price && Number(price) >= 1;
+
+  const doLookup = async (rawIsbn) => {
+    const val = (rawIsbn || isbnInput).replace(/[-\s]/g,"");
+    if (!val) { setLookupErr("Enter an ISBN first."); return; }
+    setLooking(true); setLookupErr("");
+    const data = await lookupISBNData(val);
+    setLooking(false);
+    if (!data) { setLookupErr("No book found for that ISBN. Try entering details manually."); return; }
+    setTitle(data.title); setAuthor(data.author); setIsbn(data.isbn);
+    if (data.cover_url) setCoverUrl(data.cover_url);
+    setInputMode("manual");
+  };
+
+  const toggleTag = (tag) => {
+    setTags(prev => { const n=new Set(prev); n.has(tag)?n.delete(tag):n.add(tag); return n; });
+  };
+
+  const handleSubmit = async () => {
+    if (!ready) return;
+    setSubmitting(true); setErr("");
+    try {
+      await onSubmit({ title:title.trim(), author:author.trim()||null, isbn:isbn.trim()||null, price:Number(price), condition, tags:[...tags], description:description.trim()||null, cover_url:coverUrl||null });
+      onClose();
+    } catch(e) { setErr(e.message||"Could not create listing."); }
+    finally { setSubmitting(false); }
+  };
+
+  if (showCamera) {
+    return (
+      <BarcodeCamera
+        onDetect={code => { setShowCamera(false); setIsbnInput(code); doLookup(code); }}
+        onClose={() => setShowCamera(false)}
+      />
+    );
+  }
+
+  return (
+    <div className="ls-list-modal">
+      <div className="ls-list-modal-bg" onClick={onClose}/>
+      <div className="ls-list-modal-sheet">
+        <div className="ls-list-modal-handle"/>
+        <div className="ls-list-modal-title">List a Book</div>
+        {err && <div style={{padding:"8px 12px",background:"rgba(220,50,50,.1)",border:"1px solid rgba(220,50,50,.3)",borderRadius:8,fontSize:13,color:"#e06060",marginBottom:12}}>{err}</div>}
+
+        {/* ── Input method selector ── */}
+        <div style={{ display:"flex", gap:6, marginBottom:16 }}>
+          {canScan && (
+            <button onClick={()=>setShowCamera(true)}
+              style={{ flex:1, padding:"10px 6px", borderRadius:8, border:"1px solid rgba(212,148,26,.35)", background:"rgba(212,148,26,.08)", color:"var(--gold)", fontSize:11, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:5 }}>
+              📷 Scan
+            </button>
+          )}
+          <button onClick={()=>setInputMode("isbn")}
+            style={{ flex:1, padding:"10px 6px", borderRadius:8, border:`1px solid ${inputMode==="isbn"?"rgba(212,148,26,.4)":"rgba(255,255,255,.12)"}`, background:inputMode==="isbn"?"rgba(212,148,26,.1)":"transparent", color:inputMode==="isbn"?"var(--gold)":"var(--muted)", fontSize:11, fontWeight:700, cursor:"pointer" }}>
+            Enter ISBN
+          </button>
+          <button onClick={()=>setInputMode("manual")}
+            style={{ flex:1, padding:"10px 6px", borderRadius:8, border:`1px solid ${inputMode==="manual"&&!coverUrl?"rgba(212,148,26,.4)":"rgba(255,255,255,.12)"}`, background:inputMode==="manual"&&!coverUrl?"rgba(212,148,26,.1)":"transparent", color:inputMode==="manual"&&!coverUrl?"var(--gold)":"var(--muted)", fontSize:11, fontWeight:700, cursor:"pointer" }}>
+            Manual
+          </button>
+        </div>
+
+        {/* ── ISBN lookup ── */}
+        {inputMode==="isbn" && (
+          <div style={{ marginBottom:16 }}>
+            <div style={{ display:"flex", gap:8 }}>
+              <input className="ls-list-input" style={{ flex:1 }} placeholder="9780307474728" value={isbnInput}
+                onChange={e=>{setIsbnInput(e.target.value);setLookupErr("");}}
+                onKeyDown={e=>e.key==="Enter"&&doLookup()} inputMode="numeric"/>
+              <button onClick={()=>doLookup()} disabled={!isbnInput.trim()||looking}
+                style={{ padding:"12px 14px", borderRadius:8, border:"none", background:"var(--gold)", color:"#060402", fontSize:12, fontWeight:700, cursor:"pointer", whiteSpace:"nowrap", opacity:!isbnInput.trim()||looking?0.5:1 }}>
+                {looking?"…":"Look up →"}
+              </button>
+            </div>
+            {lookupErr
+              ? <div style={{fontSize:12,color:"#e06060",marginTop:6}}>{lookupErr}</div>
+              : <div style={{fontSize:11,color:"var(--muted)",marginTop:6,lineHeight:1.5}}>13-digit number on the back cover, usually starting with 978.</div>
+            }
+            {!canScan && (
+              <div style={{fontSize:11,color:"var(--muted)",marginTop:8,lineHeight:1.5,padding:"8px 10px",background:"rgba(255,255,255,.04)",borderRadius:7}}>
+                💡 Barcode scanning works in Chrome on Android. On iPhone, type the ISBN from the back cover.
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── Lookup result preview ── */}
+        {coverUrl && title && (
+          <div style={{ display:"flex", gap:12, marginBottom:16, padding:"12px 14px", background:"rgba(212,148,26,.07)", border:"1px solid rgba(212,148,26,.2)", borderRadius:10 }}>
+            <img src={coverUrl} alt={title} style={{ width:44, height:64, objectFit:"cover", borderRadius:6, flexShrink:0 }} onError={e=>e.target.style.display="none"}/>
+            <div>
+              <div style={{ fontSize:14, fontWeight:700, color:"var(--text)", fontFamily:"'Lora',serif", lineHeight:1.3, marginBottom:3 }}>{title}</div>
+              {author && <div style={{ fontSize:12, color:"var(--muted)" }}>{author}</div>}
+              <div style={{ fontSize:10, color:"var(--gold)", marginTop:5, fontWeight:700 }}>✓ Book found — details filled in</div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Book details ── */}
+        <div className="ls-list-field">
+          <div className="ls-list-label">Title *</div>
+          <input className="ls-list-input" placeholder="Book title" value={title} onChange={e=>setTitle(e.target.value)}/>
+        </div>
+        <div style={{ display:"flex", gap:10 }}>
+          <div className="ls-list-field" style={{ flex:2 }}>
+            <div className="ls-list-label">Author</div>
+            <input className="ls-list-input" placeholder="Author name" value={author} onChange={e=>setAuthor(e.target.value)}/>
+          </div>
+          <div className="ls-list-field" style={{ flex:1 }}>
+            <div className="ls-list-label">ISBN</div>
+            <input className="ls-list-input" placeholder="Optional" value={isbn} onChange={e=>setIsbn(e.target.value)} inputMode="numeric"/>
+          </div>
+        </div>
+        <div className="ls-list-field" style={{ maxWidth:140 }}>
+          <div className="ls-list-label">Price (USD) *</div>
+          <input className="ls-list-input" placeholder="0.00" type="number" min="1" step="0.01" value={price} onChange={e=>setPrice(e.target.value)}/>
+        </div>
+
+        {/* ── Condition ── */}
+        <div className="ls-list-field">
+          <div className="ls-list-label">Condition *</div>
+          <div className="ls-condition-btns">
+            {conditions.map(c=>(
+              <button key={c} className={`ls-condition-btn${condition===c?" on":""}`} onClick={()=>setCondition(c)}>{c}</button>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Tags ── */}
+        <div className="ls-list-field">
+          <div className="ls-list-label">Tags — select all that apply</div>
+          <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
+            {PRESET_TAGS.map(t => {
+              const on = tags.has(t);
+              return (
+                <button key={t} onClick={()=>toggleTag(t)}
+                  style={{ padding:"5px 11px", borderRadius:99, border:`1px solid ${on?"rgba(212,148,26,.5)":"rgba(255,255,255,.12)"}`, background:on?"rgba(212,148,26,.15)":"transparent", color:on?"var(--gold)":"var(--text2)", fontSize:11, fontWeight:600, cursor:"pointer", transition:"all .15s" }}>
+                  {t}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ── Description ── */}
+        <div className="ls-list-field">
+          <div className="ls-list-label">Description (optional)</div>
+          <textarea className="ls-list-input" placeholder="Edition details, condition notes, provenance, personal note to the buyer…" rows={3}
+            value={description} onChange={e=>setDescription(e.target.value)} style={{ resize:"vertical" }}/>
+        </div>
+
+        <div style={{ fontSize:12, color:"var(--muted)", lineHeight:1.65, marginBottom:16 }}>
+          LitSense holds payment in escrow until delivery is confirmed. We email a prepaid USPS Media Mail label when your book sells. <strong style={{ color:"var(--text2)" }}>10% platform fee</strong>.
+        </div>
+        <button className="ls-list-submit" disabled={!ready||submitting} onClick={handleSubmit}>
+          {submitting?"Listing…":`List for $${price||"0"} →`}
         </button>
       </div>
     </div>
   );
 }
 
-function MarketplaceTab({ isPro, savedBooks, wantList, onRequirePro, userEmail }) {
-  const [marketTab, setMarketTab]   = useState("browse");
-  const [listings,  setListings]    = useState(MOCK_LISTINGS);
-  const [showList,  setShowList]    = useState(false);
-  const [selected,  setSelected]    = useState(null);
-  const [buying,    setBuying]      = useState(false);
-  const [buyError,  setBuyError]    = useState("");
-  const [buyDone,   setBuyDone]     = useState(false);
+// ── MARKETPLACE TAB ───────────────────────────────────────────────────────────
+function MarketplaceTab({ isPro, savedBooks, wantList, onRequirePro, userEmail, userId, marketplaceEnabled, isSignedIn }) {
+  const [marketTab,  setMarketTab]  = useState("browse");
+  const [listings,   setListings]   = useState([]);
+  const [loading,    setLoading]    = useState(true);
+  const [showList,   setShowList]   = useState(false);
+  const [selected,   setSelected]   = useState(null);
+  const [buying,     setBuying]     = useState(false);
+  const [buyError,   setBuyError]   = useState("");
+  const [buySuccess, setBuySuccess] = useState(false);
+  const [search,     setSearch]     = useState("");
+  const [tagFilter,  setTagFilter]  = useState(new Set());
+  const [sortBy,     setSortBy]     = useState("newest");
 
-  if (!isPro) {
-    return (
-      <div className="ls-market" style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",flex:1,padding:"40px 32px",textAlign:"center"}}>
-        <Lock size={36} strokeWidth={1.5} style={{color:"var(--gold)",opacity:.6,marginBottom:16}}/>
-        <div style={{fontFamily:"'Lora',serif",fontSize:22,fontWeight:700,color:"var(--text)",marginBottom:8}}>Marketplace is Pro</div>
-        <div style={{fontSize:14,color:"var(--muted)",lineHeight:1.7,marginBottom:24}}>Buy and sell books directly with other readers. Trade your shelf for something new.</div>
-        <button className="ls-list-submit" style={{maxWidth:240}} onClick={onRequirePro}>Join Club to access →</button>
-      </div>
-    );
-  }
+  const loadListings = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { data } = await supabase.from("marketplace_listings").select("*").order("created_at", { ascending:false });
+      setListings(Array.isArray(data) ? data : []);
+    } catch { setListings([]); }
+    finally { setLoading(false); }
+  }, []);
 
-  return (
+  useEffect(() => { if (marketplaceEnabled && isPro) loadListings(); }, [marketplaceEnabled, isPro, loadListings]);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("market_checkout") === "success") { setBuySuccess(true); loadListings(); }
+  }, [loadListings]);
+
+  const browse     = listings.filter(l => l.status==="active" && l.seller_user_id !== userId);
+  const myListings = listings.filter(l => l.seller_user_id === userId);
+  const wantTitles = (wantList||[]).map(t => (typeof t==="string"?t:t.title||"").toLowerCase());
+
+  // All unique tags across active listings for the filter row
+  const allActiveTags = useMemo(() => {
+    const counts = {};
+    browse.forEach(l => (l.tags||[]).forEach(t => { counts[t]=(counts[t]||0)+1; }));
+    return Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([t])=>t);
+  }, [browse]);
+
+  const toggleTagFilter = (tag) => {
+    setTagFilter(prev => { const n=new Set(prev); n.has(tag)?n.delete(tag):n.add(tag); return n; });
+  };
+
+  // Filtered + sorted browse results
+  const filtered = useMemo(() => {
+    let r = browse;
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      r = r.filter(l =>
+        l.title.toLowerCase().includes(q) ||
+        l.author?.toLowerCase().includes(q) ||
+        l.description?.toLowerCase().includes(q) ||
+        (l.tags||[]).some(t => t.toLowerCase().includes(q)) ||
+        l.condition?.toLowerCase().includes(q)
+      );
+    }
+    if (tagFilter.size > 0) {
+      r = r.filter(l => [...tagFilter].every(tag => (l.tags||[]).includes(tag)));
+    }
+    if (sortBy==="price_asc")  r = [...r].sort((a,b)=>a.price-b.price);
+    if (sortBy==="price_desc") r = [...r].sort((a,b)=>b.price-a.price);
+    return r;
+  }, [browse, search, tagFilter, sortBy]);
+
+  const wantMatches = filtered.filter(l => wantTitles.some(w => w && l.title.toLowerCase().includes(w)));
+  const others      = filtered.filter(l => !wantMatches.includes(l));
+
+  const handleBuy = async () => {
+    if (!selected) return;
+    setBuying(true); setBuyError("");
+    try {
+      const res = await fetch("/api/checkout", {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({ listing_id:selected.id, buyer_email:userEmail, buyer_user_id:userId }),
+      });
+      const d = await res.json();
+      if (d.url) window.location.href = d.url;
+      else setBuyError(d.error||"Checkout failed. Please try again.");
+    } catch(err) { setBuyError(err.message); }
+    finally { setBuying(false); }
+  };
+
+  const handleRemove = async (listing) => {
+    if (!window.confirm(`Remove "${listing.title}" from the marketplace?`)) return;
+    await supabase.from("marketplace_listings").update({ status:"cancelled", updated_at:new Date().toISOString() }).eq("id", listing.id);
+    loadListings();
+  };
+
+  const sColor = { active:"#6dbf6d", sold:"#c8a96e", pending_shipment:"#6ea8c8", shipped:"#a86ec8", completed:"#6dbf6d", cancelled:"#c86e6e", pending_payment:"#c8a96e" };
+  const sLabel = { active:"Listed", sold:"Sold — label coming", pending_shipment:"Label sent", shipped:"Shipped", completed:"Completed", cancelled:"Removed", pending_payment:"Processing" };
+
+  // ── Gates ────────────────────────────────────────────────────────────────────
+  if (!marketplaceEnabled) return (
     <div className="ls-market" style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",flex:1,padding:"40px 32px",textAlign:"center"}}>
-      <ShoppingBag size={44} strokeWidth={1.2} style={{color:"var(--gold)",opacity:.5,marginBottom:20}}/>
+      <ShoppingBag size={44} strokeWidth={1.2} style={{color:"var(--gold)",opacity:.4,marginBottom:20}}/>
       <div className="ls-market-new-badge" style={{marginBottom:16}}><Sparkles size={10}/> Coming Soon</div>
-      <div style={{fontFamily:"'Lora',serif",fontSize:24,fontWeight:700,color:"var(--text)",marginBottom:10}}>Book Marketplace</div>
-      <div style={{fontSize:15,color:"var(--muted)",lineHeight:1.75,maxWidth:300,marginBottom:28}}>
-        Buy and sell books directly with other LitSense readers. We handle payment, escrow, and shipping labels. Launching soon.
-      </div>
-      <div style={{fontSize:14,color:"var(--text2)",lineHeight:1.7,padding:"14px 18px",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:"var(--r-lg)",maxWidth:300}}>
-        Be among the first sellers when we launch — list a book and reach readers who'll actually love it.
-      </div>
+      <div style={{fontFamily:"'Lora',serif",fontSize:22,fontWeight:700,color:"var(--text)",marginBottom:10}}>Book Marketplace</div>
+      <div style={{fontSize:14,color:"var(--muted)",lineHeight:1.75,maxWidth:300}}>Buy and sell physical books with other Club members. Stripe escrow, prepaid shipping, 10% platform fee. Launching soon.</div>
     </div>
   );
 
-  // Highlight listings matching user's want list
-  const wantTitles = (wantList||[]).map(t=>t.toLowerCase());
-  const matches = browse.filter(l => wantTitles.includes(l.title.toLowerCase()));
+  if (!isPro) return (
+    <div className="ls-market" style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",flex:1,padding:"40px 32px",textAlign:"center"}}>
+      <Lock size={36} strokeWidth={1.5} style={{color:"var(--gold)",opacity:.6,marginBottom:16}}/>
+      <div style={{fontFamily:"'Lora',serif",fontSize:22,fontWeight:700,color:"var(--text)",marginBottom:8}}>Marketplace is Club only</div>
+      <div style={{fontSize:14,color:"var(--muted)",lineHeight:1.7,marginBottom:24}}>Buy and sell books directly with other Club members. We handle payment, escrow, and prepaid shipping labels.</div>
+      <button className="ls-list-submit" style={{maxWidth:240}} onClick={onRequirePro}>Join Club to access →</button>
+    </div>
+  );
+
+  if (buySuccess) return (
+    <div className="ls-market" style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",flex:1,padding:"40px 32px",textAlign:"center"}}>
+      <CheckCircle size={44} style={{color:"var(--gold)",marginBottom:16}}/>
+      <div style={{fontFamily:"'Lora',serif",fontSize:22,fontWeight:700,color:"var(--text)",marginBottom:10}}>Payment received.</div>
+      <div style={{fontSize:14,color:"var(--muted)",lineHeight:1.75,maxWidth:300,marginBottom:24}}>Your payment is held securely in escrow. The seller has been notified and will ship within 3 days. You'll get a tracking number by email.</div>
+      <div style={{fontSize:13,color:"var(--muted)",lineHeight:1.7,padding:"12px 16px",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:"var(--r-md)",maxWidth:300,marginBottom:24}}>Once your book arrives, confirm delivery and we'll release payment to the seller.</div>
+      <button className="ls-list-submit" style={{maxWidth:200}} onClick={()=>{setBuySuccess(false);setMarketTab("browse");}}>Browse more books</button>
+    </div>
+  );
 
   return (
     <div className="ls-market">
       <div className="ls-market-hdr">
-        <div className="ls-market-new-badge"><Sparkles size={10}/> NEW — just getting started</div>
         <div className="ls-market-title">Book Marketplace</div>
-        <div className="ls-market-sub">Buy books from other readers. We handle payment, escrow, and postage labels. 10% platform fee.</div>
+        <div className="ls-market-sub">Buy from Club members. Stripe escrow on every sale. 10% fee · USPS Media Mail shipping.</div>
       </div>
 
       <div className="ls-market-tabs">
-        {[["browse","Browse"],["mine","My Listings"]].map(([v,label])=>(
+        {[["browse","Browse"],["mine",`My Listings${myListings.length>0?` (${myListings.length})`:""}`]].map(([v,label])=>(
           <button key={v} className={`ls-market-tab${marketTab===v?" on":""}`} onClick={()=>setMarketTab(v)}>{label}</button>
         ))}
       </div>
 
+      {/* ── Browse tab ── */}
       {marketTab==="browse" && (
-        <>
-          {matches.length > 0 && (
-            <div style={{margin:"0 16px 12px",padding:"12px 14px",background:"rgba(212,148,26,.08)",border:"1px solid rgba(212,148,26,.25)",borderRadius:"var(--r-md)"}}>
-              <div style={{fontSize:12,fontWeight:700,color:"var(--gold)",letterSpacing:".5px",textTransform:"uppercase",marginBottom:6}}>On your want list</div>
-              {matches.map(l=><ListingCard key={l.id} listing={l} onTap={setSelected}/>)}
+        <div style={{ padding:"0 16px" }}>
+
+          {/* Search */}
+          <input className="ls-market-search" placeholder="Search by title, author, tag, condition…"
+            value={search} onChange={e=>setSearch(e.target.value)}/>
+
+          {/* Tag filters */}
+          {allActiveTags.length > 0 && (
+            <div className="ls-market-filter-row" style={{ marginBottom:8 }}>
+              {allActiveTags.map(tag => (
+                <button key={tag} className={`ls-tag-filter${tagFilter.has(tag)?" on":""}`}
+                  onClick={()=>toggleTagFilter(tag)}>
+                  {tag}
+                </button>
+              ))}
             </div>
           )}
-          {browse.length === 0 ? (
+
+          {/* Sort + result count */}
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
+            <div style={{ fontSize:11, color:"var(--muted)" }}>
+              {filtered.length} {filtered.length===1?"listing":"listings"}
+              {(search||tagFilter.size>0)?" found":""}
+            </div>
+            <div className="ls-sort-row" style={{ margin:0 }}>
+              {[["newest","Newest"],["price_asc","Price ↑"],["price_desc","Price ↓"]].map(([v,l])=>(
+                <button key={v} className={`ls-sort-btn${sortBy===v?" on":""}`} onClick={()=>setSortBy(v)}>{l}</button>
+              ))}
+            </div>
+          </div>
+
+          {/* Clear filters */}
+          {(search||tagFilter.size>0) && (
+            <button onClick={()=>{setSearch("");setTagFilter(new Set());}}
+              style={{ fontSize:11, color:"var(--gold)", background:"none", border:"none", cursor:"pointer", padding:0, marginBottom:10 }}>
+              ✕ Clear filters
+            </button>
+          )}
+
+          {loading && <div className="ls-market-empty"><div className="ls-market-empty-body">Loading listings…</div></div>}
+
+          {!loading && browse.length === 0 && !search && tagFilter.size===0 && (
             <div className="ls-market-empty">
               <div className="ls-market-empty-icon">📚</div>
               <div className="ls-market-empty-title">Be one of the first</div>
-              <div className="ls-market-empty-body">We're just getting started. List a book and be among the first sellers on LitSense.</div>
+              <div className="ls-market-empty-body">No books listed yet. List a book and be among the first sellers on LitSense.</div>
             </div>
-          ) : browse.filter(l=>!wantTitles.includes(l.title.toLowerCase())).map(l=>(
-            <ListingCard key={l.id} listing={l} onTap={setSelected}/>
-          ))}
-        </>
+          )}
+
+          {!loading && filtered.length === 0 && (search||tagFilter.size>0) && (
+            <div className="ls-market-empty">
+              <div className="ls-market-empty-title">No matches</div>
+              <div className="ls-market-empty-body">Try different keywords or clear the filters.</div>
+            </div>
+          )}
+
+          {!loading && wantMatches.length > 0 && (
+            <div style={{ marginBottom:16, padding:"12px 14px", background:"rgba(212,148,26,.08)", border:"1px solid rgba(212,148,26,.25)", borderRadius:"var(--r-md)", margin:"0 0 16px" }}>
+              <div style={{ fontSize:11, fontWeight:700, color:"var(--gold)", letterSpacing:".5px", textTransform:"uppercase", marginBottom:8 }}>On your want list ✓</div>
+              {wantMatches.map(l => <ListingCard key={l.id} listing={l} onTap={setSelected}/>)}
+            </div>
+          )}
+
+          {!loading && others.map(l => <ListingCard key={l.id} listing={l} onTap={setSelected}/>)}
+        </div>
       )}
 
+      {/* ── My Listings tab ── */}
       {marketTab==="mine" && (
-        <>
+        <div style={{ padding:"0 16px" }}>
           {myListings.length === 0 ? (
             <div className="ls-market-empty">
               <div className="ls-market-empty-title">Nothing listed yet</div>
-              <div className="ls-market-empty-body">List a book from your shelf and reach readers who'll actually love it.</div>
+              <div className="ls-market-empty-body">List a book from your shelf and reach Club members who'll love it.</div>
             </div>
-          ) : myListings.map(l=><ListingCard key={l.id} listing={l} onTap={setSelected}/>)}
-        </>
+          ) : myListings.map(l => (
+            <div key={l.id} style={{ padding:"14px", marginBottom:10, background:"rgba(255,255,255,.04)", borderRadius:"var(--r-md)", border:"1px solid rgba(255,255,255,.08)" }}>
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:12 }}>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ fontFamily:"'Lora',serif", fontWeight:700, color:"var(--text)", fontSize:15, marginBottom:2, lineHeight:1.3 }}>{l.title}</div>
+                  {l.author && <div style={{ fontSize:12, color:"var(--muted)", marginBottom:6 }}>{l.author}</div>}
+                  <div style={{ display:"flex", gap:8, alignItems:"center", flexWrap:"wrap" }}>
+                    <span style={{ fontSize:16, fontWeight:700, color:"var(--gold)" }}>${l.price}</span>
+                    <span style={{ fontSize:11, color:"var(--muted)" }}>{l.condition}</span>
+                    {l.tags?.slice(0,2).map(t=><span key={t} className="ls-listing-tag">{t}</span>)}
+                  </div>
+                </div>
+                <div style={{ textAlign:"right", flexShrink:0 }}>
+                  <span style={{ fontSize:10, fontWeight:700, padding:"3px 8px", borderRadius:99, background:(sColor[l.status]||"#888")+"22", color:sColor[l.status]||"#888", border:`1px solid ${(sColor[l.status]||"#888")}40` }}>
+                    {sLabel[l.status]||l.status}
+                  </span>
+                  {l.status==="active" && (
+                    <button onClick={()=>handleRemove(l)} style={{ display:"block", marginTop:6, fontSize:11, color:"var(--muted)", background:"none", border:"none", cursor:"pointer", padding:0, textAlign:"right", opacity:.7 }}>
+                      Remove
+                    </button>
+                  )}
+                </div>
+              </div>
+              {(l.status==="sold"||l.status==="pending_shipment") && (
+                <div style={{ marginTop:10, padding:"8px 12px", background:"rgba(212,148,26,.08)", border:"1px solid rgba(212,148,26,.2)", borderRadius:8, fontSize:12, color:"var(--gold)", lineHeight:1.6 }}>
+                  Sold! A prepaid shipping label will be emailed to you within 24 hours. Ship within 3 days of receiving it.
+                </div>
+              )}
+              {l.tracking_number && (
+                <div style={{ marginTop:8, fontSize:12, color:"var(--text2)" }}>
+                  Tracking: <a href={l.tracking_url} target="_blank" rel="noopener noreferrer" style={{ color:"var(--gold)" }}>{l.tracking_number}</a>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
       )}
 
-      <button className="ls-list-btn" onClick={()=>setShowList(true)}>
-        <Tag size={15}/> List a book
-      </button>
+      {/* ── List a book CTA ── */}
+      {isSignedIn && (
+        <button className="ls-list-btn" onClick={()=>setShowList(true)}>
+          <Tag size={15}/> List a book
+        </button>
+      )}
 
+      {/* ── List book modal ── */}
       {showList && (
         <ListBookModal
           onClose={()=>setShowList(false)}
-          onSubmit={(data)=>{
-            setListings(prev=>[{id:`l${Date.now()}`,seller:"me",...data,color:["#1a1408","#0e0c06"]},  ...prev]);
-            setMarketTab("mine");
+          userId={userId}
+          onSubmit={async (data) => {
+            const { error } = await supabase.from("marketplace_listings").insert({
+              ...data, seller_user_id:userId, seller_email:userEmail, status:"active",
+            });
+            if (error) throw new Error(error.message);
+            setMarketTab("mine"); loadListings();
           }}
         />
       )}
 
-      {/* Listing detail sheet */}
+      {/* ── Listing detail / buy sheet ── */}
       {selected && (
         <div className="ls-list-modal">
-          <div className="ls-list-modal-bg" onClick={()=>setSelected(null)}/>
+          <div className="ls-list-modal-bg" onClick={()=>{setSelected(null);setBuyError("");setBuying(false);}}/>
           <div className="ls-list-modal-sheet">
             <div className="ls-list-modal-handle"/>
-            <div style={{display:"flex",gap:14,marginBottom:20}}>
-              <div style={{width:72,height:104,borderRadius:10,overflow:"hidden",flexShrink:0}}>
-                <BookCover isbn={selected.isbn} title={selected.title} author={selected.author} color={selected.color} className="fill"/>
+            <div style={{ display:"flex", gap:14, marginBottom:16 }}>
+              <div style={{ width:72, height:104, borderRadius:10, overflow:"hidden", flexShrink:0 }}>
+                {selected.cover_url
+                  ? <img src={selected.cover_url} alt={selected.title} style={{ width:"100%", height:"100%", objectFit:"cover" }} onError={e=>e.target.style.display="none"}/>
+                  : <BookCover isbn={selected.isbn} title={selected.title} author={selected.author} className="fill"/>
+                }
               </div>
-              <div>
-                <div style={{fontFamily:"'Lora',serif",fontSize:19,fontWeight:700,color:"var(--text)",lineHeight:1.3,marginBottom:4}}>{selected.title}</div>
-                <div style={{fontSize:13,color:"var(--muted)",marginBottom:10}}>{selected.author}</div>
-                <div style={{fontSize:22,fontWeight:700,color:"var(--gold)",marginBottom:4}}>${selected.price}</div>
-                <div style={{fontSize:12,color:"var(--text2)"}}>{selected.condition} · Listed by {selected.seller}</div>
-              </div>
-            </div>
-            <div style={{fontSize:13,color:"var(--muted)",lineHeight:1.7,marginBottom:20}}>
-              Payment is held in escrow until you confirm delivery. We generate the postage label — seller ships to you directly. LitSense takes a 10% platform fee.
-            </div>
-
-            {buyDone ? (
-              <div style={{textAlign:"center",padding:"20px 0"}}>
-                <CheckCircle size={36} style={{color:"var(--gold)",marginBottom:12}}/>
-                <div style={{fontFamily:"'Lora',serif",fontSize:19,fontWeight:700,color:"var(--text)",marginBottom:8}}>Payment held in escrow</div>
-                <div style={{fontSize:14,color:"var(--muted)",lineHeight:1.7}}>The seller has been notified. They'll ship within 3 days. You'll get tracking info here.</div>
-                <button className="ls-list-submit" style={{marginTop:20}} onClick={()=>{setSelected(null);setBuyDone(false);}}>Done</button>
-              </div>
-            ) : (
-              <>
-                {buyError && (
-                  <div style={{padding:"10px 14px",background:"rgba(220,50,50,.1)",border:"1px solid rgba(220,50,50,.3)",borderRadius:"var(--r-md)",fontSize:14,color:"#e06060",marginBottom:14}}>
-                    {buyError}
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ fontFamily:"'Lora',serif", fontSize:18, fontWeight:700, color:"var(--text)", lineHeight:1.25, marginBottom:4 }}>{selected.title}</div>
+                {selected.author && <div style={{ fontSize:13, color:"var(--muted)", marginBottom:8 }}>{selected.author}</div>}
+                <div style={{ fontSize:24, fontWeight:700, color:"var(--gold)", marginBottom:4 }}>${selected.price}</div>
+                <div style={{ fontSize:12, color:"var(--text2)" }}>{selected.condition}</div>
+                {selected.tags?.length > 0 && (
+                  <div style={{ display:"flex", flexWrap:"wrap", gap:4, marginTop:6 }}>
+                    {selected.tags.map(t => <span key={t} className="ls-listing-tag">{t}</span>)}
                   </div>
                 )}
-                <button
-                  className="ls-list-submit"
-                  disabled={buying}
-                  onClick={async () => {
-                    setBuying(true); setBuyError("");
-                    try {
-                      const amount_cents = selected.price * 100;
-                      const res = await fetch("/api/checkout", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                          listing_id:    selected.id,
-                          buyer_email:   userEmail,
-                          amount_cents,
-                          postage_cents: 450, // ~$4.50 Media Mail estimate
-                        }),
-                      });
-                      const data = await res.json();
-                      if (!res.ok) throw new Error(data.error || "Checkout failed");
-                      // In production: use Stripe.js to confirm the payment with client_secret
-                      // For now: show success (payment intent created, funds authorized)
-                      setBuyDone(true);
-                    } catch (err) {
-                      setBuyError(err.message || "Payment failed. Please try again.");
-                    } finally {
-                      setBuying(false);
-                    }
-                  }}
-                >
-                  {buying ? "Processing…" : `Buy for $${selected.price} + $4.50 shipping →`}
-                </button>
-              </>
+              </div>
+            </div>
+            {selected.description && (
+              <div style={{ fontSize:14, color:"var(--text2)", lineHeight:1.7, marginBottom:14, fontStyle:"italic", paddingLeft:2 }}>
+                "{selected.description}"
+              </div>
             )}
-            <button onClick={()=>{setSelected(null);setBuyError("");setBuyDone(false);}} style={{width:"100%",marginTop:10,padding:12,background:"none",border:"none",color:"var(--muted)",fontSize:14,cursor:"pointer"}}>Cancel</button>
+            {/* Seller photos gallery */}
+            {selected.images?.length > 0 && (
+              <div style={{ marginBottom:16 }}>
+                <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.07em", textTransform:"uppercase", color:"var(--muted)", marginBottom:8 }}>
+                  Seller photos
+                </div>
+                <div className="ls-detail-photos">
+                  {selected.images.map((url, i) => (
+                    <img key={i} src={url} alt={`Photo ${i+1}`} className="ls-detail-photo"
+                      onError={e=>e.target.style.display="none"}/>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div style={{ fontSize:13, color:"var(--muted)", lineHeight:1.65, marginBottom:20, padding:"10px 12px", background:"rgba(255,255,255,.04)", borderRadius:"var(--r-md)" }}>
+              Payment held in escrow by Stripe until you confirm delivery. ~$4.50 USPS Media Mail shipping included. 10% fee comes from the seller.
+            </div>
+            {buyError && <div style={{ padding:"10px 14px", background:"rgba(220,50,50,.1)", border:"1px solid rgba(220,50,50,.3)", borderRadius:"var(--r-md)", fontSize:13, color:"#e06060", marginBottom:14 }}>{buyError}</div>}
+            {!isSignedIn
+              ? <div style={{ fontSize:14, color:"var(--muted)", textAlign:"center", marginBottom:16 }}>Sign in to purchase from the marketplace.</div>
+              : <button className="ls-list-submit" disabled={buying} onClick={handleBuy}>
+                  {buying?"Opening checkout…":`Buy for $${selected.price} + $4.50 shipping →`}
+                </button>
+            }
+            <button onClick={()=>{setSelected(null);setBuyError("");}} style={{ width:"100%", marginTop:10, padding:12, background:"none", border:"none", color:"var(--muted)", fontSize:14, cursor:"pointer" }}>
+              Cancel
+            </button>
           </div>
         </div>
       )}
     </div>
   );
 }
-
-
 // ── DISCUSSION ───────────────────────────────────────────────────────────────
 // Conversational thread per book. Scrolls chronologically, not like a forum.
 
@@ -6182,7 +6974,16 @@ export default function LitSense() {
       try { localStorage.setItem("ls_ref_from", refCode); } catch {}
     }
 
-    // Stripe checkout return
+    // Stripe marketplace checkout return
+    const marketCheckout = params.get("market_checkout");
+    if (marketCheckout === "success") {
+      window.history.replaceState({}, "", window.location.pathname);
+      // Listing is now marked sold via webhook — user sees updated state on next load
+    } else if (marketCheckout === "cancelled") {
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+
+    // Stripe subscription checkout return
     const checkout = params.get("checkout");
     if (checkout === "success") {
       // Clean URL without reloading
@@ -6206,6 +7007,7 @@ export default function LitSense() {
   const [flags,       setFlags]       = useState(new Set());
   const [siteContent, setSiteContent] = useState({});
   const [appSettings, setAppSettings] = useState({});
+  const [subTiers,    setSubTiers]    = useState([]);
   const [userEmail, setUserEmail]   = useState("");
   const [userId,    setUserId]      = useState(null);
 
@@ -6242,12 +7044,13 @@ export default function LitSense() {
   }, []);
   const [showAuth, setShowAuth]     = useState(false);
 
-  // Load admin-controlled config (flags, content, settings) once on mount
+  // Load admin-controlled config (flags, content, settings, tiers) once on mount
   useEffect(() => {
-    loadAdminConfig().then(({ flags: f, settings: s, content: c }) => {
+    loadAdminConfig().then(({ flags: f, settings: s, content: c, tiers: t }) => {
       setFlags(f);
       setAppSettings(s);
       setSiteContent(c);
+      setSubTiers(t);
     });
   }, []);
   const [authMode, setAuthMode]     = useState("signup");
@@ -6454,19 +7257,8 @@ export default function LitSense() {
       const unread = savedBooks.find(sb => !reactions[sb.id]);
       if (unread) return { msg:`You saved ${unread.title.split(":")[0]} — did you ever start it?`, cta:"Tell me more about it", prompt:`Tell me more about ${unread.title} by ${unread.author}. Is it right for me?` };
     }
-    // Marketplace signal — book on their want list is listed for sale
-    if (isPro && wantList.length > 0) {
-      const wantTitles = wantList.map(t => t.toLowerCase());
-      const match = MOCK_LISTINGS.find(l => wantTitles.includes(l.title.toLowerCase()));
-      if (match) {
-        return {
-          msg: `Someone just listed a copy of ${match.title.split(":")[0]} — it's on your list.`,
-          cta: "See it in the marketplace",
-          prompt: `Tell me about ${match.title} by ${match.author}. I might buy it.`,
-          onTap: () => setTab("market"),
-        };
-      }
-    }
+    // Marketplace signal — skip, listings are dynamic now
+    // (live want-list matching happens inside MarketplaceTab directly)
     // New signed-in user with no history — greet by name
     if (firstName) {
       return {
@@ -6558,18 +7350,57 @@ export default function LitSense() {
 
   // ── UI STATE ──────────────────────────────────────────────────────────────
   const [showPro, setPro]           = useState(false);
-  const [proStep,  setProStep]       = useState("pitch"); // "pitch" | "done"
-  const [proTier,  setProTier]       = useState("plus");   // "plus" | "club"
-  const [proBilling, setProBilling]  = useState("annual"); // "monthly" | "annual"
+  const [proStep,  setProStep]       = useState("pitch");
+  const [proTier,  setProTier]       = useState("plus");
+  const [proBilling, setProBilling]  = useState("annual");
   const [proError, setProError]      = useState("");
   const [proBusy,  setProBusy]       = useState(false);
   const [proCard,  setProCard]       = useState({ number:"", expiry:"", cvc:"", name:"" });
+  const [couponCode,   setCouponCode]   = useState("");
+  const [couponResult, setCouponResult] = useState(null); // { valid, message, discount_type, discount_value }
+  const [couponChecking, setCouponChecking] = useState(false);
+
+  const checkCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setCouponChecking(true); setCouponResult(null);
+    try {
+      const res = await fetch("/api/validate-coupon", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: couponCode.trim() }),
+      });
+      const d = await res.json();
+      setCouponResult(d);
+    } catch { setCouponResult({ valid: false, message: "Could not validate code." }); }
+    finally { setCouponChecking(false); }
+  };
+
+  // Look up price IDs from admin-managed tiers, fall back to env vars
+  const tierPriceId = (tierName, billing) => {
+    const match = subTiers.find(t =>
+      t.name?.toLowerCase().includes(tierName.toLowerCase()) &&
+      ((billing === "annual" && t.interval === "year") ||
+       (billing === "monthly" && t.interval === "month"))
+    );
+    if (match?.stripe_price_id) return match.stripe_price_id;
+    // Env var fallback
+    if (tierName === "plus" && billing === "annual")  return import.meta.env.VITE_STRIPE_PRICE_PLUS_ANNUAL;
+    if (tierName === "plus" && billing === "monthly") return import.meta.env.VITE_STRIPE_PRICE_PLUS_MONTHLY;
+    if (tierName === "club" && billing === "annual")  return import.meta.env.VITE_STRIPE_PRICE_CLUB_ANNUAL;
+    if (tierName === "club" && billing === "monthly") return import.meta.env.VITE_STRIPE_PRICE_CLUB_MONTHLY;
+    return null;
+  };
   const [shelfToast, setShelfToast] = useState(null); // { title } shown briefly when book auto-added
   const [discBook,   setDiscBook]   = useState(null); // book being discussed
   const [detailBook, setDetailBook] = useState(null); // glass detail sheet
   const [showWelcome, setShowWelcome] = useState(false);
   const [welcomePlaying, setWelcomePlaying] = useState(false);
   const welcomeVideoRef = useRef(null);
+
+  // ── RETURN EXPERIENCE — personalized greeting + marketplace alert ───────────
+  const [marketMatch,    setMarketMatch]    = useState(null);  // marketplace listing matching want list
+  const [returnGreeting, setReturnGreeting] = useState("");    // personal Sage greeting on return
+  const returnCheckedRef = useRef(false);                      // only run once per session
   const [shelfTab, setShelfTab]   = useState("read");
   const [bookInput, setBookInput] = useState("");
   const [wantInput, setWantInput] = useState("");
@@ -6768,6 +7599,38 @@ export default function LitSense() {
     try { localStorage.setItem("ls_welcome_shown", new Date().toISOString()); } catch {}
     setShowWelcome(false);
   };
+
+  // When user is signed in, compose a personal return greeting and check if
+  // any marketplace listings match their want list. Runs once per session.
+  useEffect(() => {
+    if (!isSignedIn || returnCheckedRef.current) return;
+    returnCheckedRef.current = true;
+
+    // Personal Sage greeting based on reading history
+    const greeting = composeReturnGreeting({ currentBook, readBooks, reactions, wantList });
+    if (greeting) setReturnGreeting(greeting);
+
+    // Check marketplace for want-list matches (only if marketplace feature is on)
+    const sessionKey = "ls_market_alert_seen";
+    if (wantList.length > 0 && !sessionStorage.getItem(sessionKey)) {
+      supabase
+        .from("marketplace_listings")
+        .select("id,title,author,isbn,price,condition,images,tags")
+        .eq("status", "active")
+        .then(({ data }) => {
+          if (!data?.length) return;
+          const wantTitles = wantList.map(t =>
+            (typeof t === "string" ? t : t.title || "").toLowerCase()
+          );
+          const match = data.find(l =>
+            wantTitles.some(w => w && l.title.toLowerCase().includes(w))
+          );
+          if (match) setMarketMatch(match);
+        })
+        .catch(() => {});
+    }
+  }, [isSignedIn]); // eslint-disable-line react-hooks/exhaustive-deps
+  // ^ We intentionally read wantList/readBooks/etc. from closure at sign-in time.
 
   // ── LINK HANDLING ─────────────────────────────────────────────────────────
   const fetchLinkMeta = useCallback(async (url) => {
@@ -7029,6 +7892,22 @@ description: one sentence max.`,
                 style={{width:"72%", maxWidth:340, height:"auto", display:"block", margin:"0 auto"}}
               />
             </div>
+
+            {/* ── WANT LIST ALERT — Sage noticed a marketplace match ── */}
+            {marketMatch && flags.has("marketplace") && isSignedIn && (
+              <WantListAlert
+                listing={marketMatch}
+                onSee={() => {
+                  setMarketMatch(null);
+                  try { sessionStorage.setItem("ls_market_alert_seen", "1"); } catch {}
+                  setTab("market");
+                }}
+                onDismiss={() => {
+                  setMarketMatch(null);
+                  try { sessionStorage.setItem("ls_market_alert_seen", "1"); } catch {}
+                }}
+              />
+            )}
 
             {/* ── TOP MOMENT — one thing worth saying ── */}
             <TopMoment
@@ -7509,6 +8388,20 @@ description: one sentence max.`,
           </div>
         )}
 
+        {/* ── READ LOCAL ── */}
+        {tab==="local" && (
+          <ReadLocal
+            readBooks={readBooks}
+            reactions={reactions}
+            savedBooks={savedBooks}
+            currentBook={currentBook}
+            intelligence={intelligence}
+            isSignedIn={isSignedIn}
+            userId={userId}
+            onOpenChat={goAsk}
+          />
+        )}
+
         {/* ── MARKETPLACE ── */}
         {tab==="market" && (
           <MarketplaceTab
@@ -7517,6 +8410,9 @@ description: one sentence max.`,
             wantList={wantList}
             onRequirePro={()=>setPro(true)}
             userEmail={userEmail}
+            userId={userId}
+            marketplaceEnabled={flags.has("marketplace")}
+            isSignedIn={isSignedIn}
           />
         )}
 
@@ -7904,8 +8800,12 @@ description: one sentence max.`,
                         <div className="ls-ask-sage-avatar">
                           <SageOwl size={32}/>
                         </div>
-                        <div className="ls-ask-greeting">{getSageGreeting()} I'm Sage.</div>
-                        <div className="ls-ask-entry-headline"><em>{getSageMood()}</em></div>
+                        <div className="ls-ask-greeting">
+                          {returnGreeting || `${getSageGreeting()} I'm Sage.`}
+                        </div>
+                        <div className="ls-ask-entry-headline">
+                          <em>{returnGreeting ? "What are we reading?" : getSageMood()}</em>
+                        </div>
                         <div className="ls-ask-entry-sub">Tell me what you've loved, what you're in the mood for, or just ask about a book.</div>
                         <div className="ls-ask-nudge-grid">
                           {[
@@ -8028,11 +8928,12 @@ description: one sentence max.`,
       {/* BOTTOM NAV */}
       <nav className="ls-nav">
         {[
-          ["discover",<Search size={21} strokeWidth={1.75}/>,"Discover"],
-          ["shelf",<Library size={21} strokeWidth={1.75}/>,"My Shelf"],
+          ["discover",<Search   size={21} strokeWidth={1.75}/>,"Discover"],
+          ["shelf",   <Library  size={21} strokeWidth={1.75}/>,"My Shelf"],
           ...(isPro ? [["club",<Crown size={21} strokeWidth={1.75}/>,"Club"]] : []),
-          ["profile",<BookMarked size={21} strokeWidth={1.75}/>,"Profile"],
-          ["ask",<SageOwl size={21} style={{opacity:0.85}}/>,"Sage"],
+          ...(flags.has("read_local") ? [["local",<MapPin size={21} strokeWidth={1.75}/>,"Local"]] : []),
+          ["profile", <BookMarked size={21} strokeWidth={1.75}/>,"Profile"],
+          ["ask",     <SageOwl size={21} style={{opacity:0.85}}/>,"Sage"],
         ].map(([v,icon,label])=>(
           <button key={v} className={`ls-nav-btn${tab===v?" on":""}`} onClick={()=>setTab(v)}>
             {icon}<span className="ls-nav-label">{label}</span>
@@ -8171,9 +9072,9 @@ description: one sentence max.`,
                         e.stopPropagation();
                         if (!isSignedIn) { setPro(false); setShowAuth(true); setAuthMode("signup"); return; }
                         setProTier("plus"); setProBusy(true);
-                        const priceId = proBilling==="annual" ? import.meta.env.VITE_STRIPE_PRICE_PLUS_ANNUAL : import.meta.env.VITE_STRIPE_PRICE_PLUS_MONTHLY;
+                        const priceId = tierPriceId("plus", proBilling);
                         try {
-                          const r = await fetch("/api/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({priceId,userId:userId,email:userEmail})});
+                          const r = await fetch("/api/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({priceId,userId:userId,email:userEmail,couponCode:couponResult?.valid?couponCode:undefined})});
                           const d = await r.json();
                           if (d.upgraded) { setProStep("done"); }
                           else if (d.url) window.location.href = d.url;
@@ -8201,9 +9102,9 @@ description: one sentence max.`,
                         e.stopPropagation();
                         if (!isSignedIn) { setPro(false); setShowAuth(true); setAuthMode("signup"); return; }
                         setProTier("club"); setProBusy(true);
-                        const priceId = proBilling==="annual" ? import.meta.env.VITE_STRIPE_PRICE_CLUB_ANNUAL : import.meta.env.VITE_STRIPE_PRICE_CLUB_MONTHLY;
+                        const priceId = tierPriceId("club", proBilling);
                         try {
-                          const r = await fetch("/api/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({priceId,userId:userId,email:userEmail})});
+                          const r = await fetch("/api/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({priceId,userId:userId,email:userEmail,couponCode:couponResult?.valid?couponCode:undefined})});
                           const d = await r.json();
                           if (d.upgraded) { setProStep("done"); }
                           else if (d.url) window.location.href = d.url;
@@ -8214,7 +9115,32 @@ description: one sentence max.`,
                   </div>
                 </div>
                 {proError && <div style={{fontSize:12,color:"#e05555",marginBottom:12,textAlign:"center"}}>{proError}</div>}
-                <button className="ls-modal-cancel" onClick={()=>{setPro(false);setProStep("pitch");setProError("");}}>Maybe another time</button>
+
+                {/* Coupon code */}
+                <div style={{marginBottom:12}}>
+                  <div style={{display:"flex",gap:6}}>
+                    <input
+                      type="text"
+                      placeholder="Promo code"
+                      value={couponCode}
+                      onChange={e=>{setCouponCode(e.target.value.toUpperCase());setCouponResult(null);}}
+                      onKeyDown={e=>e.key==="Enter"&&checkCoupon()}
+                      style={{flex:1,background:"rgba(255,255,255,.07)",border:`1px solid ${couponResult?.valid?"rgba(109,191,109,.4)":couponResult?.valid===false?"rgba(224,85,85,.4)":"rgba(255,255,255,.12)"}`,borderRadius:8,padding:"9px 12px",color:"#f0e8d8",fontFamily:"'Inter',sans-serif",fontSize:13,outline:"none",letterSpacing:"0.08em"}}
+                    />
+                    <button
+                      onClick={checkCoupon}
+                      disabled={!couponCode.trim()||couponChecking}
+                      style={{padding:"9px 14px",borderRadius:8,border:"1px solid rgba(255,255,255,.12)",background:"rgba(255,255,255,.07)",color:"#c0b89a",fontSize:12,fontWeight:600,cursor:"pointer",whiteSpace:"nowrap",opacity:!couponCode.trim()||couponChecking?0.5:1}}
+                    >{couponChecking?"…":"Apply"}</button>
+                  </div>
+                  {couponResult && (
+                    <div style={{fontSize:12,marginTop:6,paddingLeft:2,color:couponResult.valid?"#6dbf6d":"#e05555"}}>
+                      {couponResult.valid?"✓ ":""}{couponResult.message}
+                    </div>
+                  )}
+                </div>
+
+                <button className="ls-modal-cancel" onClick={()=>{setPro(false);setProStep("pitch");setProError("");setCouponCode("");setCouponResult(null);}}>Maybe another time</button>
               </>
             )}
 

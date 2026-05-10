@@ -81,6 +81,31 @@ function paymentFailedHtml(name) {
 </body></html>`;
 }
 
+function marketplaceSoldHtml(title, author, price) {
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/></head>
+<body style="margin:0;padding:0;background:#0f0c07;font-family:Georgia,serif;color:#f0e8d8;">
+<div style="max-width:560px;margin:0 auto;padding:48px 32px;">
+  <div style="font-family:'Georgia',serif;font-size:13px;letter-spacing:0.25em;color:#c9a84c;margin-bottom:32px;">LITSENSE MARKETPLACE</div>
+  <h1 style="font-size:28px;font-weight:400;font-style:italic;color:#f0e8d8;margin:0 0 16px;line-height:1.3;">Your book sold!</h1>
+  <p style="font-size:16px;color:#b8a88a;line-height:1.75;margin:0 0 8px;"><strong style="color:#f0e8d8;">${title}${author ? ` by ${author}` : ""}</strong> sold for $${Number(price).toFixed(2)}.</p>
+  <p style="font-size:16px;color:#b8a88a;line-height:1.75;margin:0 0 24px;">Payment is held in escrow. We'll email you a prepaid USPS Media Mail shipping label within 24 hours. Ship the book within 3 days of receiving the label.</p>
+  <div style="padding:16px 20px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);border-radius:10px;margin-bottom:28px;">
+    <div style="font-size:13px;color:#c9a84c;font-weight:700;margin-bottom:8px;">What happens next</div>
+    <ol style="margin:0;padding-left:18px;font-size:14px;color:#b8a88a;line-height:2;">
+      <li>We'll send your prepaid shipping label</li>
+      <li>Pack the book carefully and drop it off at any USPS location</li>
+      <li>Buyer confirms delivery</li>
+      <li>Funds are released to you (minus 10% platform fee)</li>
+    </ol>
+  </div>
+  <p style="font-size:14px;color:#6e5f47;line-height:1.6;">Questions? Reply to this email or contact <a href="mailto:hello@litsense.app" style="color:#c9a84c;">hello@litsense.app</a>.</p>
+  <div style="margin-top:48px;padding-top:24px;border-top:1px solid rgba(255,255,255,0.07);font-size:12px;color:#6e5f47;line-height:1.6;">
+    <a href="https://litsense.app/privacy.html" style="color:#6e5f47;">Privacy Policy</a> · <a href="https://litsense.app/terms.html" style="color:#6e5f47;">Terms</a>
+  </div>
+</div>
+</body></html>`;
+}
+
 function getEmailContent(type, data = {}) {
   switch (type) {
     case 'welcome':
@@ -102,6 +127,11 @@ function getEmailContent(type, data = {}) {
       return {
         subject: 'Action needed — LitSense payment failed',
         html: paymentFailedHtml(data.name),
+      };
+    case 'marketplace_sold':
+      return {
+        subject: `Your book sold on LitSense — ${data.title || ""}`,
+        html: marketplaceSoldHtml(data.title, data.author, data.price),
       };
     default:
       return null;

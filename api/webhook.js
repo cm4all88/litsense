@@ -144,38 +144,74 @@ export default async function handler(req, res) {
       // ── New checkout completed ──────────────────────────────────────────────
       case "checkout.session.completed": {
         const session = event.data.object;
-        if (session.mode !== "subscription") break;
 
-        const userId = userIdFromMeta(session);
-        const subId  = session.subscription;
+        // ── Subscription checkout ───────────────────────────────────────────
+        if (session.mode === "subscription") {
+          const userId = userIdFromMeta(session);
+          const subId  = session.subscription;
 
-        // Fetch full subscription to get price and period
-        const sub = await stripe.subscriptions.retrieve(subId);
-        const priceId = sub.items.data[0]?.price?.id;
-        const tier    = tierFromPriceId(priceId);
+          const sub = await stripe.subscriptions.retrieve(subId);
+          const priceId = sub.items.data[0]?.price?.id;
+          const tier    = tierFromPriceId(priceId);
 
-        await upsertSubscription(userId, {
-          stripeCustomerId:   session.customer,
-          stripeSubId:        subId,
-          tier,
-          status:             sub.status,
-          currentPeriodEnd:   new Date(sub.current_period_end * 1000).toISOString(),
-          cancelAtPeriodEnd:  sub.cancel_at_period_end,
-        });
-        // Send welcome email
-        if (session.customer_email || session.customer_details?.email) {
-          await sendEmail("welcome", session.customer_email || session.customer_details?.email, {});
+          await upsertSubscription(userId, {
+            stripeCustomerId:   session.customer,
+            stripeSubId:        subId,
+            tier,
+            status:             sub.status,
+            currentPeriodEnd:   new Date(sub.current_period_end * 1000).toISOString(),
+            cancelAtPeriodEnd:  sub.cancel_at_period_end,
+          });
+          if (session.customer_email || session.customer_details?.email) {
+            await sendEmail("welcome", session.customer_email || session.customer_details?.email, {});
+          }
+          if (userId) {
+            const monthKey = new Date().toISOString().slice(0, 7);
+            const entryCount = tier === "club" ? 15 : 5;
+            await supabase.from("reward_entries").upsert({
+              user_id: userId, month_key: monthKey,
+              source: "subscription", entries: entryCount,
+              note: `${tier} subscription`,
+            }, { onConflict: "user_id,month_key,source" });
+          }
         }
-        // Seed initial reward entries for this month
-        if (userId) {
-          const monthKey = new Date().toISOString().slice(0, 7);
-          const entryCount = tier === "club" ? 15 : 5;
-          await supabase.from("reward_entries").upsert({
-            user_id: userId, month_key: monthKey,
-            source: "subscription", entries: entryCount,
-            note: `${tier} subscription`,
-          }, { onConflict: "user_id,month_key,source" });
+
+        // ── Marketplace purchase ────────────────────────────────────────────
+        else if (session.mode === "payment" && session.metadata?.type === "marketplace") {
+          const listing_id  = session.metadata?.listing_id;
+          const buyer_email = session.metadata?.buyer_email || session.customer_details?.email || null;
+          const buyer_user_id = session.metadata?.buyer_user_id || null;
+
+          if (listing_id) {
+            // Mark listing as sold
+            await supabase
+              .from("marketplace_listings")
+              .update({
+                status:            "sold",
+                buyer_email:       buyer_email,
+                buyer_user_id:     buyer_user_id,
+                stripe_session_id: session.id,
+                updated_at:        new Date().toISOString(),
+              })
+              .eq("id", listing_id);
+
+            // Notify seller by email
+            const { data: listing } = await supabase
+              .from("marketplace_listings")
+              .select("seller_email, title, author, price")
+              .eq("id", listing_id)
+              .single();
+
+            if (listing?.seller_email) {
+              await sendEmail("marketplace_sold", listing.seller_email, {
+                title:  listing.title,
+                author: listing.author || "",
+                price:  listing.price,
+              });
+            }
+          }
         }
+
         break;
       }
 
