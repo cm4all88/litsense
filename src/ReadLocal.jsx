@@ -473,7 +473,7 @@ export default function ReadLocal({ readBooks=[], reactions={}, savedBooks=[], c
         </div>
         <div className="rl-sec">
           <div className="rl-sec-hdr">Nearby</div>
-          <div style={{ margin:"0 20px 20px" }} className="rl-skel" style={{ height:200, borderRadius:16, margin:"0 20px 20px" }}/>
+          <div className="rl-skel" style={{ height:200, borderRadius:16, margin:"0 20px 20px" }}/>
         </div>
         <div className="rl-sec">
           <div className="rl-sec-hdr">More places</div>

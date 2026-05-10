@@ -5077,14 +5077,8 @@ function TopMoment({ intelligence, signalCandidates, recCandidates, behavioral, 
         fontSize:10, fontWeight:700, letterSpacing:"2.5px", textTransform:"uppercase",
         color:"rgba(212,148,26,.5)", marginBottom:9,
         display:"flex", alignItems:"center", gap:7,
-      }}>
-        <div style={{
-          width:16, height:16, borderRadius:"50%",
-          background:"rgba(212,148,26,.1)", border:"1px solid rgba(212,148,26,.2)",
-          display:"flex", alignItems:"center", justifyContent:"center",
-          fontSize:10, color:"var(--gold)",
-        }}>✦</div>
-        LitSense
+      }}><SageOwl size={14}/>
+        Sage
       </div>
       {/* Typing text */}
       <div className="ls-moment-msg" style={{paddingRight:28}}>
@@ -7215,6 +7209,7 @@ export default function LitSense() {
   const [showWelcome, setShowWelcome] = useState(false);
   const [welcomePlaying, setWelcomePlaying] = useState(false);
   const welcomeVideoRef = useRef(null);
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   // ── RETURN EXPERIENCE — personalized greeting + marketplace alert ───────────
   const [marketMatch,    setMarketMatch]    = useState(null);  // marketplace listing matching want list
@@ -7658,15 +7653,33 @@ description: one sentence max.`,
           ) : (
             <>
               {!isPro && <button className="ls-pro-btn" onClick={()=>setPro(true)}><Crown size={11} strokeWidth={2}/> Join Club</button>}
-              <div className="ls-user-avatar" title={`Signed in as ${userEmail}`} onClick={handleSignOut}
-                style={userPhoto ? {backgroundImage:`url(${userPhoto})`,backgroundSize:"cover",backgroundPosition:"center",color:"transparent"} : {}}>
-                {userPhoto ? "" : userInitial}
+              <div style={{position:"relative"}}>
+                <div className="ls-user-avatar" title={userEmail} onClick={()=>setShowUserMenu(m=>!m)}
+                  style={userPhoto ? {backgroundImage:`url(${userPhoto})`,backgroundSize:"cover",backgroundPosition:"center",color:"transparent"} : {}}>
+                  {userPhoto ? "" : userInitial}
+                </div>
+                {showUserMenu && (
+                  <>
+                    <div style={{position:"fixed",inset:0,zIndex:199}} onClick={()=>setShowUserMenu(false)}/>
+                    <div style={{position:"absolute",top:"calc(100% + 8px)",right:0,zIndex:200,background:"#1a1720",border:"1px solid rgba(255,255,255,.12)",borderRadius:10,minWidth:200,boxShadow:"0 12px 40px rgba(0,0,0,.6)",overflow:"hidden"}}>
+                      <div style={{padding:"12px 14px 10px",borderBottom:"1px solid rgba(255,255,255,.07)"}}>
+                        <div style={{fontSize:10,fontWeight:700,letterSpacing:"0.07em",textTransform:"uppercase",color:"rgba(186,170,142,.4)",marginBottom:3}}>Signed in as</div>
+                        <div style={{fontSize:12,color:"rgba(186,170,142,.7)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{userEmail}</div>
+                      </div>
+                      <button onClick={()=>{setShowUserMenu(false);setTab("profile");}} style={{width:"100%",padding:"11px 14px",background:"none",border:"none",color:"rgba(240,232,216,.85)",fontSize:13,textAlign:"left",cursor:"pointer",display:"flex",alignItems:"center",gap:9}}>
+                        <BookMarked size={14} strokeWidth={1.75}/> My Profile
+                      </button>
+                      <button onClick={()=>{setShowUserMenu(false);setTab("shelf");}} style={{width:"100%",padding:"11px 14px",background:"none",border:"none",color:"rgba(240,232,216,.85)",fontSize:13,textAlign:"left",cursor:"pointer",display:"flex",alignItems:"center",gap:9}}>
+                        <Library size={14} strokeWidth={1.75}/> My Shelf
+                      </button>
+                      <div style={{borderTop:"1px solid rgba(255,255,255,.07)",margin:"4px 0"}}/>
+                      <button onClick={()=>{setShowUserMenu(false);handleSignOut();}} style={{width:"100%",padding:"11px 14px",background:"none",border:"none",color:"rgba(200,110,110,.8)",fontSize:13,textAlign:"left",cursor:"pointer"}}>
+                        Sign out
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
-            </>
-          )}
-        </div>
-      </header>
-      )}
       {shelfToast && (
         <div className="ls-shelf-toast">
           ✓ Added "{shelfToast.length > 30 ? shelfToast.slice(0,28)+"…" : shelfToast}" to your shelf
@@ -7697,9 +7710,11 @@ description: one sentence max.`,
                 ) : (
                   <>
                     {!isPro && <button className="ls-pro-btn" onClick={()=>setPro(true)}><Crown size={11} strokeWidth={2}/> Join Club</button>}
-                    <div className="ls-user-avatar" title={`Signed in as ${userEmail}`} onClick={handleSignOut}
-                      style={userPhoto ? {backgroundImage:`url(${userPhoto})`,backgroundSize:"cover",backgroundPosition:"center",color:"transparent"} : {}}>
-                      {userPhoto ? "" : userInitial}
+                    <div style={{position:"relative"}}>
+                      <div className="ls-user-avatar" title={userEmail} onClick={()=>setShowUserMenu(m=>!m)}
+                        style={userPhoto ? {backgroundImage:`url(${userPhoto})`,backgroundSize:"cover",backgroundPosition:"center",color:"transparent"} : {}}>
+                        {userPhoto ? "" : userInitial}
+                      </div>
                     </div>
                   </>
                 )}
@@ -9034,11 +9049,6 @@ description: one sentence max.`,
               <div className="ls-auth-field">
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                   <div className="ls-auth-label">Password</div>
-                  {authMode==="login" && (
-                    <button onClick={()=>{setAuthMode("forgot");setAuthError("");}} style={{background:"none",border:"none",color:"var(--gold)",fontSize:11,fontWeight:600,cursor:"pointer",padding:0,opacity:0.8}}>
-                      Forgot password?
-                    </button>
-                  )}
                 </div>
                 <input className="ls-auth-input" type="password"
                   name="password" autoComplete={authMode==="signup"?"new-password":"current-password"}
@@ -9046,6 +9056,12 @@ description: one sentence max.`,
                   value={authPass} onChange={e=>{setAuthPass(e.target.value);setAuthExitWarn(false);}}
                   onKeyDown={e=>{if(e.key==="Enter")handleAuth();}}/>
               </div>
+              {authMode==="login" && (
+                <button onClick={()=>{setAuthMode("forgot");setAuthError("");}}
+                  style={{background:"none",border:"none",color:"var(--gold)",fontSize:13,fontWeight:600,cursor:"pointer",padding:"0 0 4px",textAlign:"left",display:"block",marginTop:-6,marginBottom:8,opacity:0.9}}>
+                  Forgot password?
+                </button>
+              )}
               {authMode==="signup" && (
                 <div style={{display:"flex",alignItems:"flex-start",gap:10,marginBottom:12,marginTop:4}}>
                   <input
