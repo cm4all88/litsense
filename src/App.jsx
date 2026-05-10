@@ -6219,7 +6219,15 @@ export default function LitSense() {
       }
     });
     // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "PASSWORD_RECOVERY") {
+        // User clicked the reset link in their email — show the new password form
+        setAuthMode("reset");
+        setAuthError("");
+        setAuthPass("");
+        setShowAuth(true);
+        return;
+      }
       if (session) {
         setIsSignedIn(true);
         setUserEmail(session.user.email);
@@ -6852,6 +6860,36 @@ description: one sentence max.`,
       setShowAuth(false); setAuthEmail(""); setAuthPass(""); setAuthError("");
     } catch (err) {
       setAuthError(err.message || "Something went wrong. Please try again.");
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    setAuthError("");
+    if (!authEmail.trim()) { setAuthError("Enter your email address first."); return; }
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(authEmail.trim(), {
+        redirectTo: window.location.origin,
+      });
+      if (error) throw error;
+      setAuthMode("forgot-sent");
+    } catch (err) {
+      setAuthError(err.message || "Could not send reset email. Please try again.");
+    }
+  };
+
+  const handleResetPassword = async () => {
+    setAuthError("");
+    if (!authPass.trim() || authPass.trim().length < 6) {
+      setAuthError("Password must be at least 6 characters.");
+      return;
+    }
+    try {
+      const { error } = await supabase.auth.updateUser({ password: authPass.trim() });
+      if (error) throw error;
+      setAuthMode("reset-done");
+      setAuthPass("");
+    } catch (err) {
+      setAuthError(err.message || "Could not update password. Please try again.");
     }
   };
 
@@ -8221,56 +8259,122 @@ description: one sentence max.`,
 
             <div className="ls-auth-eyebrow">LitSense</div>
             <div className="ls-auth-title">
-              {authMode==="signup"?<>Your shelf, <em>remembered.</em></>:<>Welcome <em>back.</em></>}
+              {authMode==="signup"  && <>Your shelf, <em>remembered.</em></>}
+              {authMode==="login"   && <>Welcome <em>back.</em></>}
+              {authMode==="forgot"  && <>Reset your <em>password.</em></>}
+              {authMode==="forgot-sent" && <>Check your <em>email.</em></>}
+              {authMode==="reset"   && <>Set a new <em>password.</em></>}
+              {authMode==="reset-done" && <>Password <em>updated.</em></>}
             </div>
             <div className="ls-auth-sub">
-              {authMode==="signup"
-                ?`Free account gets ${LIMIT_FREE} questions per day and saves your last ${MEM_BOOKS} rated books.`
-                :"Sign in to access your shelf and reading history."}
+              {authMode==="signup"     && `Free account gets ${LIMIT_FREE} questions per day and saves your last ${MEM_BOOKS} rated books.`}
+              {authMode==="login"      && "Sign in to access your shelf and reading history."}
+              {authMode==="forgot"     && "Enter your email and we'll send you a link to reset your password."}
+              {authMode==="forgot-sent"&& `A reset link is on its way to ${authEmail}. Check your inbox (and spam folder).`}
+              {authMode==="reset"      && "Enter your new password below."}
+              {authMode==="reset-done" && "You're all set. Sign in with your new password."}
             </div>
             {authError&&<div className="ls-auth-error">{authError}</div>}
-            <div className="ls-auth-field">
-              <div className="ls-auth-label">Email</div>
-              <input className="ls-auth-input" type="email"
-                name="email" autoComplete="email"
-                placeholder="you@example.com"
-                value={authEmail} onChange={e=>{setAuthEmail(e.target.value);setAuthExitWarn(false);}}
-                onKeyDown={e=>{if(e.key==="Enter")handleAuth();}}/>
-            </div>
-            <div className="ls-auth-field">
-              <div className="ls-auth-label">Password</div>
-              <input className="ls-auth-input" type="password"
-                name="password" autoComplete={authMode==="signup"?"new-password":"current-password"}
-                placeholder="••••••••"
-                value={authPass} onChange={e=>{setAuthPass(e.target.value);setAuthExitWarn(false);}}
-                onKeyDown={e=>{if(e.key==="Enter")handleAuth();}}/>
-            </div>
-            {authMode==="signup" && (
-              <div style={{display:"flex",alignItems:"flex-start",gap:10,marginBottom:12,marginTop:4}}>
-                <input
-                  type="checkbox" id="ls-tos-agree"
-                  style={{marginTop:3,accentColor:"var(--gold)",flexShrink:0,width:16,height:16,cursor:"pointer"}}
-                  checked={tosAgreed} onChange={e=>setTosAgreed(e.target.checked)}
-                />
-                <label htmlFor="ls-tos-agree" style={{fontSize:12.5,color:"var(--text2)",lineHeight:1.55,cursor:"pointer"}}>
-                  I agree to the{" "}
-                  <a href="/terms.html" target="_blank" rel="noopener" style={{color:"var(--gold)"}}>Terms of Service</a>
-                  {" "}and{" "}
-                  <a href="/privacy.html" target="_blank" rel="noopener" style={{color:"var(--gold)"}}>Privacy Policy</a>
-                </label>
+
+            {/* ── SIGNUP / LOGIN ── */}
+            {(authMode==="signup"||authMode==="login") && (<>
+              <div className="ls-auth-field">
+                <div className="ls-auth-label">Email</div>
+                <input className="ls-auth-input" type="email"
+                  name="email" autoComplete="email"
+                  placeholder="you@example.com"
+                  value={authEmail} onChange={e=>{setAuthEmail(e.target.value);setAuthExitWarn(false);}}
+                  onKeyDown={e=>{if(e.key==="Enter")handleAuth();}}/>
               </div>
+              <div className="ls-auth-field">
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <div className="ls-auth-label">Password</div>
+                  {authMode==="login" && (
+                    <button onClick={()=>{setAuthMode("forgot");setAuthError("");}} style={{background:"none",border:"none",color:"var(--gold)",fontSize:11,fontWeight:600,cursor:"pointer",padding:0,opacity:0.8}}>
+                      Forgot password?
+                    </button>
+                  )}
+                </div>
+                <input className="ls-auth-input" type="password"
+                  name="password" autoComplete={authMode==="signup"?"new-password":"current-password"}
+                  placeholder="••••••••"
+                  value={authPass} onChange={e=>{setAuthPass(e.target.value);setAuthExitWarn(false);}}
+                  onKeyDown={e=>{if(e.key==="Enter")handleAuth();}}/>
+              </div>
+              {authMode==="signup" && (
+                <div style={{display:"flex",alignItems:"flex-start",gap:10,marginBottom:12,marginTop:4}}>
+                  <input
+                    type="checkbox" id="ls-tos-agree"
+                    style={{marginTop:3,accentColor:"var(--gold)",flexShrink:0,width:16,height:16,cursor:"pointer"}}
+                    checked={tosAgreed} onChange={e=>setTosAgreed(e.target.checked)}
+                  />
+                  <label htmlFor="ls-tos-agree" style={{fontSize:12.5,color:"var(--text2)",lineHeight:1.55,cursor:"pointer"}}>
+                    I agree to the{" "}
+                    <a href="/terms.html" target="_blank" rel="noopener" style={{color:"var(--gold)"}}>Terms of Service</a>
+                    {" "}and{" "}
+                    <a href="/privacy.html" target="_blank" rel="noopener" style={{color:"var(--gold)"}}>Privacy Policy</a>
+                  </label>
+                </div>
+              )}
+              <button className="ls-auth-cta" onClick={handleAuth}
+                disabled={authMode==="signup" && !tosAgreed}
+                style={authMode==="signup" && !tosAgreed ? {opacity:0.5,cursor:"not-allowed"} : {}}
+              >
+                {authMode==="signup"?"Create free account":"Sign in"}
+              </button>
+              <div className="ls-auth-switch">
+                {authMode==="signup"
+                  ?<>Already have an account? <button onClick={()=>{setAuthMode("login");setAuthError("");setAuthExitWarn(false);}}>Sign in</button></>
+                  :<>Don't have an account? <button onClick={()=>{setAuthMode("signup");setAuthError("");setAuthExitWarn(false);}}>Sign up free</button></>}
+              </div>
+            </>)}
+
+            {/* ── FORGOT PASSWORD ── */}
+            {authMode==="forgot" && (<>
+              <div className="ls-auth-field">
+                <div className="ls-auth-label">Email</div>
+                <input className="ls-auth-input" type="email"
+                  name="email" autoComplete="email"
+                  placeholder="you@example.com"
+                  value={authEmail} onChange={e=>{setAuthEmail(e.target.value);setAuthError("");}}
+                  onKeyDown={e=>{if(e.key==="Enter")handleForgotPassword();}}/>
+              </div>
+              <button className="ls-auth-cta" onClick={handleForgotPassword}>
+                Send reset link
+              </button>
+              <div className="ls-auth-switch">
+                <button onClick={()=>{setAuthMode("login");setAuthError("");}}>Back to sign in</button>
+              </div>
+            </>)}
+
+            {/* ── FORGOT SENT confirmation ── */}
+            {authMode==="forgot-sent" && (
+              <button className="ls-auth-cta" onClick={()=>{setShowAuth(false);setAuthMode("login");setAuthEmail("");setAuthError("");}}>
+                Got it
+              </button>
             )}
-            <button className="ls-auth-cta" onClick={handleAuth}
-              disabled={authMode==="signup" && !tosAgreed}
-              style={authMode==="signup" && !tosAgreed ? {opacity:0.5,cursor:"not-allowed"} : {}}
-            >
-              {authMode==="signup"?"Create free account":"Sign in"}
-            </button>
-            <div className="ls-auth-switch">
-              {authMode==="signup"
-                ?<>Already have an account? <button onClick={()=>{setAuthMode("login");setAuthError("");setAuthExitWarn(false);}}>Sign in</button></>
-                :<>Don't have an account? <button onClick={()=>{setAuthMode("signup");setAuthError("");setAuthExitWarn(false);}}>Sign up free</button></>}
-            </div>
+
+            {/* ── RESET PASSWORD (after clicking email link) ── */}
+            {authMode==="reset" && (<>
+              <div className="ls-auth-field">
+                <div className="ls-auth-label">New Password</div>
+                <input className="ls-auth-input" type="password"
+                  name="password" autoComplete="new-password"
+                  placeholder="At least 6 characters"
+                  value={authPass} onChange={e=>{setAuthPass(e.target.value);setAuthError("");}}
+                  onKeyDown={e=>{if(e.key==="Enter")handleResetPassword();}}/>
+              </div>
+              <button className="ls-auth-cta" onClick={handleResetPassword}>
+                Set new password
+              </button>
+            </>)}
+
+            {/* ── RESET DONE ── */}
+            {authMode==="reset-done" && (
+              <button className="ls-auth-cta" onClick={()=>{setShowAuth(false);setAuthMode("login");setAuthError("");}}>
+                Sign in
+              </button>
+            )}
             <button className="ls-auth-cancel" onClick={()=>{
               const hasInput = authEmail.trim() || authPass.trim();
               if (hasInput && !authExitWarn) { setAuthExitWarn(true); return; }
