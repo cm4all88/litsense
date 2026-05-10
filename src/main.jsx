@@ -22,13 +22,18 @@ const publishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || "pk_test_dH
 // Without this, React 18 + ClerkProvider flushes the initial render synchronously
 // inside root.render(), before App.jsx's module-level const declarations have
 // finished evaluating — causing "Cannot access 'X' before initialization" TDZ errors.
-const App = lazy(() => import('./App.jsx'))
+const App           = lazy(() => import('./App.jsx'))
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard.jsx'))
+
+// If the URL is /admin (or /admin/anything), show the admin dashboard.
+// Otherwise show the normal app. No router library needed.
+const isAdmin = window.location.pathname.startsWith('/admin')
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ClerkProvider publishableKey={publishableKey}>
       <Suspense fallback={null}>
-        <App />
+        {isAdmin ? <AdminDashboard /> : <App />}
       </Suspense>
     </ClerkProvider>
   </React.StrictMode>,
