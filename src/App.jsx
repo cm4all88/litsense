@@ -3338,7 +3338,7 @@ function InlineBookCard({ title, author, onSave, affiliateEnabled = true }) {
       .catch(() => {});
   }, [title, author]);
 
-  const amzUrl = `https://www.amazon.com/s?k=${encodeURIComponent(title + " " + (author||""))}&tag=litsense-20`tag=${AMAZON_TAG}`;
+  const amzUrl = `https://www.amazon.com/s?k=${encodeURIComponent(title + " " + (author||""))}&tag=${AMAZON_TAG}`;
   const audUrl = audibleUrl(title, author);
 
   return (
