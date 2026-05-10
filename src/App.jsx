@@ -7835,7 +7835,10 @@ description: one sentence max.`,
 
               {/* Proof card — shows the intelligence, not just the claim */}
               <div className="ls-proof">
-                
+                <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:12}}>
+                  <SageOwl size={13}/>
+                  <span style={{fontSize:9.5,fontWeight:700,letterSpacing:"2.5px",textTransform:"uppercase",color:"rgba(212,148,26,.6)"}}>Sage</span>
+                </div>
                 <div className="ls-proof-card">
                   <div className="ls-proof-cover" style={{position:"relative"}}>
                     <BookCover isbn="9780802162175" title="The Covenant of Water" author="Abraham Verghese" color={["#1a2430","#0e1820"]}/>
