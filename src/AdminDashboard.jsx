@@ -115,14 +115,42 @@ const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAIL || "")
 // Supabase client for auth checks
 const _supabase = createClient(SB_URL, SB_KEY);
 
-// ── SUPABASE REST ─────────────────────────────────────────────────────────────
-const H = () => ({ apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, "Content-Type": "application/json", Prefer: "return=representation" });
+// ── SUPABASE DB HELPER (uses JS client, handles auth properly) ────────────────
 const db = {
-  get:    async (t, x = "")  => (await fetch(`${SB_URL}/rest/v1/${t}?select=*${x}`, { headers: H() })).json(),
-  insert: async (t, row)     => (await fetch(`${SB_URL}/rest/v1/${t}`, { method: "POST",  headers: H(), body: JSON.stringify(row) })).json(),
-  update: async (t, id, row) => (await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`, { method: "PATCH", headers: H(), body: JSON.stringify({ ...row, updated_at: new Date().toISOString() }) })).ok,
-  upsert: async (t, row, on = "key") => (await fetch(`${SB_URL}/rest/v1/${t}?on_conflict=${on}`, { method: "POST", headers: { ...H(), Prefer: "resolution=merge-duplicates,return=representation" }, body: JSON.stringify(row) })).json(),
-  del:    async (t, id)      => (await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`, { method: "DELETE", headers: H() })).ok,
+  get: async (t, x = "") => {
+    let q = _supabase.from(t).select("*");
+    // parse simple order params like "&order=category.asc,label.asc"
+    const orderMatch = x.match(/order=([^&]+)/);
+    if (orderMatch) {
+      orderMatch[1].split(",").forEach(o => {
+        const [col, dir] = o.split(".");
+        q = q.order(col, { ascending: dir !== "desc" });
+      });
+    }
+    const { data, error } = await q;
+    if (error) { console.error("db.get error:", error); return []; }
+    return data || [];
+  },
+  insert: async (t, row) => {
+    const { data, error } = await _supabase.from(t).insert(row).select();
+    if (error) { console.error("db.insert error:", error); return null; }
+    return data?.[0] || null;
+  },
+  update: async (t, id, row) => {
+    const { error } = await _supabase.from(t).update({ ...row, updated_at: new Date().toISOString() }).eq("id", id);
+    if (error) { console.error("db.update error:", error); return false; }
+    return true;
+  },
+  upsert: async (t, row, on = "key") => {
+    const { data, error } = await _supabase.from(t).upsert(row, { onConflict: on }).select();
+    if (error) { console.error("db.upsert error:", error); return null; }
+    return data?.[0] || null;
+  },
+  del: async (t, id) => {
+    const { error } = await _supabase.from(t).delete().eq("id", id);
+    if (error) { console.error("db.del error:", error); return false; }
+    return true;
+  },
 };
 
 // ── STRIPE HELPER ─────────────────────────────────────────────────────────────
