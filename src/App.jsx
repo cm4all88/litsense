@@ -3183,7 +3183,7 @@ function composeReturnGreeting({ currentBook, readBooks, reactions, wantList }) 
     return `You've started building your taste. Let's keep going.`;
 
   // Want list signal
-  if (wantList.length >= 3) {
+  if ((wantList||[]).length >= 3) {
     const t = trim(typeof wantList[0] === "string" ? wantList[0] : wantList[0]?.title || "", 35);
     return `${wantList.length} books on your list — "${t}" is at the top. Ready to start?`;
   }
@@ -7426,7 +7426,7 @@ export default function LitSense() {
 
     // Check marketplace for want-list matches (only if marketplace feature is on)
     const sessionKey = "ls_market_alert_seen";
-    if (wantList.length > 0 && !sessionStorage.getItem(sessionKey)) {
+    if ((wantList||[]).length > 0 && !sessionStorage.getItem(sessionKey)) {
       supabase
         .from("marketplace_listings")
         .select("id,title,author,isbn,price,condition,images,tags")
@@ -7685,6 +7685,7 @@ description: one sentence max.`,
         </div>
       </header>
       )}
+      {shelfToast && (
         <div className="ls-shelf-toast">
           ✓ Added "{shelfToast.length > 30 ? shelfToast.slice(0,28)+"…" : shelfToast}" to your shelf
         </div>
