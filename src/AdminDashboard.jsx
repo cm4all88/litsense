@@ -779,7 +779,12 @@ function FeatureFlags() {
   const cc = { monetization:T.amber, features:T.blue, access:T.red, marketing:T.green, system:T.purple, general:T.mid };
 
   useEffect(() => {
-    db.get("feature_flags","&order=category.asc,label.asc").then(d => Array.isArray(d) && setFlags(d));
+    const load = async () => {
+      const { data, error } = await _supabase.from("feature_flags").select("*").order("category").order("label");
+      console.log("FLAGS DATA:", data, "ERROR:", error);
+      if (data) setFlags(data);
+    };
+    load();
   }, []);
 
   const toggle = async (flag) => {
