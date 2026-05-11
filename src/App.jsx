@@ -7680,7 +7680,11 @@ description: one sentence max.`,
                   </>
                 )}
               </div>
-      {shelfToast && (
+            </>
+          )}
+        </div>
+      </header>
+      )}
         <div className="ls-shelf-toast">
           ✓ Added "{shelfToast.length > 30 ? shelfToast.slice(0,28)+"…" : shelfToast}" to your shelf
         </div>
